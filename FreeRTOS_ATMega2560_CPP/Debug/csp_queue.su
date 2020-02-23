@@ -1,8 +1,0 @@
-csp_queue.c:33:20:csp_queue_create	3	static
-csp_queue.c:37:6:csp_queue_remove	3	static
-csp_queue.c:41:5:csp_queue_enqueue	7	static
-csp_queue.c:47:5:csp_queue_enqueue_isr	3	static
-csp_queue.c:51:5:csp_queue_dequeue	7	static
-csp_queue.c:57:5:csp_queue_dequeue_isr	3	static
-csp_queue.c:61:5:csp_queue_size	3	static
-csp_queue.c:65:5:csp_queue_size_isr	3	static

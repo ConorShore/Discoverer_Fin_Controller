@@ -1,3 +1,0 @@
-integer.c:80:8:vCompeteingIntMathTask	9	static
-integer.c:69:6:vStartIntegerMathTasks	6	static
-integer.c:141:12:xAreIntegerMathsTaskStillRunning	3	static

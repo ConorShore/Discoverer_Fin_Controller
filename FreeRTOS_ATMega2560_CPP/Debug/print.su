@@ -1,3 +1,0 @@
-print.c:72:6:vPrintInitialise	3	static
-print.c:81:6:vPrintDisplayMessage	3	static
-print.c:92:13:pcPrintGetNextMessage	7	static

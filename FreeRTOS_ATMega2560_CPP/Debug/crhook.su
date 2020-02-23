@@ -1,4 +1,0 @@
-crhook.c:182:13:prvHookCoRoutine	6	static
-crhook.c:107:6:vStartHookCoRoutines	13	static
-crhook.c:129:6:vApplicationTickHook	3	static
-crhook.c:219:12:xAreHookCoRoutinesStillRunning	3	static

@@ -1,6 +1,0 @@
-serial.c:93:16:xSerialPortInitMinimal	8	static
-serial.c:132:22:xSerialGetChar	3	static
-serial.c:150:22:xSerialPutChar	6	static
-serial.c:167:6:vSerialClose	3	static
-serial.c:188:1:__vector_25	23	static
-serial.c:207:1:__vector_26	23	static

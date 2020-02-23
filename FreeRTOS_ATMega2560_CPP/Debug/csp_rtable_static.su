@@ -1,7 +1,0 @@
-csp_rtable_static.c:54:15:csp_rtable_find_iface	3	static
-csp_rtable_static.c:61:9:csp_rtable_find_mac	3	static
-csp_rtable_static.c:68:6:csp_rtable_clear	3	static
-csp_rtable_static.c:72:6:csp_route_table_load	3	static
-csp_rtable_static.c:76:6:csp_route_table_save	3	static
-csp_rtable_static.c:80:5:csp_rtable_set	12	dynamic,bounded
-csp_rtable_static.c:110:6:csp_rtable_print	17	dynamic,bounded

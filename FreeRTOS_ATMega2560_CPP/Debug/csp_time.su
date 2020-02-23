@@ -1,4 +1,0 @@
-csp_time.c:32:10:csp_get_ms	3	static
-csp_time.c:36:10:csp_get_ms_isr	3	static
-csp_time.c:40:10:csp_get_s	3	static
-csp_time.c:44:10:csp_get_s_isr	3	static

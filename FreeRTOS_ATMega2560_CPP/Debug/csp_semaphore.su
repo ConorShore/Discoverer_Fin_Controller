@@ -1,9 +1,0 @@
-csp_semaphore.c:35:5:csp_mutex_create	5	static
-csp_semaphore.c:56:5:csp_bin_sem_create	5	static
-csp_semaphore.c:61:5:csp_bin_sem_remove	3	static
-csp_semaphore.c:44:5:csp_mutex_remove	3	static
-csp_semaphore.c:68:5:csp_bin_sem_wait	14	dynamic,bounded
-csp_semaphore.c:48:5:csp_mutex_lock	3	static
-csp_semaphore.c:79:5:csp_bin_sem_post	10	dynamic,bounded
-csp_semaphore.c:52:5:csp_mutex_unlock	3	static
-csp_semaphore.c:88:5:csp_bin_sem_post_isr	12	dynamic,bounded

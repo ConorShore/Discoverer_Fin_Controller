@@ -1,6 +1,0 @@
-FinCont.cpp:7:6:void enableleds()	3	static
-FinCont.cpp:12:6:void contled(int, int)	3	static
-FinCont.cpp:36:6:void pwrredinit()	3	static
-FinCont.cpp:42:6:void timeoutstart(int)	3	static
-FinCont.cpp:60:6:void timeoutreset()	3	static
-FinCont.cpp:64:5:int timeoutcheck()	3	static

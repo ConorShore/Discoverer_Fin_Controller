@@ -1,6 +1,0 @@
-csp_system.c:31:5:csp_sys_tasklist	3	static
-csp_system.c:40:5:csp_sys_tasklist_size	3	static
-csp_system.c:44:10:csp_sys_memfree	15	static
-csp_system.c:69:5:csp_sys_reboot	6	dynamic,bounded
-csp_system.c:86:5:csp_sys_shutdown	6	dynamic,bounded
-csp_system.c:99:6:csp_sys_set_color	9	dynamic,bounded

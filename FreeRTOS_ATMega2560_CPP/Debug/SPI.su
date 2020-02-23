@@ -1,4 +1,0 @@
-SPI.cpp:33:6:static void SPIClass::begin()	3	static
-SPI.cpp:92:6:static void SPIClass::end()	3	static
-SPI.cpp:146:6:static void SPIClass::usingInterrupt(uint8_t)	3	static
-SPI.cpp:186:6:static void SPIClass::notUsingInterrupt(uint8_t)	3	static

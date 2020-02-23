@@ -1,5 +1,0 @@
-csp_debug.c:52:6:csp_debug_hook_set	3	static
-csp_debug.c:57:6:do_csp_debug	14	dynamic,bounded
-csp_debug.c:119:6:csp_debug_set_level	3	static
-csp_debug.c:126:5:csp_debug_get_level	3	static
-csp_debug.c:133:6:csp_debug_toggle_level	9	dynamic,bounded

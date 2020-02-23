@@ -1,2 +1,0 @@
-csp_malloc.c:27:8:csp_malloc	3	static
-csp_malloc.c:31:6:csp_free	3	static

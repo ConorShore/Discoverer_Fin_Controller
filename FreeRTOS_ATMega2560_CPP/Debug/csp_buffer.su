@@ -1,8 +1,0 @@
-csp_buffer.c:48:5:csp_buffer_init	13	static
-csp_buffer.c:99:7:csp_buffer_get_isr	8	static
-csp_buffer.c:119:7:csp_buffer_get	14	dynamic,bounded
-csp_buffer.c:147:6:csp_buffer_free_isr	8	static
-csp_buffer.c:172:6:csp_buffer_free	14	dynamic,bounded
-csp_buffer.c:207:7:csp_buffer_clone	7	static
-csp_buffer.c:223:5:csp_buffer_remaining	3	static
-csp_buffer.c:227:5:csp_buffer_size	3	static

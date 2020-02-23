@@ -1,3 +1,0 @@
-csp_crc32.c:71:10:csp_crc32_memory	11	static
-csp_crc32.c:85:5:csp_crc32_append	5	static
-csp_crc32.c:109:5:csp_crc32_verify	13	static

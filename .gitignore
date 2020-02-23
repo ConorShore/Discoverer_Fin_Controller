@@ -1,5 +1,5 @@
 FreeRTOS_ATMega2560_CPP/Release/*
 FreeRTOS_ATMega2560_CPP/Debug/*
 .vs/*
-FreeRTOS_ATMega2560_CPP/FinController.componentinfo.xml*
-FreeRTOS_ATMega2560_CPP/FinController.cppproj*
+FreeRTOS_ATMega2560_CPP/FinController.componentinfo.xml
+FreeRTOS_ATMega2560_CPP/FinController.cppproj

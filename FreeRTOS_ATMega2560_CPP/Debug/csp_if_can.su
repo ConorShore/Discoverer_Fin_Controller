@@ -1,5 +1,0 @@
-csp_if_can.c:185:12:csp_can_pbuf_free	5	static
-csp_if_can.c:414:12:csp_can_tx	40	dynamic,bounded
-csp_if_can.c:386:8:csp_can_rx_task	21	dynamic,bounded
-csp_if_can.c:406:5:csp_can_rx_frame	3	static
-csp_if_can.c:493:5:csp_can_init	19	dynamic,bounded

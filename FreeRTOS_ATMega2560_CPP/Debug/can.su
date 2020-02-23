@@ -1,4 +1,0 @@
-can.cpp:31:5:int can_init(uint32_t, uint32_t, csp_can_config*)	15	static
-can.cpp:54:5:int can_send(can_id_t, uint8_t*, uint8_t)	37	dynamic,bounded
-can.cpp:95:6:void CanRxFunc(void*)	29	dynamic,bounded
-can.cpp:246:3:cpp)	3	static
