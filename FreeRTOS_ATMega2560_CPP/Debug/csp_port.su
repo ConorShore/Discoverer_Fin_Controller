@@ -1,0 +1,4 @@
+csp_port.c:39:16:csp_port_get_socket	3	static
+csp_port.c:56:5:csp_port_init	3	static
+csp_port.c:64:5:csp_listen	5	static
+csp_port.c:77:5:csp_bind	14	dynamic,bounded

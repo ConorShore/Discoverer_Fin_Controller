@@ -1,0 +1,9 @@
+csp_services.c:34:5:csp_ping	20	static
+csp_services.c:91:6:csp_ping_noreply	16	dynamic,bounded
+csp_services.c:121:6:csp_reboot	20	static
+csp_services.c:126:6:csp_shutdown	20	static
+csp_services.c:131:6:csp_ps	20	dynamic,bounded
+csp_services.c:180:6:csp_memfree	28	dynamic,bounded
+csp_services.c:197:6:csp_buf_free	28	dynamic,bounded
+csp_services.c:211:6:csp_uptime	28	dynamic,bounded
+csp_services.c:225:5:csp_cmp	13	static

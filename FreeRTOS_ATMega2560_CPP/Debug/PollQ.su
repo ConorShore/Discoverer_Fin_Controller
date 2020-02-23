@@ -1,0 +1,4 @@
+PollQ.c:112:8:vPolledQueueProducer	7	static
+PollQ.c:151:8:vPolledQueueConsumer	7	static
+PollQ.c:88:6:vStartPolledQueueTasks	7	static
+PollQ.c:198:12:xArePollingQueuesStillRunning	3	static

@@ -1,0 +1,5 @@
+main.cpp:252:13:void wdtr(void*)	3	static
+main.cpp:372:1:csp_thread_return_t task_client(void*)	15	dynamic,bounded
+main.cpp:169:5:int main()	19	dynamic,bounded
+main.cpp:294:1:void __vector_3()	22	static
+main.cpp:480:1:void __vector_default()	10	dynamic,bounded

@@ -1,0 +1,4 @@
+csp_iflist.c:60:12:csp_bytesize	19	dynamic,bounded
+csp_iflist.c:27:15:csp_iflist_get_by_name	7	static
+csp_iflist.c:37:6:csp_iflist_add	3	static
+csp_iflist.c:78:6:csp_iflist_print	107	dynamic,bounded

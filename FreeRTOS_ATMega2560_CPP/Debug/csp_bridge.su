@@ -1,0 +1,2 @@
+csp_bridge.c:32:8:csp_bridge	26	dynamic,bounded
+csp_bridge.c:76:5:csp_bridge_start	10	dynamic,bounded

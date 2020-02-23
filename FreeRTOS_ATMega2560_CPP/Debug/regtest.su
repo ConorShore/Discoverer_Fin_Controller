@@ -1,0 +1,4 @@
+regtest.c:75:13:prvRegisterCheck1	3	static
+regtest.c:218:13:prvRegisterCheck2	3	static
+regtest.c:49:6:vStartRegTestTasks	6	static
+regtest.c:56:15:xAreRegTestTasksStillRunning	3	static

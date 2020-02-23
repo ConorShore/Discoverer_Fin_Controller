@@ -1,0 +1,4 @@
+csp_sfp.c:51:5:csp_sfp_send_own_memcpy	40	dynamic,bounded
+csp_sfp.c:96:5:csp_sfp_send	9	static
+csp_sfp.c:100:5:csp_sfp_recv_fp	38	dynamic,bounded
+csp_sfp.c:164:5:csp_sfp_recv	7	static

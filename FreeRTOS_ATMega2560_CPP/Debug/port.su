@@ -1,0 +1,3 @@
+port.c:193:14:pxPortInitialiseStack	3	static
+port.c:316:12:xPortStartScheduler	3	static
+port.c:333:6:vPortEndScheduler	3	static

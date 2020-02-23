@@ -1,0 +1,9 @@
+avr_usart_init.c:14:6:usart_init	3	static
+avr_usart_init.c:28:6:usart_putchar	3	static
+avr_usart_init.c:35:6:usart_getchar	3	static
+avr_usart_init.c:42:6:usart_pstr_p	7	static
+avr_usart_init.c:59:6:usart_pstr	5	static
+avr_usart_init.c:68:6:usart_pstrl	3	static
+avr_usart_init.c:74:15:kbhit	3	static
+avr_usart_init.c:82:6:usart_nl	3	static
+avr_usart_init.c:87:5:usart_putchar_printf	4	static

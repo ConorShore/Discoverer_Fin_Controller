@@ -1,0 +1,3 @@
+csp_service_handler.c:45:17:wrap_32bit_memcpy	9	static
+csp_service_handler.c:54:6:csp_cmp_set_memcpy	3	static
+csp_service_handler.c:210:6:csp_service_handler	20	dynamic,bounded
