@@ -11,8 +11,8 @@
 #include <avr/wdt.h>
 
 
-#include "spi.h"
-#include "mcp2515.h"
+#include <SPI/spi.h>
+#include <arduino-mcp2515-master/mcp2515.h>
 
 //#define MSGMAX 50 // maximum CSP message size
 
@@ -20,21 +20,9 @@ extern "C" {
 
 
 /* Scheduler include files. */
-#include "FreeRTOS.h"
-#include "task.h"
-#include "croutine.h"
-
-
-
-/* Demo file headers. */
-#include "PollQ.h"
-#include "integer.h"
-#include "serial.h"
-#include "comtest.h"
-#include "flash.h"
-#include "print.h"
-#include "partest.h"
-#include "regtest.h"
+#include <FreeRTOS/FreeRTOS.h>
+#include <FreeRTOS/task.h>
+#include <FreeRTOS/croutine.h>
 
 // CSP files
 
@@ -42,30 +30,30 @@ extern "C" {
 #include <string.h>
 #include <unistd.h>
 
-#include "csp.h"
+#include <csp/csp.h>
 
 /* Using un-exported header file.
  * This is allowed since we are still in libcsp */
-#include "csp_thread.h"
+#include <csp/arch/csp_thread.h>
 
 //uart stuff for serial0
 
-#include "avr_usart_init.h"
+#include <avr_usart_init.h>
 
 
 
-#include "csp_rtable.h"
+#include <csp/csp_rtable.h>
 
 
 
 
 
 }
-#include "fin.h"
-#include "fin_server.h"
+#include <fin.h>
+#include <fin_server.h>
 
-#include "can.h"
-#include "csp_if_can.h"
+#include <csp/drivers/can.h>
+#include <csp/interfaces/csp_if_can.h>
 
 	//#include <avr/fuse.h>
 

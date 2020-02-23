@@ -137,309 +137,82 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <ToolchainSettings>
       <AvrGccCpp>
-        <avrgcc.common.Device>-mmcu=atmega2560</avrgcc.common.Device>
-        <avrgcc.common.optimization.RelaxBranches>True</avrgcc.common.optimization.RelaxBranches>
-        <avrgcc.common.outputfiles.hex>True</avrgcc.common.outputfiles.hex>
-        <avrgcc.common.outputfiles.lss>True</avrgcc.common.outputfiles.lss>
-        <avrgcc.common.outputfiles.eep>True</avrgcc.common.outputfiles.eep>
-        <avrgcc.common.outputfiles.srec>True</avrgcc.common.outputfiles.srec>
-        <avrgcc.common.outputfiles.usersignatures>False</avrgcc.common.outputfiles.usersignatures>
-        <avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>
-        <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
-        <avrgcc.compiler.symbols.DefSymbols>
-          <ListValues>
-            <Value>DEBUG</Value>
-            <Value>F_CPU=16000000UL</Value>
-          </ListValues>
-        </avrgcc.compiler.symbols.DefSymbols>
-        <avrgcc.compiler.directories.IncludePaths>
-          <ListValues>
-            <Value>%24(PackRepoDir)\Atmel\ATmega_DFP\1.4.346\include</Value>
-          </ListValues>
-        </avrgcc.compiler.directories.IncludePaths>
-        <avrgcc.compiler.optimization.level>Optimize (-O1)</avrgcc.compiler.optimization.level>
-        <avrgcc.compiler.optimization.PackStructureMembers>True</avrgcc.compiler.optimization.PackStructureMembers>
-        <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
-        <avrgcc.compiler.optimization.DebugLevel>Default (-g2)</avrgcc.compiler.optimization.DebugLevel>
-        <avrgcc.compiler.warnings.AllWarnings>True</avrgcc.compiler.warnings.AllWarnings>
-        <avrgcc.compiler.miscellaneous.OtherFlags>-std=gnu99 -fstack-usage</avrgcc.compiler.miscellaneous.OtherFlags>
-        <avrgcc.compiler.miscellaneous.Verbose>True</avrgcc.compiler.miscellaneous.Verbose>
-        <avrgcccpp.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcccpp.compiler.general.ChangeDefaultCharTypeUnsigned>
-        <avrgcccpp.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcccpp.compiler.general.ChangeDefaultBitFieldUnsigned>
-        <avrgcccpp.compiler.symbols.DefSymbols>
-          <ListValues>
-            <Value>DEBUG</Value>
-            <Value>F_CPU=16000000UL</Value>
-          </ListValues>
-        </avrgcccpp.compiler.symbols.DefSymbols>
-        <avrgcccpp.compiler.directories.IncludePaths>
-          <ListValues>
-            <Value>%24(PackRepoDir)\Atmel\ATmega_DFP\1.4.346\include</Value>
-          </ListValues>
-        </avrgcccpp.compiler.directories.IncludePaths>
-        <avrgcccpp.compiler.optimization.level>Optimize (-O1)</avrgcccpp.compiler.optimization.level>
-        <avrgcccpp.compiler.optimization.PrepareFunctionsForGarbageCollection>False</avrgcccpp.compiler.optimization.PrepareFunctionsForGarbageCollection>
-        <avrgcccpp.compiler.optimization.PackStructureMembers>True</avrgcccpp.compiler.optimization.PackStructureMembers>
-        <avrgcccpp.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcccpp.compiler.optimization.AllocateBytesNeededForEnum>
-        <avrgcccpp.compiler.optimization.DebugLevel>Default (-g2)</avrgcccpp.compiler.optimization.DebugLevel>
-        <avrgcccpp.compiler.warnings.AllWarnings>True</avrgcccpp.compiler.warnings.AllWarnings>
-        <avrgcccpp.compiler.miscellaneous.OtherFlags>-std=c++11 -fstack-usage</avrgcccpp.compiler.miscellaneous.OtherFlags>
-        <avrgcccpp.compiler.miscellaneous.Verbose>True</avrgcccpp.compiler.miscellaneous.Verbose>
-        <avrgcccpp.linker.general.UseVprintfLibrary>True</avrgcccpp.linker.general.UseVprintfLibrary>
-        <avrgcccpp.linker.libraries.Libraries>
-          <ListValues>
-            <Value>libm</Value>
-          </ListValues>
-        </avrgcccpp.linker.libraries.Libraries>
-        <avrgcccpp.assembler.general.IncludePaths>
-          <ListValues>
-            <Value>%24(PackRepoDir)\Atmel\ATmega_DFP\1.4.346\include</Value>
-          </ListValues>
-        </avrgcccpp.assembler.general.IncludePaths>
-        <avrgcccpp.assembler.debugging.DebugLevel>Default (-Wa,-g)</avrgcccpp.assembler.debugging.DebugLevel>
-      </AvrGccCpp>
+  <avrgcc.common.Device>-mmcu=atmega2560</avrgcc.common.Device>
+  <avrgcc.common.optimization.RelaxBranches>True</avrgcc.common.optimization.RelaxBranches>
+  <avrgcc.common.outputfiles.hex>True</avrgcc.common.outputfiles.hex>
+  <avrgcc.common.outputfiles.lss>True</avrgcc.common.outputfiles.lss>
+  <avrgcc.common.outputfiles.eep>True</avrgcc.common.outputfiles.eep>
+  <avrgcc.common.outputfiles.srec>True</avrgcc.common.outputfiles.srec>
+  <avrgcc.common.outputfiles.usersignatures>False</avrgcc.common.outputfiles.usersignatures>
+  <avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcc.compiler.general.ChangeDefaultCharTypeUnsigned>
+  <avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcc.compiler.general.ChangeDefaultBitFieldUnsigned>
+  <avrgcc.compiler.symbols.DefSymbols>
+    <ListValues>
+      <Value>DEBUG</Value>
+      <Value>F_CPU=16000000UL</Value>
+    </ListValues>
+  </avrgcc.compiler.symbols.DefSymbols>
+  <avrgcc.compiler.directories.IncludePaths>
+    <ListValues>
+      <Value>%24(PackRepoDir)\Atmel\ATmega_DFP\1.4.346\include</Value>
+      <Value>../Libraries</Value>
+    </ListValues>
+  </avrgcc.compiler.directories.IncludePaths>
+  <avrgcc.compiler.optimization.level>Optimize (-O1)</avrgcc.compiler.optimization.level>
+  <avrgcc.compiler.optimization.PackStructureMembers>True</avrgcc.compiler.optimization.PackStructureMembers>
+  <avrgcc.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcc.compiler.optimization.AllocateBytesNeededForEnum>
+  <avrgcc.compiler.optimization.DebugLevel>Default (-g2)</avrgcc.compiler.optimization.DebugLevel>
+  <avrgcc.compiler.warnings.AllWarnings>True</avrgcc.compiler.warnings.AllWarnings>
+  <avrgcc.compiler.miscellaneous.OtherFlags>-std=gnu99 -fstack-usage</avrgcc.compiler.miscellaneous.OtherFlags>
+  <avrgcc.compiler.miscellaneous.Verbose>True</avrgcc.compiler.miscellaneous.Verbose>
+  <avrgcccpp.compiler.general.ChangeDefaultCharTypeUnsigned>True</avrgcccpp.compiler.general.ChangeDefaultCharTypeUnsigned>
+  <avrgcccpp.compiler.general.ChangeDefaultBitFieldUnsigned>True</avrgcccpp.compiler.general.ChangeDefaultBitFieldUnsigned>
+  <avrgcccpp.compiler.symbols.DefSymbols>
+    <ListValues>
+      <Value>DEBUG</Value>
+      <Value>F_CPU=16000000UL</Value>
+    </ListValues>
+  </avrgcccpp.compiler.symbols.DefSymbols>
+  <avrgcccpp.compiler.directories.IncludePaths>
+    <ListValues>
+      <Value>%24(PackRepoDir)\Atmel\ATmega_DFP\1.4.346\include</Value>
+      <Value>../Libraries</Value>
+    </ListValues>
+  </avrgcccpp.compiler.directories.IncludePaths>
+  <avrgcccpp.compiler.optimization.level>Optimize (-O1)</avrgcccpp.compiler.optimization.level>
+  <avrgcccpp.compiler.optimization.PrepareFunctionsForGarbageCollection>False</avrgcccpp.compiler.optimization.PrepareFunctionsForGarbageCollection>
+  <avrgcccpp.compiler.optimization.PackStructureMembers>True</avrgcccpp.compiler.optimization.PackStructureMembers>
+  <avrgcccpp.compiler.optimization.AllocateBytesNeededForEnum>True</avrgcccpp.compiler.optimization.AllocateBytesNeededForEnum>
+  <avrgcccpp.compiler.optimization.DebugLevel>Default (-g2)</avrgcccpp.compiler.optimization.DebugLevel>
+  <avrgcccpp.compiler.warnings.AllWarnings>True</avrgcccpp.compiler.warnings.AllWarnings>
+  <avrgcccpp.compiler.miscellaneous.OtherFlags>-std=c++11 -fstack-usage</avrgcccpp.compiler.miscellaneous.OtherFlags>
+  <avrgcccpp.compiler.miscellaneous.Verbose>True</avrgcccpp.compiler.miscellaneous.Verbose>
+  <avrgcccpp.linker.general.UseVprintfLibrary>True</avrgcccpp.linker.general.UseVprintfLibrary>
+  <avrgcccpp.linker.libraries.Libraries>
+    <ListValues>
+      <Value>libm</Value>
+    </ListValues>
+  </avrgcccpp.linker.libraries.Libraries>
+  <avrgcccpp.assembler.general.IncludePaths>
+    <ListValues>
+      <Value>%24(PackRepoDir)\Atmel\ATmega_DFP\1.4.346\include</Value>
+    </ListValues>
+  </avrgcccpp.assembler.general.IncludePaths>
+  <avrgcccpp.assembler.debugging.DebugLevel>Default (-Wa,-g)</avrgcccpp.assembler.debugging.DebugLevel>
+</AvrGccCpp>
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="avr_usart_init.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="avr_usart_init.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="can.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="can.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="comtest.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="crhook.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="croutine.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_autoconfig.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_bridge.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_buffer.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_cmp.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_conn.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_conn.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_crc32.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_crc32.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_debug.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_debug.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_dedup.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_endian.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_iflist.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_if_can.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_if_can.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_if_lo.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_if_lo.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_interface.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_io.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_malloc.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_port.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_promisc.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_qfifo.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_qfifo.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_queue.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_queue.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_rdp.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_route.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_route.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_rtable.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_rtable_static.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_semaphore.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_semaphore.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_services.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_service_handler.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_sfp.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_sha1.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_system.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_system.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_thread.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_thread.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_time.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_types.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="csp_udp.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="event_groups.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="fin.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="FinCont.cpp">
-      <SubType>compile</SubType>
-      <Link>FinCont.cpp</Link>
-    </Compile>
-    <Compile Include="FinCont.h">
-      <SubType>compile</SubType>
-      <Link>FinCont.h</Link>
-    </Compile>
-    <Compile Include="fin_server.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="fin_server.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="FreeRTOS.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="FreeRTOSConfig.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="heap_4.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="integer.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="list.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="main.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="mcp2515.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="mcp2515.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="partest.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="PollQ.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="port.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="portable.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="print.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="queue.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="regtest.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="serial.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="SPI.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="stream_buffer.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="tasks.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="timers.c">
-      <SubType>compile</SubType>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="src\" />
+    <Folder Include="Libraries\" />
+    <Folder Include="Libraries\arduino-mcp2515-master\" />
+    <Folder Include="Libraries\csp\" />
+    <Folder Include="Libraries\csp\arch\" />
+    <Folder Include="Libraries\csp\drivers\" />
+    <Folder Include="Libraries\csp\interfaces\" />
+    <Folder Include="Libraries\csp\rtable\" />
+    <Folder Include="Libraries\csp\transport\" />
+    <Folder Include="Libraries\FreeRTOS\" />
+    <Folder Include="Libraries\SPI\" />
     <Folder Include="src\" />
     <Folder Include="src\" />
     <Folder Include="src\" />
@@ -447,8 +220,6 @@
     <Folder Include="src\arch\" />
     <Folder Include="src\arch\" />
     <Folder Include="src\arch\" />
-    <Folder Include="src\arch\" />
-    <Folder Include="src\arch\freertos\" />
     <Folder Include="src\arch\freertos\" />
     <Folder Include="src\arch\freertos\" />
     <Folder Include="src\arch\freertos\" />
@@ -457,9 +228,446 @@
     <None Include="FinController.componentinfo.xml">
       <SubType>compile</SubType>
     </None>
-    <None Include="FreeRTOS_ATMega2560_CPP.componentinfo.xml">
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Libraries\arduino-mcp2515-master\canlib.h">
       <SubType>compile</SubType>
-    </None>
+    </Compile>
+    <Compile Include="Libraries\arduino-mcp2515-master\mcp2515.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\arduino-mcp2515-master\mcp2515.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\avr_usart_init.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\avr_usart_init.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\arch\csp_clock.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\arch\csp_malloc.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\arch\csp_malloc.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\arch\csp_queue.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\arch\csp_queue.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\arch\csp_semaphore.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\arch\csp_semaphore.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\arch\csp_system.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\arch\csp_system.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\arch\csp_thread.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\arch\csp_thread.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\arch\csp_time.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\arch\csp_time.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_autoconfig.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_bridge.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_buffer.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_buffer.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_cmp.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_conn.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_conn.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_crc32.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_crc32.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_debug.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_debug.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_dedup.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_dedup.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_endian.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_endian.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_error.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_iflist.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_iflist.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_interface.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_io.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_io.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_platform.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_port.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_port.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_promisc.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_promisc.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_qfifo.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_qfifo.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_route.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_route.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_rtable.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_services.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_service_handler.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_sfp.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\csp_types.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\drivers\can.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\drivers\can.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\drivers\i2c.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\interfaces\csp_if_can.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\interfaces\csp_if_can.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\interfaces\csp_if_i2c.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\interfaces\csp_if_i2c.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\interfaces\csp_if_lo.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\interfaces\csp_if_lo.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\rtable\csp_rtable_static.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\transport\csp_rdp.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\transport\csp_transport.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\csp\transport\csp_udp.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\fin.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FinCont.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FinCont.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\fin_server.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\fin_server.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\AbortDelay.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\AbortDelay.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\BlockQ.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\BlockQ.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\blocktim.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\blocktim.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\countsem.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\countsem.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\croutine.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\croutine.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\death.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\death.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\deprecated_definitions.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\dynamic.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\dynamic.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\events.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\event_groups.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\event_groups.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\fileIO.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\FreeRTOS.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\FreeRTOSConfig.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\GenQTest.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\GenQTest.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\heap_4.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\list.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\list.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\MessageBufferAMP.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\MessageBufferAMP.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\message_buffer.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\mevents.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\mpu_prototypes.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\mpu_wrappers.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\PollQ.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\PollQ.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\port.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\portable.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\portmacro.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\print.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\print.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\projdefs.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\QPeek.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\QPeek.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\queue.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\queue.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\QueueOverwrite.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\QueueOverwrite.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\QueueSet.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\QueueSet.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\QueueSetPolling.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\QueueSetPolling.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\recmutex.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\recmutex.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\semphr.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\semtest.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\semtest.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\stack_macros.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\StaticAllocation.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\StaticAllocation.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\stdint.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\StreamBufferInterrupt.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\StreamBufferInterrupt.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\stream_buffer.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\stream_buffer.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\task.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\TaskNotify.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\TaskNotify.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\tasks.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\TimerDemo.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\TimerDemo.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\timers.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\FreeRTOS\timers.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\SPI\SPI.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\SPI\spi.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="main.cpp">
+      <SubType>compile</SubType>
+    </Compile>
   </ItemGroup>
   <Import Project="$(AVRSTUDIO_EXE_PATH)\\Vs\\Compiler.targets" />
 </Project>
