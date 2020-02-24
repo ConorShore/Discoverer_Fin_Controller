@@ -5,7 +5,7 @@
 //stepper motor defines, mostly address but some setup stuff
 
 #define	STEPPER_GCONF_ADD 0x00
-#define STEPPER_GCONF_DATA(a,b) 0x006 | a<<8 | b<<9 //a or b =1 will invert stepper dir, 0 wont
+#define STEPPER_GCONF_DATA(a,b) ((0x006) | (a<<8) | (b<<9)) //a or b =1 will invert stepper dir, 0 wont
 #define STEPPER_GSTAT 0x01
 #define STEPPER_ISET1_ADD 0x30 // for setting currents to steppers
 #define STEPPER_ISET2_ADD 0x50
@@ -30,11 +30,18 @@ typedef struct uniman_step_config {
 
 
 typedef struct uniman_step_reg {
-	bool rw;
 	uint8_t status;
 	uint8_t address;
 	uint8_t data[4];
+
 }uniman_step_reg_t;
+
+typedef struct uniman_step_reg_32 {
+	uint8_t status;
+	uint8_t address;
+	uint32_t data;
+
+}uniman_step_reg_32_t;
 
 
 
@@ -53,13 +60,16 @@ class tmc2041 {
 	
 	
 	public:
-	tmc2041(void (csinitin()),void (csonin()),void (csoffin()),void (enstepin()), void (disstepin()),
+	tmc2041(void (csinitin()),void (csonin()),
+	void (csoffin()),void (enstepin()), void (disstepin()),
 	uniman_step_config_t configin);
 	gs_fin_cmd_error_t set_speed(uint8_t);
 	gs_fin_cmd_error_t set_pos1(uint16_t pos, uint8_t speed);
 	gs_fin_cmd_error_t set_pos2(uint16_t pos, uint8_t speed);
-	void writereg(uint8_t address,uint8_t *data);
+	void writereg(uniman_step_reg_t * databack,uint8_t amount);
+	void writereg(uniman_step_reg_32_t * databack);
 	void readreg(uniman_step_reg_t * databack);
+	void readreg(uniman_step_reg_32_t * databack);
 	
 };
 

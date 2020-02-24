@@ -17,6 +17,7 @@
 #include <tmc2041.h>
 #include <AM4096.h>
 #include <tmc2041_glue.h>
+#include <avr/wdt.h>
 
 
 csp_thread_handle_t handle_server;
@@ -310,13 +311,26 @@ csp_log_info("%s %d\n",pcTaskGetName(NULL),uxTaskGetStackHighWaterMark2(NULL));
 }
 
 
-
 gs_fin_cmd_error_t init_server(void) {
 		
 	
 	setup_temp_sensors();
+	uniman_step_reg_32_t test2 = {
+		.status=0,
+		.address=STEPPER_GCONF_ADD,
+		.data= STEPPER_GCONF_DATA(0,0)
+	};
+	stepper1.writereg(&test2);
 
+	uniman_step_reg_t test = {
+		.status=0,
+		.address=STEPPER_GCONF_ADD,
+		.data = {0,0,0,0}
+	};
+	stepper1.readreg(&test);
+	printf("%d regs %x %x %x %x %x\n",test.status,test.data[0],test.data[1],test.data[2],test.data[3]);
 
+	
 	
 	if(!csp_thread_create(task_server, "SERVER", 270, NULL, 2, &handle_server)) {
 		return FIN_CMD_OK;

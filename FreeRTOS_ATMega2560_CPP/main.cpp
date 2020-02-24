@@ -59,7 +59,7 @@ extern "C" {
 
 #define FUSES __fuse_t __fuse FUSEMEM
 
-FUSES {.low = 0xBF, .high=0x01,.extended = 0xFF};
+FUSES {.low = 0xBF, .high=0x11,.extended = 0xFF};
 
 
 
@@ -188,12 +188,13 @@ fdevopen( &usart_putchar_printf,0);
 		
 		
 		error-=init_server();
+		//while(1);
 		printf("%d",error);
 
 		// Client 
 		
-		csp_thread_handle_t handle_client;
-		error+=csp_thread_create(task_client, "CLIENT", 220, NULL, 1, &handle_client);
+		//csp_thread_handle_t handle_client;
+		//error+=csp_thread_create(task_client, "CLIENT", 220, NULL, 1, &handle_client);
 		
 		//csp_log_reset("test");
 		error+=csp_thread_create(CanRxFunc,"CANRX",180,NULL,3,&handle_canrx);
@@ -206,7 +207,7 @@ fdevopen( &usart_putchar_printf,0);
 
 		//printf("Debug enabed\r\n");
 		
-		//csp_debug_toggle_level(CSP_INFO);
+		csp_debug_toggle_level(CSP_INFO);
 		//csp_debug_toggle_level(CSP_WARN);
 		//csp_debug_toggle_level(CSP_ERROR);
 
@@ -226,6 +227,8 @@ fdevopen( &usart_putchar_printf,0);
 		//while(1);
 	 	 //xTaskCreate(TaskBlinkserial, "blinks", 128, NULL, 3, NULL);
 	// usart_pstr_p(PSTR("LED init"),1);
+	
+	
 
 
 	vTaskStartScheduler();
