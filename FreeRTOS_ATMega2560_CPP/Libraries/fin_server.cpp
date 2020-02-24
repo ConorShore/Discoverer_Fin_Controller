@@ -14,6 +14,7 @@
 #include <fin.h>
 #include <fin_server.h>
 #include <SPI/spi.h>
+#include <avr/wdt.h>
 
 
 csp_thread_handle_t handle_server;
@@ -145,14 +146,17 @@ class tmc2041 {
 	#define TEMP_MASK3 0x01
 	#define TEMP_MASK4 0x00
 	
-	#define TEMP_CAL_T0 273.15
-	#define TEMP_CAL_T1 298.15
-	#define TEMP_CAL_T2
-	#define TEMP_CAL_RT1 10000.0
-	#define TEMP_CAL_RT2
-	#define TEMP_CAL_BETA (log(TEMP_CAL_RT1/TEMP_CAL_RT2))/((1/TEMP_CAL_T1)-(1/TEMP_CAL_T2))
+	#define TEMP_CAL_T0 298.15
+	#define TEMP_CAL_T1 276.35
+	#define TEMP_CAL_T2 289.55
+	#define TEMP_CAL_RT1 27880.0
+	#define TEMP_CAL_RT2 15440.0
+	//#define TEMP_CAL_BETA (log(TEMP_CAL_RT1/TEMP_CAL_RT2))/((1/TEMP_CAL_T1)-(1/TEMP_CAL_T2))
 	#define TEMP_RES_VAL 10000.0
-	#define TEMP_RES_INF TEMP_RES_VAL*(exp((-TEMP_CAL_BETA)/TEMP_CAL_T0))
+	//#define TEMP_RES_INF TEMP_RES_VAL*(exp((-TEMP_CAL_BETA)/TEMP_CAL_T0))
+	
+	const double 	temp_cal_beta=16237.12;  //13842.67;
+	//const double temp_res_inf = TEMP_RES_VAL*(exp((-temp_cal_beta)/TEMP_CAL_T0));
 //
 
 /**
@@ -204,23 +208,41 @@ gs_fin_cmd_error_t change_ustep(void) {
 		ADMUX=(ADMUX&~(0x0F))|TEMP_MASK1;
 		ADCSRA|=(1<<ADSC);
 		while(ADCSRA&(1<<ADSC));
-		//tempstore=(TEMP_RES_VAL*ADC)/(1024-ADC);    //sort this out
-		//*(array)=(uint16_t)(TEMP_CAL_BETA/(log((tempstore)/TEMP_RES_INF));
+		tempstore=1023.0/((double)ADC)-1.0;    
+		tempstore= log(tempstore);
+		tempstore /= temp_cal_beta;
+		tempstore+= 1.0 / (TEMP_CAL_T0);
+		*(array)=(uint16_t)(1.0/tempstore);
 		
 		ADMUX=(ADMUX&~(0x0F))|TEMP_MASK2;
 		ADCSRA|=(1<<ADSC);
 		while(ADCSRA&(1<<ADSC));
-		*(array+1)=ADC;
+		
+		tempstore=1023.0/((double)ADC)-1.0;    
+		tempstore= log(tempstore);
+		tempstore /= temp_cal_beta;
+		tempstore+= 1.0 / (TEMP_CAL_T0);
+		*(array+1)=(uint16_t)(1.0/tempstore);
 		
 		ADMUX=(ADMUX&~(0x0F))|TEMP_MASK3;
 		ADCSRA|=(1<<ADSC);
 		while(ADCSRA&(1<<ADSC));
-		*(array+2)=ADC;
+		
+		tempstore=1023.0/((double)ADC)-1.0;    
+		tempstore= log(tempstore);
+		tempstore /= temp_cal_beta;
+		tempstore+= 1.0 / (TEMP_CAL_T0);
+		*(array+2)=(uint16_t)(1.0/tempstore);
 		
 		ADMUX=(ADMUX&~(0x0F))|TEMP_MASK4;
 		ADCSRA|=(1<<ADSC);
 		while(ADCSRA&(1<<ADSC));
-		*(array+3)=ADC;
+		
+		tempstore=1023.0/((double)ADC)-1.0;    
+		tempstore= log(tempstore);
+		tempstore /= temp_cal_beta;
+		tempstore+= 1.0 / (TEMP_CAL_T0);
+		*(array+3)=(uint16_t)(1.0/tempstore);
 		portEXIT_CRITICAL();
 
 	
@@ -360,7 +382,21 @@ gs_fin_cmd_error_t init_server(void) {
 		
 	tmc2041 stepper1(&stepper_1_cs_init,&stepper_1_cson,&stepper_1_csoff,&stepper_1_en, &stepper_1_dis,  uniman_step1_conf);
 	tmc2041 stepper2(&stepper_2_cs_init,&stepper_2_cson,&stepper_2_csoff,&stepper_2_en, &stepper_2_dis,  uniman_step2_conf);	
+	printf("test\n");
+
 	
+	printf("%l\n",temp_cal_beta);
+	setup_temp_sensors();
+	uint16_t testar[4];
+	while(1) {
+	 read_temp_sensors(testar);
+	 printf("test ar 1 = %d\n",testar[0]);
+	 printf("test ar 2 = %d\n",testar[1]);
+	 printf("test ar 3 = %d\n",testar[2]);
+	 printf("test ar 4 = %d\n",testar[3]);
+	 _delay_ms(200);
+	 wdt_reset();
+	}
 	
 	if(!csp_thread_create(task_server, "SERVER", 270, NULL, 2, &handle_server)) {
 		return FIN_CMD_OK;
