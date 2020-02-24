@@ -14,7 +14,6 @@
 #include <fin.h>
 #include <fin_server.h>
 #include <SPI/spi.h>
-#include <avr/wdt.h>
 
 
 csp_thread_handle_t handle_server;
@@ -382,21 +381,9 @@ gs_fin_cmd_error_t init_server(void) {
 		
 	tmc2041 stepper1(&stepper_1_cs_init,&stepper_1_cson,&stepper_1_csoff,&stepper_1_en, &stepper_1_dis,  uniman_step1_conf);
 	tmc2041 stepper2(&stepper_2_cs_init,&stepper_2_cson,&stepper_2_csoff,&stepper_2_en, &stepper_2_dis,  uniman_step2_conf);	
-	printf("test\n");
 
-	
-	printf("%l\n",temp_cal_beta);
 	setup_temp_sensors();
-	uint16_t testar[4];
-	while(1) {
-	 read_temp_sensors(testar);
-	 printf("test ar 1 = %d\n",testar[0]);
-	 printf("test ar 2 = %d\n",testar[1]);
-	 printf("test ar 3 = %d\n",testar[2]);
-	 printf("test ar 4 = %d\n",testar[3]);
-	 _delay_ms(200);
-	 wdt_reset();
-	}
+
 	
 	if(!csp_thread_create(task_server, "SERVER", 270, NULL, 2, &handle_server)) {
 		return FIN_CMD_OK;
