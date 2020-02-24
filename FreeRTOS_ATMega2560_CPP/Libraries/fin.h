@@ -61,6 +61,24 @@ typedef enum {
        Set fin position in minimum drag position.
     */
     GS_FIN_CMD_SET_MIN_DRAG = 3,
+	
+	/**
+	Get config parameters
+	*/
+	UNIMAN_FIN_CFG_GET = 4,
+	
+	/**
+	Set config parameters
+	*/
+	
+	UNIMAN_FIN_CFG_SET = 5,
+	
+	/**
+	Save current config parameters in ram to EEPROM
+	*/
+	
+	UNIMAN_FIN_CFG_SAVE = 6
+	
 } gs_fin_commands_t;
 
 /**
@@ -140,6 +158,7 @@ typedef enum {
 	//code for selecting uStep mode
 	//this will apply to all stepper motors
 	//auto means the controller will decide
+	// any other setting will force microstepping in that mode
 	
 	STEPPER_USTEP_AUTO = 0,
 	STEPPER_USTEP_FULL	= 1,
@@ -149,32 +168,38 @@ typedef enum {
 	STEPPER_USTEP_1_16 = 5,
 	STEPPER_USTEP_1_32 = 6,
 	STEPPER_USTEP_1_64 = 7,
-
 	
 }uniman_ustep_mode_t;
 
 typedef enum {
-	STEPPER_USTEP_INV1_0 = (0<<4),
-	STEPPER_USTEP_INV1_1 = (1<<4),
-	STEPPER_USTEP_INV2_0 = (0<<5),
-	STEPPER_USTEP_INV2_1 = (1<<5),
-	STEPPER_USTEP_INV3_0 = (0<<6),
-	STEPPER_USTEP_INV3_1 = (1<<6),
-	STEPPER_USTEP_INV4_0 = (0<<7),
-	STEPPER_USTEP_INV4_1 = (1<<7),
+	
+	// for setting inverts for each steppers
+	
+	STEPPER_USTEP_INVA_0 = (0<<4),
+	STEPPER_USTEP_INVA_1 = (1<<4),
+	STEPPER_USTEP_INVB_0 = (0<<5),
+	STEPPER_USTEP_INVB_1 = (1<<5),
+	STEPPER_USTEP_INVC_0 = (0<<6),
+	STEPPER_USTEP_INVC_1 = (1<<6),
+	STEPPER_USTEP_INVD_0 = (0<<7),
+	STEPPER_USTEP_INVD_1 = (1<<7),
 	
 }uniman_ustep_invert_t;
 
-//#define uniman_step_config(a,b) a&b
-
-
+// 1=A=y+, 2=B=x+, 3=C=y-, 4=D=x-
 
 
 
 typedef struct __attribute__((packed, aligned(1))) uniman_fin_config {
 	
-	//uint8_t
+	uint8_t stepper_config; // contains the step mode and invert statuses for steppers
+	uint8_t stepper_ihold; //stepper run
+	uint8_t stepper_irun; //stepper run current
+	uint8_t stepper_speed_custom; //speed to move for custom positions moves. defined
+	uint8_t stepper_speed_minmax; //speed for max min drag moves
+	uint8_t system_reset_encoder_zero; //[7:5]unused,[4]reset controller,[3:0]zero encoder D-A
 	
+
 	}uniman_fin_config_t;
 
 #endif /* SRC_SOAR_FIN_FIN_H_ */
