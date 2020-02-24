@@ -245,8 +245,7 @@ static void wdtr(void* pvParameters) {
 	// wdt_disable();
 	 wdt_enable(WDTO_500MS);
 	 
-	 int a =0;
-	 
+	
 	for(;;) {
 	wdt_reset();
 	vTaskDelay(200/ portTICK_PERIOD_MS);

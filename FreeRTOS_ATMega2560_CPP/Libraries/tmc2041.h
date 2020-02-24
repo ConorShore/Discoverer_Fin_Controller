@@ -76,7 +76,7 @@ class tmc2041 {
 	void readreg(uniman_step_reg_t * databack); // for reading individual bytes
 	void readreg(uniman_step_reg_32_t * databack); // for reading the full 32bit
 	gs_fin_cmd_error_t saveconfig(void); //saves current config to eeprom
-	gs_fin_cmd_error_t updateconfig(uniman_step_config_t confin);
+	gs_fin_cmd_error_t updateconfig(uniman_step_config_t * confin);
 	
 	
 };

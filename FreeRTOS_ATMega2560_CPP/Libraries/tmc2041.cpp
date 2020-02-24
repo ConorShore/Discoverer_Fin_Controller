@@ -86,8 +86,8 @@
 		
 	};
 	
-	gs_fin_cmd_error_t tmc2041::updateconfig(uniman_step_config_t confin) {
-		config=confin;
+	gs_fin_cmd_error_t tmc2041::updateconfig(uniman_step_config_t * confin) {
+		config=*confin;
 		
 		gs_fin_cmd_error_t error=FIN_CMD_OK;
 		

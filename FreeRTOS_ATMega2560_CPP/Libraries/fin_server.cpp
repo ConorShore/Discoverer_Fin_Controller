@@ -316,8 +316,7 @@ gs_fin_cmd_error_t init_server(void) {
 		
 	
 	setup_temp_sensors();
-	//stepper1.updateconfig(test)
-
+	
 	
 	
 	if(!csp_thread_create(task_server, "SERVER", 270, NULL, 2, &handle_server)) {
