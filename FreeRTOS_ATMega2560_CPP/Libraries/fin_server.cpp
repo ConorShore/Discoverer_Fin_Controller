@@ -311,11 +311,12 @@ csp_log_info("%s %d\n",pcTaskGetName(NULL),uxTaskGetStackHighWaterMark2(NULL));
 }
 
 
+gs_fin_cmd_error_t init_server(void) {
 
 		
 	
 	setup_temp_sensors();
-	
+	//stepper1.updateconfig(test)
 
 	
 	
