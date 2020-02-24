@@ -530,12 +530,6 @@
     <Compile Include="Libraries\FreeRTOS\list.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="Libraries\FreeRTOS\MessageBufferAMP.c">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="Libraries\FreeRTOS\MessageBufferAMP.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="Libraries\FreeRTOS\message_buffer.h">
       <SubType>compile</SubType>
     </Compile>

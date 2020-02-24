@@ -13,11 +13,14 @@
 #define STEPPER_MSCNT2_ADD 0x7A
 #define STEPPER_MSCURACT1_ADD 0x6B
 #define STEPPER_MSCURACT2_ADD 0x7B
-#define STEPPER_CHOPCONF1_ADD Ox6C
-#define STEPPER_CHOPCONF2_ADD Ox7C
+#define STEPPER_CHOPCONF1_ADD 0x6C
+#define STEPPER_CHOPCONF2_ADD 0x7C
 
 #define STEPPER_DEFAULT_IHOLD 31
 #define STEPPER_DEFAULT_IRUN 31
+
+#define STEPPER_1_EEPROM_ADDRESS 0x10
+#define STEPPER_2_EEPROM_ADDRESS 0x20
 
 #define STEPPER_SPI_CLK 2000000UL
 
@@ -56,20 +59,25 @@ class tmc2041 {
 	void (*disstep)();
 	void startSPI(void);
 	void endSPI(void);
+	uint8_t eeprom_address;
+
 	
 	
 	
 	public:
 	tmc2041(void (csinitin()),void (csonin()),
 	void (csoffin()),void (enstepin()), void (disstepin()),
-	uniman_step_config_t configin);
+	uniman_step_config_t configin,uint8_t eeprom_addressin);
 	gs_fin_cmd_error_t set_speed(uint8_t);
 	gs_fin_cmd_error_t set_pos1(uint16_t pos, uint8_t speed);
 	gs_fin_cmd_error_t set_pos2(uint16_t pos, uint8_t speed);
-	void writereg(uniman_step_reg_t * databack,uint8_t amount);
-	void writereg(uniman_step_reg_32_t * databack);
-	void readreg(uniman_step_reg_t * databack);
-	void readreg(uniman_step_reg_32_t * databack);
+	void writereg(uniman_step_reg_t * databack,uint8_t amount); // for writing individual bytes
+	void writereg(uniman_step_reg_32_t * databack); //for writing the full 32bit
+	void readreg(uniman_step_reg_t * databack); // for reading individual bytes
+	void readreg(uniman_step_reg_32_t * databack); // for reading the full 32bit
+	gs_fin_cmd_error_t saveconfig(void); //saves current config to eeprom
+	gs_fin_cmd_error_t updateconfig(uniman_step_config_t confin);
+	
 	
 };
 

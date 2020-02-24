@@ -46,8 +46,8 @@ uniman_step_config_t uniman_step2_conf = {
 
 
 	
-tmc2041 stepper1(&stepper_1_cs_init,&stepper_1_cson,&stepper_1_csoff,&stepper_1_en, &stepper_1_dis,  uniman_step1_conf);
-tmc2041 stepper2(&stepper_2_cs_init,&stepper_2_cson,&stepper_2_csoff,&stepper_2_en, &stepper_2_dis,  uniman_step2_conf);
+tmc2041 stepper1(&stepper_1_cs_init,&stepper_1_cson,&stepper_1_csoff,&stepper_1_en, &stepper_1_dis,  uniman_step1_conf,STEPPER_1_EEPROM_ADDRESS);
+tmc2041 stepper2(&stepper_2_cs_init,&stepper_2_cson,&stepper_2_csoff,&stepper_2_en, &stepper_2_dis,  uniman_step2_conf,STEPPER_2_EEPROM_ADDRESS);
 
 	
 
@@ -311,24 +311,11 @@ csp_log_info("%s %d\n",pcTaskGetName(NULL),uxTaskGetStackHighWaterMark2(NULL));
 }
 
 
-gs_fin_cmd_error_t init_server(void) {
+
 		
 	
 	setup_temp_sensors();
-	uniman_step_reg_32_t test2 = {
-		.status=0,
-		.address=STEPPER_GCONF_ADD,
-		.data= STEPPER_GCONF_DATA(0,0)
-	};
-	stepper1.writereg(&test2);
-
-	uniman_step_reg_t test = {
-		.status=0,
-		.address=STEPPER_GCONF_ADD,
-		.data = {0,0,0,0}
-	};
-	stepper1.readreg(&test);
-	printf("%d regs %x %x %x %x %x\n",test.status,test.data[0],test.data[1],test.data[2],test.data[3]);
+	
 
 	
 	

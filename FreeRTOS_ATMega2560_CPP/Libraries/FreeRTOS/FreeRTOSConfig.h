@@ -31,8 +31,9 @@
 /* Here is a good place to include header files that are required across
 your application. */
 #include <avr/io.h>
+#include <avr/interrupt.h>
 
-#define FORCERESET vTaskSuspendAll(); printf("Error Reset\n"); while(1); 
+#define FORCERESET vTaskSuspendAll(); cli(); printf("Error Reset\n"); while(1); 
 
 
 #define configUSE_PREEMPTION                    1
