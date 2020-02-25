@@ -59,7 +59,7 @@ extern "C" {
 
 #define FUSES __fuse_t __fuse FUSEMEM
 
-FUSES {.low = 0xBF, .high=0x81,.extended = 0xFF};
+FUSES {.low = 0xBF, .high=0x01,.extended = 0xFF};
 
 
 

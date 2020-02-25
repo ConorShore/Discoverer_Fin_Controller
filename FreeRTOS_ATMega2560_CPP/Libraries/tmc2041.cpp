@@ -111,7 +111,7 @@
 		tempwrite = {
 			.status=0,
 			.address=STEPPER_ISET1_ADD,
-			.data=	((((uint32_t)config.IRUN)<<8)|config.IHOLD) 
+			.data=	((((uint32_t)config.IRUN)<<8)|config.IHOLD)  | (((uint32_t)8)<<16)
 		};
 		
 		tempread.address=tempwrite.address;
@@ -122,7 +122,7 @@
 		tempwrite = {
 			.status=0,
 			.address=STEPPER_ISET2_ADD,
-			.data=	((((uint32_t)config.IRUN)<<8)|config.IHOLD) 
+			.data=	((((uint32_t)config.IRUN)<<8)|config.IHOLD) | (((uint32_t)8)<<16)
 		};
 		
 		tempread.address=tempwrite.address;
@@ -160,6 +160,8 @@
 	return error;
 			
 	}
+	
+
 	
 	gs_fin_cmd_error_t tmc2041::set_speed(uint8_t) {};
 	gs_fin_cmd_error_t tmc2041::set_pos1(uint16_t pos, uint8_t speed) {};

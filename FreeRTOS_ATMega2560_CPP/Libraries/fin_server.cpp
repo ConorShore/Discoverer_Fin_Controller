@@ -27,14 +27,24 @@ uniman_step_config_t uniman_step1_conf = {
 	.GCONF=STEPPER_GCONF_DATA(0,0),
 	.IHOLD=STEPPER_DEFAULT_IHOLD,
 	.IRUN=STEPPER_DEFAULT_IRUN,
-	.CHOPCONF=0x08010008
+	.CHOPCONF=STEPPER_CHOPCONF_DEFAULT
 };
 
 uniman_step_config_t uniman_step2_conf = {
 	.GCONF=STEPPER_GCONF_DATA(0,0),
 	.IHOLD=STEPPER_DEFAULT_IHOLD,
 	.IRUN=STEPPER_DEFAULT_IRUN,
-	.CHOPCONF=0x08010008
+	.CHOPCONF=0x07010008
+};
+
+uniman_fin_config_t uniman_running_conf = {
+	.stepper_config=0x01,
+	.stepper_ihold=31,
+	.stepper_irun=31,
+	.stepper_speed_custom = 60,
+	.stepper_speed_minmax = 60,
+	.system_reset_encoder_zero = 0,
+	.system_extra = 0
 };
 
 //functions for controlling certain pins of steppers
@@ -264,6 +274,25 @@ static void process_fin_cmd(csp_conn_t * conn, csp_packet_t * packet)
    Handles generic CSP cmds and fin controller cmds.
    CSP must be enabled prior to creation of this task.
  */
+
+CSP_DEFINE_TASK(task_stepper) {
+	
+	printf("\n%d\n",stepper2.updateconfig(&uniman_step2_conf));
+	stepper2.enstep();
+	DDRL|=(1<<PL1) | (1<<PL2);
+	//PORTL|=(1<<PL2);
+	
+	for(;;) {
+		
+		 	PORTL|=(1<<PL1);
+		 	vTaskDelay(10/portTICK_PERIOD_MS);
+		 	PORTL&=~(1<<PL1);
+		 	vTaskDelay(10/portTICK_PERIOD_MS);
+		
+	}	
+	vTaskSuspend(NULL);
+}
+
 CSP_DEFINE_TASK(task_server)
 {
     /* Create socket without any socket options */
@@ -312,19 +341,18 @@ csp_log_info("%s %d\n",pcTaskGetName(NULL),uxTaskGetStackHighWaterMark2(NULL));
 
 
 gs_fin_cmd_error_t init_server(void) {
-
+	
+	
+gs_fin_cmd_error_t error=FIN_CMD_OK;
 		
 	
 	setup_temp_sensors();
+
+
 	
-	
-	
-	if(!csp_thread_create(task_server, "SERVER", 270, NULL, 2, &handle_server)) {
-		return FIN_CMD_OK;
-	} else {
-		return FIN_CMD_FAIL;
+	if(csp_thread_create(task_server, "SERVER", 270, NULL, 2, &handle_server)) error=FIN_CMD_FAIL;
 		
-	}
+	if(csp_thread_create(task_stepper, "STEP",configMINIMAL_STACK_SIZE, NULL, 2, NULL)) error=FIN_CMD_FAIL;
 
 	//should also initalise other things such as temp sensors and steppers here
 	
@@ -333,5 +361,19 @@ gs_fin_cmd_error_t init_server(void) {
 }
 
 uint8_t step_config_concat(uniman_ustep_mode_t a, uniman_ustep_invert_t b) {return a|b;};
+	
+gs_fin_cmd_error_t process_config(uniman_fin_config_t * confin) {
+	//get invert data
+	uniman_step1_conf.GCONF=STEPPER_GCONF_DATA(	(confin->stepper_config&(STEPPER_INVA_1))>>4	,(confin->stepper_config&(STEPPER_INVB_1))>>5);
+	uniman_step2_conf.GCONF=STEPPER_GCONF_DATA(	(confin->stepper_config&(STEPPER_INVC_1))>>6	,(confin->stepper_config&(STEPPER_INVD_1))>>7);
+	
+	//get step data
+	if((confin->stepper_config&0x0F)!=0) {
+		//uniman_step1_conf.CHOPCONF=
+	} else {
+		
+	}
+
+}
 
 

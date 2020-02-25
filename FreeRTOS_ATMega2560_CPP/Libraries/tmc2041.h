@@ -15,6 +15,7 @@
 #define STEPPER_MSCURACT2_ADD 0x7B
 #define STEPPER_CHOPCONF1_ADD 0x6C
 #define STEPPER_CHOPCONF2_ADD 0x7C
+#define STEPPER_CHOPCONF_DEFAULT 0x08010008
 
 #define STEPPER_DEFAULT_IHOLD 31
 #define STEPPER_DEFAULT_IRUN 31
@@ -53,15 +54,12 @@ class tmc2041 {
 	private:
 	uniman_step_config_t config;
 	void (*init_cs_en)();
-	void (*cson)();
-	void (*csoff)();
-	void (*enstep)();
-	void (*disstep)();
 	void startSPI(void);
 	void endSPI(void);
 	uint8_t eeprom_address;
-
-	
+	void (*cson)();
+	void (*csoff)();
+	static uint8_t speed;
 	
 	
 	public:
@@ -77,7 +75,9 @@ class tmc2041 {
 	void readreg(uniman_step_reg_32_t * databack); // for reading the full 32bit
 	gs_fin_cmd_error_t saveconfig(void); //saves current config to eeprom
 	gs_fin_cmd_error_t updateconfig(uniman_step_config_t * confin);
-	
+
+		void (*enstep)();
+		void (*disstep)();
 	
 };
 

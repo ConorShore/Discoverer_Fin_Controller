@@ -175,14 +175,14 @@ typedef enum {
 	
 	// for setting inverts for each steppers
 	
-	STEPPER_USTEP_INVA_0 = (0<<4),
-	STEPPER_USTEP_INVA_1 = (1<<4),
-	STEPPER_USTEP_INVB_0 = (0<<5),
-	STEPPER_USTEP_INVB_1 = (1<<5),
-	STEPPER_USTEP_INVC_0 = (0<<6),
-	STEPPER_USTEP_INVC_1 = (1<<6),
-	STEPPER_USTEP_INVD_0 = (0<<7),
-	STEPPER_USTEP_INVD_1 = (1<<7),
+	STEPPER_INVA_0 = (0<<4),
+	STEPPER_INVA_1 = (1<<4),
+	STEPPER_INVB_0 = (0<<5),
+	STEPPER_INVB_1 = (1<<5),
+	STEPPER_INVC_0 = (0<<6),
+	STEPPER_INVC_1 = (1<<6),
+	STEPPER_INVD_0 = (0<<7),
+	STEPPER_INVD_1 = (1<<7),
 	
 }uniman_ustep_invert_t;
 
@@ -192,12 +192,14 @@ typedef enum {
 
 typedef struct __attribute__((packed, aligned(1))) uniman_fin_config {
 	
-	uint8_t stepper_config; // contains the step mode and invert statuses for steppers
-	uint8_t stepper_ihold; //stepper run
-	uint8_t stepper_irun; //stepper run current
-	uint8_t stepper_speed_custom; //speed to move for custom positions moves. defined
-	uint8_t stepper_speed_minmax; //speed for max min drag moves
-	uint8_t system_reset_encoder_zero; //[7:5]unused,[4]reset controller,[3:0]zero encoder D-A
+	uint8_t stepper_config; // contains the step mode and invert statuses for steppers.
+							// uses uniman_ustep_mode_t and uniman_ustep_invert_t.
+	uint8_t stepper_ihold; //stepper hold current. as per tmc2041 data sheet value from 0-31
+	uint8_t stepper_irun; //stepper run current. as per tmc2041 data sheet value from 0-31
+	uint16_t stepper_speed_custom; //speed to move for custom positions moves. defined as full steps per minute. typ =60
+	uint16_t stepper_speed_minmax; //speed for max min drag moves. defined as full steps per minute
+	uint8_t system_reset_encoder_zero; //[7:5]reserved,[4]reset controller,[3:0]zero encoder D-A
+	uint8_t system_extra; // [7:0] reserved
 	
 
 	}uniman_fin_config_t;
