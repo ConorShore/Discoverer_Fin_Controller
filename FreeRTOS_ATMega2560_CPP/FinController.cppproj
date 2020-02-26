@@ -452,6 +452,12 @@
     <Compile Include="Libraries\fin_server.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="Libraries\fin_server_backend.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\fin_server_backend.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="Libraries\FreeRTOS\AbortDelay.c">
       <SubType>compile</SubType>
     </Compile>

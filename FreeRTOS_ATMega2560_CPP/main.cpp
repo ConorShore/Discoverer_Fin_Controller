@@ -49,8 +49,10 @@ extern "C" {
 
 
 }
+
 #include <fin.h>
 #include <fin_server.h>
+#include <fin_server_backend.h>
 
 #include <csp/drivers/can.h>
 #include <csp/interfaces/csp_if_can.h>
@@ -124,7 +126,7 @@ static void TaskBlinkyellowLED(void* pvParameters);
 
 
 // CSP prototypes
-CSP_DEFINE_TASK(task_server);
+
 CSP_DEFINE_TASK(task_client);
 /*-----------------------------------------------------------*/
 
