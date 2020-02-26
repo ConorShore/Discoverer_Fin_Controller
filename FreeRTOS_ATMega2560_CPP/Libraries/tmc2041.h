@@ -5,7 +5,8 @@
 //stepper motor defines, mostly address but some setup stuff
 
 #define	STEPPER_GCONF_ADD 0x00
-#define STEPPER_GCONF_DATA(a,b) ((0x006) | (a<<8) | (b<<9)) //a or b =1 will invert stepper dir, 0 wont
+#define STEPPER_GCONF_DEFAULT 0x006
+#define STEPPER_GCONF_DATA(a,b) ((STEPPER_GCONF_DEFAULT) | (a<<8) | (b<<9)) //a or b =1 will invert stepper dir, 0 wont
 #define STEPPER_GSTAT 0x01
 #define STEPPER_ISET1_ADD 0x30 // for setting currents to steppers
 #define STEPPER_ISET2_ADD 0x50
@@ -15,7 +16,7 @@
 #define STEPPER_MSCURACT2_ADD 0x7B
 #define STEPPER_CHOPCONF1_ADD 0x6C
 #define STEPPER_CHOPCONF2_ADD 0x7C
-#define STEPPER_CHOPCONF_DEFAULT 0x08010008
+#define STEPPER_CHOPCONF_DEFAULT 0x28010008
 
 #define STEPPER_DEFAULT_IHOLD 31
 #define STEPPER_DEFAULT_IRUN 31

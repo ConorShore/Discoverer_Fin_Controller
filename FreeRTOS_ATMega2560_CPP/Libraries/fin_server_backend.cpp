@@ -22,14 +22,14 @@ uniman_step_config_t uniman_step2_conf = {
 	.GCONF=STEPPER_GCONF_DATA(0,0),
 	.IHOLD=STEPPER_DEFAULT_IHOLD,
 	.IRUN=STEPPER_DEFAULT_IRUN,
-	.CHOPCONF=0x07010008
+	.CHOPCONF=STEPPER_CHOPCONF_DEFAULT
 };
 
 uniman_fin_config_t uniman_running_conf = {
 	.stepper_config=0x01,
 	.stepper_ihold=31,
 	.stepper_irun=31,
-	.stepper_speed = 60,
+	.stepper_speed = 30,
 	.system_reset_encoder_zero = 0,
 	.system_extra = 0
 };
@@ -51,7 +51,7 @@ tmc2041 stepper2(&stepper_2_cs_init,&stepper_2_cson,&stepper_2_csoff,&stepper_2_
 	AM4096 encoder3(0x52,4096);
 	AM4096 encoder4(0x53,4096);
 	
-
+gs_fin_cmd_error_t process_config(uniman_fin_config_t * confin);
 
 
 // defines for temp sensors
@@ -169,17 +169,18 @@ void read_temp_sensors(uint16_t *array){
 
 CSP_DEFINE_TASK(task_stepper) {
 	
-	printf("\n%d\n",stepper2.updateconfig(&uniman_step2_conf));
+	//printf("\n%d\n",stepper2.updateconfig(&uniman_step2_conf));
+	process_config(&uniman_running_conf);
 	stepper2.enstep();
 	DDRL|=(1<<PL1) | (1<<PL2);
 	//PORTL|=(1<<PL2);
 	
 	for(;;) {
-		
-		PORTL|=(1<<PL1);
-		vTaskDelay(10/portTICK_PERIOD_MS);
-		PORTL&=~(1<<PL1);
-		vTaskDelay(10/portTICK_PERIOD_MS);
+		uint32_t delayticks=(1000*(uint32_t)60);
+		delayticks/=((uint32_t)portTICK_PERIOD_MS)*((uint32_t)uniman_running_conf.stepper_speed);
+		PORTL^=(1<<PL1);
+		vTaskDelay((TickType_t) delayticks);
+
 		
 	}
 	vTaskSuspend(NULL);
@@ -211,14 +212,28 @@ uint8_t step_config_concat(uniman_ustep_mode_t a, uniman_invert_t b) {return a|b
 
 gs_fin_cmd_error_t process_config(uniman_fin_config_t * confin) {
 	//get invert data
-	uniman_step1_conf.GCONF=STEPPER_GCONF_DATA(	(confin->stepper_config&(STEPPER_INVA_1))>>4	,(confin->stepper_config&(STEPPER_INVB_1))>>5);
-	uniman_step2_conf.GCONF=STEPPER_GCONF_DATA(	(confin->stepper_config&(STEPPER_INVC_1))>>6	,(confin->stepper_config&(STEPPER_INVD_1))>>7);
+	uniman_running_conf=*confin;
+	
+	uniman_step1_conf.GCONF=STEPPER_GCONF_DATA(	(uniman_running_conf.stepper_config&(STEPPER_INVA_1))>>4	,(uniman_running_conf.stepper_config&(STEPPER_INVB_1))>>5);
+	uniman_step2_conf.GCONF=STEPPER_GCONF_DATA(	(uniman_running_conf.stepper_config&(STEPPER_INVC_1))>>6	,(uniman_running_conf.stepper_config&(STEPPER_INVD_1))>>7);
 	
 	//get step data
-	if((confin->stepper_config&0x0F)!=0) {
-		//uniman_step1_conf.CHOPCONF=
-		} else {
+	if((uniman_running_conf.stepper_config&0x0F)!=0) { //if manually setting ustep setting, rahter than auto
+		uniman_step1_conf.CHOPCONF=(STEPPER_CHOPCONF_DEFAULT&~(0x0F000000))| (((uint32_t)(9-uniman_running_conf.stepper_config))<<24);
+		uniman_step2_conf.CHOPCONF=(STEPPER_CHOPCONF_DEFAULT&~(0x0F000000))| (((uint32_t)(9-uniman_running_conf.stepper_config))<<24);
+		printf("%lx\n",uniman_step2_conf.CHOPCONF);
+		} 
 		
-	}
+	// do the currents, these translate directly
+	uniman_step1_conf.IRUN=uniman_running_conf.stepper_irun;
+	uniman_step2_conf.IRUN=uniman_running_conf.stepper_irun;
+	
+	uniman_step1_conf.IHOLD=uniman_running_conf.stepper_ihold;
+	uniman_step2_conf.IHOLD=uniman_running_conf.stepper_ihold;
+	
+	stepper1.updateconfig(&uniman_step1_conf);
+	stepper2.updateconfig(&uniman_step2_conf);
+	
+	
 
 }
