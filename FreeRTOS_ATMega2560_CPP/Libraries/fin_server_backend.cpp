@@ -193,7 +193,7 @@ CSP_DEFINE_TASK(task_stepper) {
 			PORTL^=(1<<PL1);
 			i++;
 			if(i>=stepc) break;
-			delay_us(deal/stepc);
+			delay_us(deal>>((uniman_running_conf.stepper_config&0x0F)-1));
 		}
 		
 		portEXIT_CRITICAL();
