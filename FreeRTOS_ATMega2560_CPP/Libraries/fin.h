@@ -168,6 +168,8 @@ typedef enum {
 	STEPPER_USTEP_1_16 = 5,
 	STEPPER_USTEP_1_32 = 6,
 	STEPPER_USTEP_1_64 = 7,
+	STEPPER_USTEP_1_128 = 8,
+	STEPPER_USTEP_1_256 = 9
 	
 }uniman_ustep_mode_t;
 

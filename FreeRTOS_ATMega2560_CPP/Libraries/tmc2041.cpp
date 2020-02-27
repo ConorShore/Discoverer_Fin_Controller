@@ -105,13 +105,17 @@
 		
 		writereg(&tempwrite);
 		readreg(&tempread);
-		if (tempwrite.data!=tempread.data) error=FIN_CMD_FAIL;
+
+		if (tempwrite.data!=tempread.data) {
+		error=FIN_CMD_FAIL;
+
+		}
 		
 		
 		tempwrite = {
 			.status=0,
 			.address=STEPPER_ISET1_ADD,
-			.data=	((((uint32_t)config.IRUN)<<8)|config.IHOLD)  | (((uint32_t)8)<<16)
+			.data=	((((uint32_t)config.IRUN)<<8)|config.IHOLD)  | (((uint32_t)STEPPER_DEFAULT_IHOLDDELAY)<<16)
 		};
 		
 		tempread.address=tempwrite.address;
@@ -122,7 +126,7 @@
 		tempwrite = {
 			.status=0,
 			.address=STEPPER_ISET2_ADD,
-			.data=	((((uint32_t)config.IRUN)<<8)|config.IHOLD) | (((uint32_t)8)<<16)
+			.data=	((((uint32_t)config.IRUN)<<8)|config.IHOLD) | (((uint32_t)STEPPER_DEFAULT_IHOLDDELAY)<<16)
 		};
 		
 		tempread.address=tempwrite.address;
@@ -141,8 +145,11 @@
 		
 		writereg(&tempwrite);
 		readreg(&tempread);
-		if (tempwrite.data!=tempread.data) error=FIN_CMD_FAIL;
+	
+		if (tempwrite.data!=tempread.data) {
+		error=FIN_CMD_FAIL;
 
+		}
 		tempwrite = {
 			.status=0,
 			.address=STEPPER_CHOPCONF2_ADD,
@@ -154,9 +161,12 @@
 		
 		writereg(&tempwrite);
 		readreg(&tempread);
-		if (tempwrite.data!=tempread.data) error=FIN_CMD_FAIL;
+		
+		if (tempwrite.data!=tempread.data) {
+		error=FIN_CMD_FAIL;
 
-			
+		}
+		
 	return error;
 			
 	}

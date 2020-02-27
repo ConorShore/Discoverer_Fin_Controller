@@ -677,6 +677,9 @@
     <Compile Include="Libraries\tmc2041.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="Libraries\tmc2041_glue.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="main.cpp">
       <SubType>compile</SubType>
     </Compile>

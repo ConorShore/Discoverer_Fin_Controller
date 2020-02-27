@@ -27,9 +27,9 @@ uniman_step_config_t uniman_step2_conf = {
 
 uniman_fin_config_t uniman_running_conf = {
 	.stepper_config=0x01,
-	.stepper_ihold=31,
-	.stepper_irun=31,
-	.stepper_speed = 30,
+	.stepper_ihold=STEPPER_DEFAULT_IHOLD,
+	.stepper_irun=STEPPER_DEFAULT_IRUN,
+	.stepper_speed = 60,
 	.system_reset_encoder_zero = 0,
 	.system_extra = 0
 };
@@ -37,7 +37,8 @@ uniman_fin_config_t uniman_running_conf = {
 
 
 csp_thread_handle_t handle_server;
-
+gs_fin_cmd_error_t process_config(uniman_fin_config_t * confin);
+void delay_us(uint16_t in);
 
 	
 tmc2041 stepper1(&stepper_1_cs_init,&stepper_1_cson,&stepper_1_csoff,&stepper_1_en, &stepper_1_dis,  uniman_step1_conf,STEPPER_1_EEPROM_ADDRESS);
@@ -51,7 +52,7 @@ tmc2041 stepper2(&stepper_2_cs_init,&stepper_2_cson,&stepper_2_csoff,&stepper_2_
 	AM4096 encoder3(0x52,4096);
 	AM4096 encoder4(0x53,4096);
 	
-gs_fin_cmd_error_t process_config(uniman_fin_config_t * confin);
+
 
 
 // defines for temp sensors
@@ -168,24 +169,50 @@ void read_temp_sensors(uint16_t *array){
 
 
 CSP_DEFINE_TASK(task_stepper) {
-	
-	//printf("\n%d\n",stepper2.updateconfig(&uniman_step2_conf));
-	process_config(&uniman_running_conf);
+
 	stepper2.enstep();
 	DDRL|=(1<<PL1) | (1<<PL2);
-	//PORTL|=(1<<PL2);
+	PORTL|=(1<<PL2);
+	uniman_step_reg_32_t tempread = {
+			.status=0,
+			.address=0x6B,
+			.data=0
+		};
 	
 	for(;;) {
-		uint32_t delayticks=(1000*(uint32_t)60);
-		delayticks/=((uint32_t)portTICK_PERIOD_MS)*((uint32_t)uniman_running_conf.stepper_speed);
-		PORTL^=(1<<PL1);
-		vTaskDelay((TickType_t) delayticks);
+	#define deal ((uint16_t) 10024)
+	if((uniman_running_conf.stepper_config&0x0F)!=0){
+		uint16_t stepc=1;
+		for (uint16_t i=0; i<(uniman_running_conf.stepper_config&0x0F)-1;i++){
+			stepc*=2;
+		}
+		portENTER_CRITICAL();
+		uint16_t i=0;
+		while(i<stepc) {
+			PORTL^=(1<<PL1);
+			i++;
+			if(i>=stepc) break;
+			delay_us(deal/stepc);
+		}
+		portEXIT_CRITICAL();
+	}
+
+
+
+
+		
+		vTaskDelay(1000/portTICK_PERIOD_MS);
 
 		
 	}
 	vTaskSuspend(NULL);
 }
 
+void delay_us(uint16_t in) {
+	while(in--) {
+		_delay_us(1);
+	}
+}
 
 
 gs_fin_cmd_error_t init_server(void) {
@@ -195,12 +222,15 @@ gs_fin_cmd_error_t init_server(void) {
 	
 	
 	setup_temp_sensors();
+	process_config(&uniman_running_conf);
 
+	stepper1.enstep();
+	stepper2.enstep();
 
 	
 	if(csp_thread_create(task_server, "SERVER", 270, NULL, 2, &handle_server)) error=FIN_CMD_FAIL;
 	
-	if(csp_thread_create(task_stepper, "STEP",configMINIMAL_STACK_SIZE, NULL, 2, NULL)) error=FIN_CMD_FAIL;
+	if(csp_thread_create(task_stepper, "STEP",configMINIMAL_STACK_SIZE+80, NULL, 2, NULL)) error=FIN_CMD_FAIL;
 
 	//should also initalise other things such as temp sensors and steppers here
 	
@@ -221,9 +251,9 @@ gs_fin_cmd_error_t process_config(uniman_fin_config_t * confin) {
 	if((uniman_running_conf.stepper_config&0x0F)!=0) { //if manually setting ustep setting, rahter than auto
 		uniman_step1_conf.CHOPCONF=(STEPPER_CHOPCONF_DEFAULT&~(0x0F000000))| (((uint32_t)(9-uniman_running_conf.stepper_config))<<24);
 		uniman_step2_conf.CHOPCONF=(STEPPER_CHOPCONF_DEFAULT&~(0x0F000000))| (((uint32_t)(9-uniman_running_conf.stepper_config))<<24);
-		printf("%lx\n",uniman_step2_conf.CHOPCONF);
-		} 
 		
+	}
+	
 	// do the currents, these translate directly
 	uniman_step1_conf.IRUN=uniman_running_conf.stepper_irun;
 	uniman_step2_conf.IRUN=uniman_running_conf.stepper_irun;
@@ -233,7 +263,7 @@ gs_fin_cmd_error_t process_config(uniman_fin_config_t * confin) {
 	
 	stepper1.updateconfig(&uniman_step1_conf);
 	stepper2.updateconfig(&uniman_step2_conf);
-	
-	
 
 }
+
+
