@@ -61,7 +61,7 @@ extern "C" {
 
 #define FUSES __fuse_t __fuse FUSEMEM
 
-FUSES {.low = 0xBF, .high=0x11,.extended = 0xFF};
+FUSES {.low = 0xBF, .high=0x01,.extended = 0xFF};
 
 
 
@@ -163,7 +163,7 @@ fdevopen( &usart_putchar_printf,0);
 
 
 	
-	//wdt_enable(WDTO_500MS); // set watchdog up to reset if not called after 2s
+	wdt_enable(WDTO_500MS); // set watchdog up to reset if not called after 2s
 	//pwrredinit();
 	enableleds();
 
