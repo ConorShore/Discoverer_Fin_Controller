@@ -26,7 +26,7 @@ uniman_step_config_t uniman_step2_conf = {
 };
 
 uniman_fin_config_t uniman_running_conf = {
-	.stepper_config=0x09,
+	.stepper_config=0x01,
 	.stepper_ihold=STEPPER_DEFAULT_IHOLD,
 	.stepper_irun=STEPPER_DEFAULT_IRUN,
 	.stepper_speed = 60,
@@ -187,6 +187,7 @@ CSP_DEFINE_TASK(task_stepper) {
 		for (uint16_t i=0; i<(uniman_running_conf.stepper_config&0x0F)-1;i++){
 			stepc*=2;
 		}
+		//stepc=stepc>>2;
 		portENTER_CRITICAL();
 		uint16_t i=0;
 		while(i<stepc) {
@@ -200,10 +201,10 @@ CSP_DEFINE_TASK(task_stepper) {
 	}
 
 
-
-
 		
-		vTaskDelay(500/portTICK_PERIOD_MS);
+		//(uint16_t)(500*(uint32_t)uniman_running_conf.stepper_speed)/(60*(uint32_t)portTICK_PERIOD_MS)
+		
+		vTaskDelay((uint16_t)(500*(uint32_t)60)/(uniman_running_conf.stepper_speed*(uint32_t)portTICK_PERIOD_MS));
 
 		
 	}
