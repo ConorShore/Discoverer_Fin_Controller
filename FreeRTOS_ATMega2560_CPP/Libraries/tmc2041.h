@@ -16,10 +16,10 @@
 #define STEPPER_MSCURACT2_ADD 0x7B
 #define STEPPER_CHOPCONF1_ADD 0x6C
 #define STEPPER_CHOPCONF2_ADD 0x7C
-#define STEPPER_CHOPCONF_DEFAULT 0x080100C3//0x080100C3
+#define STEPPER_CHOPCONF_DEFAULT 0x080300C3//0x080100C3
 
-#define STEPPER_DEFAULT_IHOLD 15
-#define STEPPER_DEFAULT_IRUN 31
+#define STEPPER_DEFAULT_IHOLD 5
+#define STEPPER_DEFAULT_IRUN 15
 #define STEPPER_DEFAULT_IHOLDDELAY 1
 
 #define STEPPER_1_EEPROM_ADDRESS 0x10
@@ -61,12 +61,13 @@ class tmc2041 {
 	uint8_t eeprom_address;
 	void (*cson)();
 	void (*csoff)();
+
 	static uint8_t speed;
 	
 	
 	public:
 	tmc2041(void (csinitin()),void (csonin()),
-	void (csoffin()),void (enstepin()), void (disstepin()),
+	void (csoffin()),void (enstepin()), void (disstepin()), void(stepfuncin(uint8_t a)),void(dirfuncin(uint8_t a,uint8_t t)),
 	uniman_step_config_t configin,uint8_t eeprom_addressin);
 	gs_fin_cmd_error_t set_speed(uint8_t);
 	gs_fin_cmd_error_t set_pos1(uint16_t pos, uint8_t speed);
@@ -80,6 +81,8 @@ class tmc2041 {
 
 		void (*enstep)();
 		void (*disstep)();
+		void (*stepfunc)(uint8_t a);
+		void (*dirfunc)(uint8_t a, uint8_t t);
 	
 };
 

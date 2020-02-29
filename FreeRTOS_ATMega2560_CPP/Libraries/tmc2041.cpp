@@ -74,9 +74,10 @@
 	
 	
 
-	tmc2041::tmc2041(void (csinitin()),void (csonin()),void (csoffin()),void (enstepin()), void (disstepin()),
+	tmc2041::tmc2041(void (csinitin()),void (csonin()),
+	void (csoffin()),void (enstepin()), void (disstepin()), void(stepfuncin(uint8_t)),void(dirfuncin(uint8_t,uint8_t)),
 	uniman_step_config_t configin,uint8_t eeprom_addressin) : init_cs_en(csinitin), cson(csonin), csoff(csoffin) , enstep(enstepin),
-	disstep(disstepin) {
+	disstep(disstepin), stepfunc(stepfuncin), dirfunc(dirfuncin) {
 		
 		config=configin;
 		eeprom_address=eeprom_addressin;
