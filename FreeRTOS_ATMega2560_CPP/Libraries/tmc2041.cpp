@@ -4,9 +4,14 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <avr/eeprom.h>
+#include <FreeRTOS/portmacro.h>
+#include <avr/delay.h>
 
-
-
+void delay_us(uint16_t in) {
+	while(in--) {
+		_delay_us(1);
+	}
+}
 
 	void tmc2041::startSPI(void) {
 			cson();
@@ -76,18 +81,19 @@
 
 	tmc2041::tmc2041(void (csinitin()),void (csonin()),
 	void (csoffin()),void (enstepin()), void (disstepin()), void(stepfuncin(uint8_t)),void(dirfuncin(uint8_t,uint8_t)),
-	uniman_step_config_t configin,uint8_t eeprom_addressin) : init_cs_en(csinitin), cson(csonin), csoff(csoffin) , enstep(enstepin),
+	uniman_step_config_t configin,uint8_t eeprom_addressin) : init_pins(csinitin), cson(csonin), csoff(csoffin) , enstep(enstepin),
 	disstep(disstepin), stepfunc(stepfuncin), dirfunc(dirfuncin) {
 		
 		config=configin;
 		eeprom_address=eeprom_addressin;
-		init_cs_en();
+		init_pins();
 		SPI.begin();
 		
 		
 	};
 	
-	gs_fin_cmd_error_t tmc2041::updateconfig(uniman_step_config_t * confin) {
+	gs_fin_cmd_error_t tmc2041::updateconfig(uniman_step_config_t * confin,uniman_fin_config_t * confin2) {
+		runconf=*confin2;
 		config=*confin;
 		
 		gs_fin_cmd_error_t error=FIN_CMD_OK;
@@ -171,10 +177,39 @@
 	return error;
 			
 	}
-	
+
+	void tmc2041::step(uint8_t a, uint8_t dir) { //a is stepper 0=1, 1=2, 0 is reverse, 1 is forward
+		
 
 	
-	gs_fin_cmd_error_t tmc2041::set_speed(uint8_t) {};
-	gs_fin_cmd_error_t tmc2041::set_pos1(uint16_t pos, uint8_t speed) {};
-	gs_fin_cmd_error_t tmc2041::set_pos2(uint16_t pos, uint8_t speed) {};
+	if((runconf.stepper_config&0x0F)!=0){
+		uint16_t stepc=2;
+		dirfunc(a,dir+1);
+		for (uint16_t i=0; i<(runconf.stepper_config&0x0F)-1;i++){
+			stepc*=2;
+		}
+		portENTER_CRITICAL();
+		uint16_t i=0;
+		while(i<stepc) {
+			stepfunc(a);
+			i++;
+			delay_us(STEPPER_FSTEP_DELAY>>((runconf.stepper_config&0x0F)-1));
+		}
+		dirfunc(a,dir+2);
+		stepc=1;
+		for (uint16_t i=0; i<(runconf.stepper_config&0x0F)-1;i++){
+			stepc*=2;
+		}
+		while(i<stepc) {
+			stepfunc(a);
+			i++;
+			if(i>=stepc) break;
+			delay_us(STEPPER_FSTEP_DELAY>>((runconf.stepper_config&0x0F)-1));
+		}
+		
+		portEXIT_CRITICAL();
+		
+	}
+	}
+
 	

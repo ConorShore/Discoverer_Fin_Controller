@@ -2,6 +2,7 @@
 #include <fin.h>
 #include <stdint.h>
 
+
 //stepper motor defines, mostly address but some setup stuff
 
 #define	STEPPER_GCONF_ADD 0x00
@@ -17,6 +18,8 @@
 #define STEPPER_CHOPCONF1_ADD 0x6C
 #define STEPPER_CHOPCONF2_ADD 0x7C
 #define STEPPER_CHOPCONF_DEFAULT 0x080300C3//0x080100C3
+
+#define STEPPER_FSTEP_DELAY ((uint16_t) 1024)
 
 #define STEPPER_DEFAULT_IHOLD 5
 #define STEPPER_DEFAULT_IRUN 15
@@ -55,12 +58,15 @@ class tmc2041 {
 	
 	private:
 	uniman_step_config_t config;
-	void (*init_cs_en)();
+	uniman_fin_config_t runconf;
+	void (*init_pins)();
 	void startSPI(void);
 	void endSPI(void);
 	uint8_t eeprom_address;
 	void (*cson)();
 	void (*csoff)();
+	void (*stepfunc)(uint8_t a);
+	void (*dirfunc)(uint8_t a, uint8_t t);
 
 	static uint8_t speed;
 	
@@ -69,20 +75,19 @@ class tmc2041 {
 	tmc2041(void (csinitin()),void (csonin()),
 	void (csoffin()),void (enstepin()), void (disstepin()), void(stepfuncin(uint8_t a)),void(dirfuncin(uint8_t a,uint8_t t)),
 	uniman_step_config_t configin,uint8_t eeprom_addressin);
-	gs_fin_cmd_error_t set_speed(uint8_t);
-	gs_fin_cmd_error_t set_pos1(uint16_t pos, uint8_t speed);
-	gs_fin_cmd_error_t set_pos2(uint16_t pos, uint8_t speed);
+
 	void writereg(uniman_step_reg_t * databack,uint8_t amount); // for writing individual bytes
 	void writereg(uniman_step_reg_32_t * databack); //for writing the full 32bit
 	void readreg(uniman_step_reg_t * databack); // for reading individual bytes
 	void readreg(uniman_step_reg_32_t * databack); // for reading the full 32bit
 	gs_fin_cmd_error_t saveconfig(void); //saves current config to eeprom
-	gs_fin_cmd_error_t updateconfig(uniman_step_config_t * confin);
+	gs_fin_cmd_error_t updateconfig(uniman_step_config_t * confin,uniman_fin_config_t * confin2);
 
 		void (*enstep)();
 		void (*disstep)();
-		void (*stepfunc)(uint8_t a);
-		void (*dirfunc)(uint8_t a, uint8_t t);
+	
+	void step(uint8_t a,uint8_t dir);
+
 	
 };
 

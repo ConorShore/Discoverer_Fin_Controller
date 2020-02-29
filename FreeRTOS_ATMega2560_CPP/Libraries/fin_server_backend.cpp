@@ -41,11 +41,11 @@ gs_fin_cmd_error_t process_config(uniman_fin_config_t * confin);
 void delay_us(uint16_t in);
 
 	
-tmc2041 stepper1(&stepper_1_cs_init,&stepper_1_cson,&stepper_1_csoff,&stepper_1_en, 
+tmc2041 stepper1(&stepper_1_pin_init,&stepper_1_cson,&stepper_1_csoff,&stepper_1_en, 
 &stepper_1_dis, &stepper_1_tstep, &stepper_1_dir, 
 uniman_step1_conf,STEPPER_1_EEPROM_ADDRESS);
 
-tmc2041 stepper2(&stepper_2_cs_init,&stepper_2_cson,&stepper_2_csoff,&stepper_2_en, 
+tmc2041 stepper2(&stepper_2_pin_init,&stepper_2_cson,&stepper_2_csoff,&stepper_2_en, 
 &stepper_2_dis,  &stepper_2_tstep, &stepper_2_dir, 
 uniman_step2_conf,STEPPER_2_EEPROM_ADDRESS);
 
@@ -176,61 +176,25 @@ void read_temp_sensors(uint16_t *array){
 CSP_DEFINE_TASK(task_stepper) {
 
 	stepper2.enstep();
-	DDRL|=(1<<PL1) | (1<<PL2);
-	PORTL|=(1<<PL2);
-	uniman_step_reg_32_t tempread = {
-			.status=0,
-			.address=0x6B,
-			.data=0
-		};
+
 	
 	for(;;) {
-	#define deal ((uint16_t) 1024)
-	
-	if((uniman_running_conf.stepper_config&0x0F)!=0){
-		uint16_t stepc=2;
-		stepper2.dirfunc(0,0);
-		for (uint16_t i=0; i<(uniman_running_conf.stepper_config&0x0F)-1;i++){
-			stepc*=2;
-		}
-		portENTER_CRITICAL();
-		uint16_t i=0;
-		while(i<stepc) {
-			stepper2.stepfunc(0);
-			i++;
-			delay_us(deal>>((uniman_running_conf.stepper_config&0x0F)-1));
-		}
-		stepper2.dirfunc(0,0);
-		stepc=1;
-		for (uint16_t i=0; i<(uniman_running_conf.stepper_config&0x0F)-1;i++){
-			stepc*=2;
-		}
-		while(i<stepc) {
-			stepper2.stepfunc(0);
-			i++;
-			if(i>=stepc) break;
-			delay_us(deal>>((uniman_running_conf.stepper_config&0x0F)-1));
-		}
-		
-		portEXIT_CRITICAL();
+		stepper2.step(0,1);
+		vTaskDelay((uint16_t)(1000*(uint32_t)60)/(uniman_running_conf.stepper_speed*(uint32_t)portTICK_PERIOD_MS));
 	}
 
 
 		
 		//(uint16_t)(500*(uint32_t)uniman_running_conf.stepper_speed)/(60*(uint32_t)portTICK_PERIOD_MS)
 		
-		vTaskDelay((uint16_t)(1000*(uint32_t)60)/(uniman_running_conf.stepper_speed*(uint32_t)portTICK_PERIOD_MS));
+	
 
 		
-	}
+	
 	vTaskSuspend(NULL);
 }
 
-void delay_us(uint16_t in) {
-	while(in--) {
-		_delay_us(1);
-	}
-}
+
 
 
 gs_fin_cmd_error_t init_server(void) {
@@ -279,8 +243,8 @@ gs_fin_cmd_error_t process_config(uniman_fin_config_t * confin) {
 	uniman_step1_conf.IHOLD=uniman_running_conf.stepper_ihold;
 	uniman_step2_conf.IHOLD=uniman_running_conf.stepper_ihold;
 	
-	stepper1.updateconfig(&uniman_step1_conf);
-	stepper2.updateconfig(&uniman_step2_conf);
+	stepper1.updateconfig(&uniman_step1_conf,confin);
+	stepper2.updateconfig(&uniman_step2_conf,confin);
 
 }
 
