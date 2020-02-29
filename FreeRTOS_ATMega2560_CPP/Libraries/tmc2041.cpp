@@ -183,7 +183,7 @@ void delay_us(uint16_t in) {
 
 	
 	if((runconf.stepper_config&0x0F)!=0){
-		uint16_t stepc=2;
+		uint16_t stepc=4;
 		dirfunc(a,dir+1);
 		for (uint16_t i=0; i<(runconf.stepper_config&0x0F)-1;i++){
 			stepc*=2;
@@ -195,11 +195,13 @@ void delay_us(uint16_t in) {
 			i++;
 			delay_us(STEPPER_FSTEP_DELAY>>((runconf.stepper_config&0x0F)-1));
 		}
+		//_delay_ms(1);
 		dirfunc(a,dir+2);
-		stepc=1;
+		stepc=2;
 		for (uint16_t i=0; i<(runconf.stepper_config&0x0F)-1;i++){
 			stepc*=2;
 		}
+		i=0;
 		while(i<stepc) {
 			stepfunc(a);
 			i++;

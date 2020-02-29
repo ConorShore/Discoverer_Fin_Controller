@@ -179,8 +179,8 @@ CSP_DEFINE_TASK(task_stepper) {
 
 	
 	for(;;) {
-		stepper2.step(0,1);
-		vTaskDelay((uint16_t)(1000*(uint32_t)60)/(uniman_running_conf.stepper_speed*(uint32_t)portTICK_PERIOD_MS));
+		stepper2.step(1,0);
+		vTaskDelay((uint16_t)(500*(uint32_t)60)/(uniman_running_conf.stepper_speed*(uint32_t)portTICK_PERIOD_MS));
 	}
 
 
