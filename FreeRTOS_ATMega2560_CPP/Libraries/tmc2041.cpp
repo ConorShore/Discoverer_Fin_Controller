@@ -188,7 +188,7 @@ void delay_us(uint16_t in) {
 		for (uint16_t i=0; i<(runconf.stepper_config&0x0F)-1;i++){
 			stepc*=2;
 		}
-		portENTER_CRITICAL();
+		//portENTER_CRITICAL();
 		uint16_t i=0;
 		while(i<stepc) {
 			stepfunc(a);
@@ -209,7 +209,7 @@ void delay_us(uint16_t in) {
 			delay_us(STEPPER_FSTEP_DELAY>>((runconf.stepper_config&0x0F)-1));
 		}
 		
-		portEXIT_CRITICAL();
+		//portEXIT_CRITICAL();
 		
 	}
 	}

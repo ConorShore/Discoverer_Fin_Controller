@@ -212,7 +212,7 @@ gs_fin_cmd_error_t init_server(void) {
 	
 	if(csp_thread_create(task_server, "SERVER", 270, NULL, 2, &handle_server)) error=FIN_CMD_FAIL;
 	
-	if(csp_thread_create(task_stepper, "STEP",configMINIMAL_STACK_SIZE+80, NULL, 2, NULL)) error=FIN_CMD_FAIL;
+	if(csp_thread_create(task_stepper, "STEP",configMINIMAL_STACK_SIZE+80, NULL, 1, NULL)) error=FIN_CMD_FAIL;
 
 	//should also initalise other things such as temp sensors and steppers here
 	

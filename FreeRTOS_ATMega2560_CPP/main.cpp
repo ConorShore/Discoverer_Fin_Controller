@@ -185,7 +185,7 @@ fdevopen( &usart_putchar_printf,0);
 		error+=csp_route_set(CSP_DEFAULT_ROUTE, &csp_if_can, 0xFF);
 
 		// Start router task with 500 word stack, OS task priority 1 		
-		error+=csp_route_start_task(180, 1);
+		error+=csp_route_start_task(180, 2);
 		
 		
 		
