@@ -12,3 +12,6 @@ int timeoutcheck(void);
 void timeoutreset(void);
 void enableleds(void);
 void contled(int con, int led);
+void timeoutstart2_us(int tim);
+void timeoutreset_us(void);
+int timeoutcheck2_us(void);

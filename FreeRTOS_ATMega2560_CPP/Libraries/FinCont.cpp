@@ -78,3 +78,42 @@ int timeoutcheck(void) {
 return 0;
 }
 
+void timeoutstart2_us(int tim) {
+	// remember power save
+	cli();
+
+	
+	TCCR4A = 0;
+	TCCR4B = 0;
+	TCNT4 = 0;
+	
+	OCR4A=(tim*2);
+	
+	TCCR4B|=(1<<WGM42);	
+	TCCR4B |= (1 << CS41); //x16 scaling
+	TIFR4|=(1<<OCF4A);
+	sei();
+	
+}
+
+void timeoutreset_us(void) {
+		TCNT4 = 0;
+}
+
+int timeoutcheck2_us(void) {
+	
+	if((TIFR4&2)>>OCF4A) {
+		cli();
+			TCCR4A = 0;
+			TCCR4B = 0;
+			TCNT4 = 0;
+			TIFR4&=~(1<<OCF4A);
+
+			sei();
+		return 1;
+	} else {
+		return 0;
+		}
+return 0;
+}
+
