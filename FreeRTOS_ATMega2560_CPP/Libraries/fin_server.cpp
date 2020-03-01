@@ -1,26 +1,20 @@
 /* Copyright (c) 2013-2019 GomSpace A/S. All rights reserved. */
 /**
    @file
-
    Fin controller server (implemented on Fin Controller Board)
 */
-
-//csp_thread_handle_t handle_seraver;
 
 #include <stdio.h>
 #include <csp/csp.h>
 #include <csp/csp_endian.h>
 #include <csp/arch/csp_thread.h>
 #include <fin.h>
+#include <fin_server.h>
 #include <fin_server_backend.h>
 
-
-
-
-
-
-
-
+/**
+   Processes incoming fin controller command.
+ */
 static void process_fin_cmd(csp_conn_t * conn, csp_packet_t * packet)
 {
     uint16_t reply_length = 1;
@@ -51,7 +45,7 @@ static void process_fin_cmd(csp_conn_t * conn, csp_packet_t * packet)
             memcpy(&pos, &packet->data[1], sizeof(pos));
 
             /* Ensure correct endianness */
-            uint16_t * pos_array = (uint16_t *) &pos; //(void *)
+            uint16_t * pos_array = (uint16_t*) &pos;
             for (int i = 0; i < 4; i++) {
                 pos_array[i] = csp_ntoh16(pos_array[i]);
             }
@@ -63,37 +57,48 @@ static void process_fin_cmd(csp_conn_t * conn, csp_packet_t * packet)
             break;
         }
 
-        case GS_FIN_CMD_SET_MAX_DRAG: {
-            /* Pass command to internal layer */
-            int8_t error = set_max_drag();
+        case GS_FIN_CMD_CFG_GET: {
+            gs_fin_config_t conf;
+
+            /* Get conf internally */
+            int8_t error = get_fin_config(&conf);
+
+            /* Set error code in response */
+            packet->data[0] = error;
+
+            if (error == FIN_CMD_OK) {
+                /* Copy conf to response buffer */
+                memcpy(&packet->data[1], &conf, sizeof(conf));
+                reply_length += sizeof(conf);
+            }
+            break;
+        }
+
+        case GS_FIN_CMD_CFG_SET: {
+            gs_fin_config_t conf;
+
+            /* Copy received conf to struct */
+            memcpy(&conf, &packet->data[1], sizeof(conf));
+
+            /* Ensure correct endianness */
+            conf.stepper_speed = csp_ntoh16(conf.stepper_speed);
+
+            /* Pass conf to internal layer */
+            int8_t error = set_fin_config(&conf);
 
             /* Set error code in response */
             packet->data[0] = error;
             break;
         }
 
-        case GS_FIN_CMD_SET_MIN_DRAG: {
-            /* Pass command to internal layer */
-            int8_t error = set_min_drag();
+        case GS_FIN_CMD_CFG_SAVE: {
+            /* Pass conf to internal layer */
+            int8_t error = save_fin_config();
 
             /* Set error code in response */
             packet->data[0] = error;
             break;
         }
-		
-        case UNIMAN_FIN_CFG_GET: {
-	       //get current config and send it
-		   
-		   
-	        break;
-        }
-		
-        case UNIMAN_FIN_CFG_SET: {
-	        //get set current config based on incoming
-	        
-	        
-	        break;
-        }		
 
         default: {
             /* Set error code in response to no command found */
@@ -111,12 +116,9 @@ static void process_fin_cmd(csp_conn_t * conn, csp_packet_t * packet)
 
 /**
    CSP server task.
-
    Handles generic CSP cmds and fin controller cmds.
    CSP must be enabled prior to creation of this task.
  */
-
-
 CSP_DEFINE_TASK(task_server)
 {
     /* Create socket without any socket options */
@@ -134,14 +136,14 @@ CSP_DEFINE_TASK(task_server)
 
     /* Process incoming connections */
     while (1) {
-csp_log_info("%s %d\n",pcTaskGetName(NULL),uxTaskGetStackHighWaterMark2(NULL));
+
         /* Wait for connection, 10000 ms timeout */
         if ((conn = csp_accept(sock, 10000)) == NULL) {
             continue;
         }
 
         /* Read packets */
-        while ((packet = csp_read(conn, 0)) != NULL) { //was 100 in my code
+        while ((packet = csp_read(conn, 0)) != NULL) {
             switch (csp_conn_dport(conn)) {
                 case GS_FIN_CONTROL_PORT:
                     /* Process fin controller packet here */
@@ -162,8 +164,3 @@ csp_log_info("%s %d\n",pcTaskGetName(NULL),uxTaskGetStackHighWaterMark2(NULL));
 
     return CSP_TASK_RETURN;
 }
-
-
-
-
-

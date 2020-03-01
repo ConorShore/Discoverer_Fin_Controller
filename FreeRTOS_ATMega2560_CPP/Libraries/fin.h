@@ -65,19 +65,19 @@ typedef enum {
 	/**
 	Get config parameters
 	*/
-	UNIMAN_FIN_CFG_GET = 4,
+	GS_FIN_CMD_CFG_GET = 4,
 	
 	/**
 	Set config parameters
 	*/
 	
-	UNIMAN_FIN_CFG_SET = 5,
+	GS_FIN_CMD_CFG_SET = 5,
 	
 	/**
 	Save current config parameters in ram to EEPROM
 	*/
 	
-	UNIMAN_FIN_CFG_SAVE = 6
+	GS_FIN_CMD_CFG_SAVE = 6
 	
 } gs_fin_commands_t;
 
@@ -192,7 +192,7 @@ typedef enum {
 
 
 
-typedef struct __attribute__((packed, aligned(1))) uniman_fin_config {
+typedef struct __attribute__((packed, aligned(1))) gs_fin_config {
 	
 	uint8_t stepper_config; // contains the step mode and invert statuses for steppers.
 							// uses uniman_ustep_mode_t or'd with uniman_ustep_invert_t.
@@ -203,6 +203,6 @@ typedef struct __attribute__((packed, aligned(1))) uniman_fin_config {
 	uint8_t system_extra; // [7:0] reserved
 	
 
-	}uniman_fin_config_t;
+	}gs_fin_config_t;
 
 #endif /* SRC_SOAR_FIN_FIN_H_ */

@@ -92,7 +92,7 @@ void delay_us(uint16_t in) {
 		
 	};
 	
-	gs_fin_cmd_error_t tmc2041::updateconfig(uniman_step_config_t * confin,uniman_fin_config_t * confin2) {
+	gs_fin_cmd_error_t tmc2041::updateconfig(uniman_step_config_t * confin,gs_fin_config_t * confin2) {
 		runconf=*confin2;
 		config=*confin;
 		

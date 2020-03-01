@@ -9,6 +9,7 @@
 #include <fin_server_backend.h>
 #include <csp/csp.h>
 #include <csp/arch/csp_thread.h>
+#include <csp/arch/csp_queue.h>
 
 
 uniman_step_config_t uniman_step1_conf = {
@@ -25,7 +26,7 @@ uniman_step_config_t uniman_step2_conf = {
 	.CHOPCONF=STEPPER_CHOPCONF_DEFAULT
 };
 
-uniman_fin_config_t uniman_running_conf = {
+gs_fin_config_t uniman_running_conf = {
 	.stepper_config=0x09,
 	.stepper_ihold=STEPPER_DEFAULT_IHOLD,
 	.stepper_irun=STEPPER_DEFAULT_IRUN,
@@ -34,10 +35,10 @@ uniman_fin_config_t uniman_running_conf = {
 	.system_extra = 0
 };
 
-
+csp_queue_handle_t uniman_stepper_q;
 
 csp_thread_handle_t handle_server;
-gs_fin_cmd_error_t process_config(uniman_fin_config_t * confin);
+gs_fin_cmd_error_t process_config(gs_fin_config_t * confin);
 void delay_us(uint16_t in);
 
 	
@@ -213,6 +214,11 @@ gs_fin_cmd_error_t init_server(void) {
 	if(csp_thread_create(task_server, "SERVER", 270, NULL, 2, &handle_server)) error=FIN_CMD_FAIL;
 	
 	if(csp_thread_create(task_stepper, "STEP",configMINIMAL_STACK_SIZE+80, NULL, 1, NULL)) error=FIN_CMD_FAIL;
+	
+		uniman_stepper_q = csp_queue_create(5,sizeof(uint16_t));
+		if (uniman_stepper_q==NULL) error =FIN_CMD_FAIL;
+	
+	
 
 	//should also initalise other things such as temp sensors and steppers here
 	
@@ -222,7 +228,7 @@ gs_fin_cmd_error_t init_server(void) {
 
 uint8_t step_config_concat(uniman_ustep_mode_t a, uniman_invert_t b) {return a|b;};
 
-gs_fin_cmd_error_t process_config(uniman_fin_config_t * confin) {
+gs_fin_cmd_error_t process_config(gs_fin_config_t * confin) {
 	//get invert data
 	uniman_running_conf=*confin;
 	
@@ -236,6 +242,8 @@ gs_fin_cmd_error_t process_config(uniman_fin_config_t * confin) {
 		
 	}
 	
+
+	
 	// do the currents, these translate directly
 	uniman_step1_conf.IRUN=uniman_running_conf.stepper_irun;
 	uniman_step2_conf.IRUN=uniman_running_conf.stepper_irun;
@@ -248,4 +256,8 @@ gs_fin_cmd_error_t process_config(uniman_fin_config_t * confin) {
 
 }
 
+gs_fin_cmd_error_t get_fin_config(gs_fin_config_t * conf) {}
 
+gs_fin_cmd_error_t set_fin_config(const gs_fin_config_t * conf) {}
+
+gs_fin_cmd_error_t save_fin_config(void) {}

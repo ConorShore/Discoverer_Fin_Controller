@@ -58,7 +58,7 @@ class tmc2041 {
 	
 	private:
 	uniman_step_config_t config;
-	uniman_fin_config_t runconf;
+	gs_fin_config_t runconf;
 	void (*init_pins)();
 	void startSPI(void);
 	void endSPI(void);
@@ -81,7 +81,7 @@ class tmc2041 {
 	void readreg(uniman_step_reg_t * databack); // for reading individual bytes
 	void readreg(uniman_step_reg_32_t * databack); // for reading the full 32bit
 	gs_fin_cmd_error_t saveconfig(void); //saves current config to eeprom
-	gs_fin_cmd_error_t updateconfig(uniman_step_config_t * confin,uniman_fin_config_t * confin2);
+	gs_fin_cmd_error_t updateconfig(uniman_step_config_t * confin,gs_fin_config_t * confin2);
 
 		void (*enstep)();
 		void (*disstep)();

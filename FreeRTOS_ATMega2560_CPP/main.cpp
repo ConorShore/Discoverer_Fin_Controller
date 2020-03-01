@@ -62,6 +62,7 @@ extern "C" {
 #define FUSES __fuse_t __fuse FUSEMEM
 
 FUSES {.low = 0xBF, .high=0x01,.extended = 0xFF};
+// FUSES {.low = 0xBF, .high=0x11,.extended = 0xFF};
 
 
 
@@ -152,7 +153,7 @@ struct can_frame canMsg2;
 	
 
 	
-
+#include <I2C.h>
 	
 
 
@@ -160,6 +161,7 @@ int main( void )
 {
 	usart_init(MYUBRR);
 fdevopen( &usart_putchar_printf,0);
+
 
 
 	
