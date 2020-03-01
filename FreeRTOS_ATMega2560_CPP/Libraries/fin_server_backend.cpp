@@ -118,6 +118,8 @@ gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
 
 gs_fin_cmd_error_t set_fin_pos(const gs_fin_positions_t * pos) {
 	
+	//TODO - add eeprom save
+	
 }
 
 	
@@ -188,8 +190,7 @@ void read_temp_sensors(uint16_t *array){
 
 CSP_DEFINE_TASK(task_stepper) {
 
-	stepper2.enstep();
-	stepper1.enstep();
+	
 	uint16_t recbuf=0;
 		stepper_cmd_t stepcmd[4];
 	bool inmove[4]= {0,0,0,0};
@@ -197,12 +198,16 @@ CSP_DEFINE_TASK(task_stepper) {
 
 	
 	for(;;) {
+		TickType_t funcstarttime=xTaskGetTickCount();
+		
 		while(csp_queue_dequeue(uniman_stepper_q,&recbuf,0)==1) {
 			stepcmd[ (recbuf&0xC000)>>14 ] = {	//select correct stepper command
 					.direction = (uint8_t) ((recbuf&0x2000)>>13), //get direction from packet
 					.tarsteps = recbuf&0x1FFF // get steps
 					}; 
 					inmove[(recbuf&0xC000)>>14]=1;
+					if (inmove[0]==1||inmove[1]==1) stepper1.enstep();
+					if (inmove[2]==1||inmove[3]==1) stepper2.enstep();
 				csp_log_info("Step CMD issued %d	%d	%d",((recbuf&0xC000)>>14),stepcmd[ (recbuf&0xC000)>>14 ].direction,stepcmd[ (recbuf&0xC000)>>14 ].tarsteps);
 		}
 		
@@ -292,6 +297,9 @@ CSP_DEFINE_TASK(task_stepper) {
 			for(int i=0;i<4;i++) {
 				if((inmove[i]==1)&&(stepcmd[i].cursteps==stepcmd[i].tarsteps)) inmove[i]=0;
 			}
+			
+			if (inmove[0]==0&&inmove[1]==0) stepper1.disstep();
+			if (inmove[2]==0&&inmove[3]==0) stepper2.disstep();
 		
 		//portEXIT_CRITICAL();
 		
@@ -300,7 +308,8 @@ CSP_DEFINE_TASK(task_stepper) {
 		//stepper2.step(1,0);
 		//vTaskDelay(10);
 		//printf("%d\n",(uint16_t)(500*(uint32_t)60)/(uniman_running_conf.stepper_speed*(uint32_t)portTICK_PERIOD_MS));
-		vTaskDelay((uint16_t)(1000*(uint32_t)60)/(uniman_running_conf.stepper_speed*(uint32_t)portTICK_PERIOD_MS));
+		//vTaskDelay((uint16_t)(1000*(uint32_t)60)/(uniman_running_conf.stepper_speed*(uint32_t)portTICK_PERIOD_MS));
+		vTaskDelayUntil(&funcstarttime,(uint16_t)(1000*(uint32_t)60)/(uniman_running_conf.stepper_speed*(uint32_t)portTICK_PERIOD_MS));
 	}
 
 
@@ -326,8 +335,6 @@ gs_fin_cmd_error_t init_server(void) {
 	setup_temp_sensors();
 	process_config(&uniman_running_conf);
 
-	stepper1.enstep();
-	stepper2.enstep();
 
 	
 	if(csp_thread_create(task_server, "SERVER", 270, NULL, 2, &handle_server)) error=FIN_CMD_FAIL;
@@ -343,16 +350,16 @@ gs_fin_cmd_error_t init_server(void) {
 		//for the stepper queue, the first 2 bits tell the task what stepper to move i.e 00 = stepper 1, 11 = stepper 4
 		// the remaining 14 bits are used for position
 		
-		uint16_t p=0x0115 |0x2000;
+		uint16_t p=0x0111;
 		
 		csp_queue_enqueue(uniman_stepper_q,&p,1000);
-			p=0x4117|0x2000;
+			p=0x4111;
 		
 		csp_queue_enqueue(uniman_stepper_q,&p,1000);
-			p=0x8119|0x2000;
+			p=0x8111;
 		
 		csp_queue_enqueue(uniman_stepper_q,&p,1000);
-			p=0xC11C|0x2000;
+			p=0xC111;
 		
 		csp_queue_enqueue(uniman_stepper_q,&p,1000);
 		
