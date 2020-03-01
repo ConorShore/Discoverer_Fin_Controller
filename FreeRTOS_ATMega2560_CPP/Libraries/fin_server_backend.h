@@ -58,5 +58,11 @@ gs_fin_cmd_error_t set_fin_config(const gs_fin_config_t * conf);
 gs_fin_cmd_error_t save_fin_config(void);
 
 
+/**
+Internal only load command to restore running config from eeprom
+*/
+gs_fin_cmd_error_t load_fin_config(void);
+
+
 
 

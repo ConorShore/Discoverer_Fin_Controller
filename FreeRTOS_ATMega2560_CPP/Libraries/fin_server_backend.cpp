@@ -10,6 +10,7 @@
 #include <csp/csp.h>
 #include <csp/arch/csp_thread.h>
 #include <csp/arch/csp_queue.h>
+#include <avr/eeprom.h>
 
 
 uniman_step_config_t uniman_step1_conf = {
@@ -34,6 +35,8 @@ gs_fin_config_t uniman_running_conf = {
 	.system_reset_encoder_zero = 0,
 	.system_extra = 0
 };
+
+#define EEPROM_RUN_CONF_ADD 0x00
 
 csp_queue_handle_t uniman_stepper_q;
 
@@ -112,11 +115,10 @@ gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
 
 
 
-gs_fin_cmd_error_t set_fin_pos(const gs_fin_positions_t * pos) {}
+gs_fin_cmd_error_t set_fin_pos(const gs_fin_positions_t * pos) {
+	
+}
 
-gs_fin_cmd_error_t set_max_drag(void) {}
-
-gs_fin_cmd_error_t set_min_drag(void) {}
 	
 gs_fin_cmd_error_t change_ustep(void) {
 	
@@ -274,8 +276,6 @@ CSP_DEFINE_TASK(task_stepper) {
 			i++;
 			if(i>=stepc) break;
 			
-			
-			
 			//implement feedback somewhere
 			
 			
@@ -344,6 +344,7 @@ gs_fin_cmd_error_t init_server(void) {
 		// [12:0] no of steps
 		//for the stepper queue, the first 2 bits tell the task what stepper to move i.e 00 = stepper 1, 11 = stepper 4
 		// the remaining 14 bits are used for position
+		
 		uint16_t p=0x0005;
 		
 		csp_queue_enqueue(uniman_stepper_q,&p,1000);
@@ -356,16 +357,22 @@ gs_fin_cmd_error_t init_server(void) {
 			p=0xC00C;
 		
 		csp_queue_enqueue(uniman_stepper_q,&p,1000);
+		
 
 		
+
+		
+
+		if(load_fin_config()) error=FIN_CMD_FAIL;
+
+		
+
 
 	
 	return error;
 	
-
-	//should also initalise other things such as temp sensors and steppers here
 	
-	//also remember to initalise the status frame
+	//TODO - also remember to initalise the status frame
 	
 }
 
@@ -399,8 +406,62 @@ gs_fin_cmd_error_t process_config(gs_fin_config_t * confin) {
 
 }
 
-gs_fin_cmd_error_t get_fin_config(gs_fin_config_t * conf) {}
+gs_fin_cmd_error_t get_fin_config(gs_fin_config_t * conf) {
+	*conf=uniman_running_conf;
+	return FIN_CMD_OK;
+}
 
-gs_fin_cmd_error_t set_fin_config(const gs_fin_config_t * conf) {}
+gs_fin_cmd_error_t set_fin_config(const gs_fin_config_t * conf) {
+	uniman_running_conf=*conf;
+	
+	//TODO - action things like reset, zeroing
+	
+	
+	return FIN_CMD_OK;
+}
 
-gs_fin_cmd_error_t save_fin_config(void) {}
+gs_fin_cmd_error_t load_fin_config(void) {
+	gs_fin_config_t temp;
+	gs_fin_cmd_error_t error = FIN_CMD_OK;
+	portENTER_CRITICAL();
+
+	eeprom_read_block(&temp,(uint16_t*) EEPROM_RUN_CONF_ADD,sizeof(gs_fin_config_t));
+	uniman_running_conf=temp;
+	portEXIT_CRITICAL();
+	return FIN_CMD_OK;
+}
+
+
+gs_fin_cmd_error_t save_fin_config(void) {
+	gs_fin_config_t temp;
+	gs_fin_cmd_error_t error = FIN_CMD_OK;
+	portENTER_CRITICAL();
+	
+eeprom_write_block(&uniman_running_conf,(uint16_t*) EEPROM_RUN_CONF_ADD,sizeof(gs_fin_config_t));
+
+eeprom_read_block(&temp,(uint16_t*) EEPROM_RUN_CONF_ADD,sizeof(gs_fin_config_t));
+
+if(temp.stepper_config!=uniman_running_conf.stepper_config) error = FIN_CMD_FAIL;
+if(temp.stepper_ihold!=uniman_running_conf.stepper_ihold) error = FIN_CMD_FAIL;
+if(temp.stepper_irun!=uniman_running_conf.stepper_irun) error = FIN_CMD_FAIL;
+if(temp.stepper_speed!=uniman_running_conf.stepper_speed) error = FIN_CMD_FAIL;
+if(temp.system_reset_encoder_zero!=uniman_running_conf.system_reset_encoder_zero) error = FIN_CMD_FAIL;
+if(temp.system_extra!=uniman_running_conf.system_extra) error = FIN_CMD_FAIL;
+portEXIT_CRITICAL();
+
+return error;
+	
+
+
+}
+
+void print_conf(gs_fin_config_t * confin) {
+			printf("%x\n",confin->stepper_config);
+		printf("%x\n",confin->stepper_ihold);
+		printf("%x\n",confin->stepper_irun);
+		printf("%x\n",confin->stepper_speed);
+		printf("%x\n",confin->system_reset_encoder_zero);
+		printf("%x\n\n",confin->system_extra);
+}
+
+
