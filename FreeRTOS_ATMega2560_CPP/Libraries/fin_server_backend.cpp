@@ -33,7 +33,7 @@ gs_fin_config_t uniman_running_conf = {
 	.stepper_ihold=STEPPER_DEFAULT_IHOLD,
 	.stepper_irun=STEPPER_DEFAULT_IRUN,
 	.stepper_speed = 60,
-	.system_reset_encoder_zero = 0,
+	.system_reset_encoder_zero = (1<<5),
 	.system_extra = 0
 };
 
@@ -122,13 +122,6 @@ gs_fin_cmd_error_t set_fin_pos(const gs_fin_positions_t * pos) {
 	
 }
 
-	
-gs_fin_cmd_error_t change_ustep(void) {
-	
-	//When operating at less than 16 times microstepping, be sure to first position to a suitable, symmetric switching position, before changing MRES, otherwise the motor behavior may differ for left and right rotation. For 16 times microstepping, interpolation to 256 microsteps gives best results!
-	
-}
-
 void setup_temp_sensors(void) {
 		ADMUX=0x40;
 		ADCSRA=0b10000100; //set adc clock
@@ -184,19 +177,12 @@ void read_temp_sensors(uint16_t *array){
 		
 	}
 
-
-
-
-
 CSP_DEFINE_TASK(task_stepper) {
 
-	
 	uint16_t recbuf=0;
-		stepper_cmd_t stepcmd[4];
+	stepper_cmd_t stepcmd[4];
 	bool inmove[4]= {0,0,0,0};
-
-
-	
+		
 	for(;;) {
 		TickType_t funcstarttime=xTaskGetTickCount();
 		
@@ -208,7 +194,7 @@ CSP_DEFINE_TASK(task_stepper) {
 					inmove[(recbuf&0xC000)>>14]=1;
 					if (inmove[0]==1||inmove[1]==1) stepper1.enstep();
 					if (inmove[2]==1||inmove[3]==1) stepper2.enstep();
-				csp_log_info("Step CMD issued %d	%d	%d",((recbuf&0xC000)>>14),stepcmd[ (recbuf&0xC000)>>14 ].direction,stepcmd[ (recbuf&0xC000)>>14 ].tarsteps);
+				csp_log_info("Queue rec for stepper %d	dir:%d	steps:%d",((recbuf&0xC000)>>14),stepcmd[ (recbuf&0xC000)>>14 ].direction,stepcmd[ (recbuf&0xC000)>>14 ].tarsteps);
 		}
 		
 		
@@ -298,27 +284,13 @@ CSP_DEFINE_TASK(task_stepper) {
 				if((inmove[i]==1)&&(stepcmd[i].cursteps==stepcmd[i].tarsteps)) inmove[i]=0;
 			}
 			
-			if (inmove[0]==0&&inmove[1]==0) stepper1.disstep();
-			if (inmove[2]==0&&inmove[3]==0) stepper2.disstep();
+
 		
-		//portEXIT_CRITICAL();
-		
-	
-		
-		//stepper2.step(1,0);
-		//vTaskDelay(10);
-		//printf("%d\n",(uint16_t)(500*(uint32_t)60)/(uniman_running_conf.stepper_speed*(uint32_t)portTICK_PERIOD_MS));
 		//vTaskDelay((uint16_t)(1000*(uint32_t)60)/(uniman_running_conf.stepper_speed*(uint32_t)portTICK_PERIOD_MS));
 		vTaskDelayUntil(&funcstarttime,(uint16_t)(1000*(uint32_t)60)/(uniman_running_conf.stepper_speed*(uint32_t)portTICK_PERIOD_MS));
+		if ((uniman_running_conf.system_reset_encoder_zero&(1<<5))&&inmove[0]==0&&inmove[1]==0) stepper1.disstep();
+		if ((uniman_running_conf.system_reset_encoder_zero&(1<<5))&&inmove[2]==0&&inmove[3]==0) stepper2.disstep();
 	}
-
-
-		
-		//(uint16_t)(500*(uint32_t)uniman_running_conf.stepper_speed)/(60*(uint32_t)portTICK_PERIOD_MS)
-		
-	
-
-		
 	
 	vTaskSuspend(NULL);
 }
@@ -344,29 +316,27 @@ gs_fin_cmd_error_t init_server(void) {
 		uniman_stepper_q = csp_queue_create(STEPPER_QUEUE_LENGTH,sizeof(uint16_t));
 		if (uniman_stepper_q==NULL) error =FIN_CMD_FAIL;
 		
-		// [15:14] Which stepper
+		
+		// stepper q layout
+		// [15:14] Which stepper, 00 is stepper 1, 01 is stepper 2 etc.
 		// [13] direction
 		// [12:0] no of steps
-		//for the stepper queue, the first 2 bits tell the task what stepper to move i.e 00 = stepper 1, 11 = stepper 4
-		// the remaining 14 bits are used for position
 		
-		uint16_t p=0x0111;
 		
-		csp_queue_enqueue(uniman_stepper_q,&p,1000);
-			p=0x4111;
+		uint16_t p=0x0005;
 		
 		csp_queue_enqueue(uniman_stepper_q,&p,1000);
-			p=0x8111;
+			p=0x4005;
 		
 		csp_queue_enqueue(uniman_stepper_q,&p,1000);
-			p=0xC111;
+			p=0x8005;
+		
+		csp_queue_enqueue(uniman_stepper_q,&p,1000);
+			p=0xC005;
 		
 		csp_queue_enqueue(uniman_stepper_q,&p,1000);
 		
 
-		
-
-		
 
 		if(load_fin_config()) error=FIN_CMD_FAIL;
 
@@ -385,6 +355,7 @@ uint8_t step_config_concat(uniman_ustep_mode_t a, uniman_invert_t b) {return a|b
 
 gs_fin_cmd_error_t process_config(gs_fin_config_t * confin) {
 	//get invert data
+	
 	uniman_running_conf=*confin;
 	
 	uniman_step1_conf.GCONF=STEPPER_GCONF_DATA(	(uniman_running_conf.stepper_config&(STEPPER_INVA_1))>>4	,(uniman_running_conf.stepper_config&(STEPPER_INVB_1))>>5);
@@ -408,17 +379,21 @@ gs_fin_cmd_error_t process_config(gs_fin_config_t * confin) {
 	
 	stepper1.updateconfig(&uniman_step1_conf,confin);
 	stepper2.updateconfig(&uniman_step2_conf,confin);
+	
+	return FIN_CMD_OK;
 
 }
 
 gs_fin_cmd_error_t get_fin_config(gs_fin_config_t * conf) {
 	*conf=uniman_running_conf;
+	csp_log_info("Returning running config");
 	return FIN_CMD_OK;
 }
 
 gs_fin_cmd_error_t set_fin_config(const gs_fin_config_t * conf) {
 	uniman_running_conf=*conf;
-	
+	process_config(&uniman_running_conf);
+	csp_log_info("Setting running config");
 	//TODO - action things like reset, zeroing
 	
 	
@@ -428,11 +403,13 @@ gs_fin_cmd_error_t set_fin_config(const gs_fin_config_t * conf) {
 gs_fin_cmd_error_t load_fin_config(void) {
 	gs_fin_config_t temp;
 	gs_fin_cmd_error_t error = FIN_CMD_OK;
+	csp_log_info("Loading config from EEPROM");
 	portENTER_CRITICAL();
 
 	eeprom_read_block(&temp,(uint16_t*) EEPROM_RUN_CONF_ADD,sizeof(gs_fin_config_t));
 	uniman_running_conf=temp;
 	portEXIT_CRITICAL();
+	csp_log_info("Error = %d",error);
 	return FIN_CMD_OK;
 }
 
@@ -440,6 +417,7 @@ gs_fin_cmd_error_t load_fin_config(void) {
 gs_fin_cmd_error_t save_fin_config(void) {
 	gs_fin_config_t temp;
 	gs_fin_cmd_error_t error = FIN_CMD_OK;
+	csp_log_info("Saving running config to EEPROM");
 	portENTER_CRITICAL();
 	
 eeprom_write_block(&uniman_running_conf,(uint16_t*) EEPROM_RUN_CONF_ADD,sizeof(gs_fin_config_t));
@@ -453,6 +431,7 @@ if(temp.stepper_speed!=uniman_running_conf.stepper_speed) error = FIN_CMD_FAIL;
 if(temp.system_reset_encoder_zero!=uniman_running_conf.system_reset_encoder_zero) error = FIN_CMD_FAIL;
 if(temp.system_extra!=uniman_running_conf.system_extra) error = FIN_CMD_FAIL;
 portEXIT_CRITICAL();
+csp_log_info("Error = %d",error);
 
 return error;
 	

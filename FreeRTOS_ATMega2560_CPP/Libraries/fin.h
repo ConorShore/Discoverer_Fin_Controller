@@ -199,7 +199,8 @@ typedef struct __attribute__((packed, aligned(1))) gs_fin_config {
 	uint8_t stepper_ihold; //stepper hold current. as per tmc2041 data sheet value from 0-31
 	uint8_t stepper_irun; //stepper run current. as per tmc2041 data sheet value from 0-31
 	uint16_t stepper_speed; //speed to move for custom positions moves. defined as full steps per minute. typ =60
-	uint8_t system_reset_encoder_zero; //[7:5]reserved,[4]reset controller,[3:0]zero encoder D-A
+	uint8_t system_reset_encoder_zero; //[7:6]reserved,[5] Stepper autodisable (if set 1, program 
+										//will disable stepper automatically, [4]reset controller,[3:0]zero encoder D-A
 	uint8_t system_extra; // [7:0] reserved
 	
 
