@@ -65,8 +65,7 @@ class tmc2041 {
 	uint8_t eeprom_address;
 	void (*cson)();
 	void (*csoff)();
-	void (*stepfunc)(uint8_t a);
-	void (*dirfunc)(uint8_t a, uint8_t t);
+
 
 	static uint8_t speed;
 	
@@ -83,10 +82,13 @@ class tmc2041 {
 	gs_fin_cmd_error_t saveconfig(void); //saves current config to eeprom
 	gs_fin_cmd_error_t updateconfig(uniman_step_config_t * confin,gs_fin_config_t * confin2);
 
-		void (*enstep)();
-		void (*disstep)();
+	void (*enstep)();
+	void (*disstep)();
 	
 	void step(uint8_t a,uint8_t dir);
+	
+	void (*stepfunc)(uint8_t a);
+	void (*dirfunc)(uint8_t a, uint8_t t);
 
 	
 };

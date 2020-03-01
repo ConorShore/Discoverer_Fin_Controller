@@ -188,12 +188,12 @@ fdevopen( &usart_putchar_printf,0);
 
 		// Start router task with 500 word stack, OS task priority 1 		
 		error+=csp_route_start_task(180, 2);
-		
+		printf("%d\n",error);
 		
 		
 		error-=init_server();
 		//while(1);
-		printf("%d",error);
+		printf("%d\n",error);
 
 		// Client 
 		

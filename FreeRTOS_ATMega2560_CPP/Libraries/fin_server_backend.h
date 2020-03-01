@@ -12,6 +12,7 @@
 #include <fin.h>
 
 
+
 gs_fin_cmd_error_t init_server(void);
 /**
    Get fin status
@@ -55,5 +56,7 @@ gs_fin_cmd_error_t set_fin_config(const gs_fin_config_t * conf);
    @returns cmd error code, see @gs_fin_cmd_error_t
  */
 gs_fin_cmd_error_t save_fin_config(void);
+
+
 
 
