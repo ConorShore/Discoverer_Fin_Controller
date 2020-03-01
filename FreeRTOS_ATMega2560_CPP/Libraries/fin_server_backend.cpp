@@ -207,7 +207,7 @@ CSP_DEFINE_TASK(task_stepper) {
 		}
 		
 		
-		uint16_t stepc=6;
+		uint16_t stepc=7;
 		if(inmove[0]) {
 			stepper1.dirfunc(0,stepcmd[0].direction&0x01);
 		}
@@ -257,7 +257,7 @@ CSP_DEFINE_TASK(task_stepper) {
 				if(inmove[3]) {
 					stepper2.dirfunc(1,(!(stepcmd[3].direction))&0x01);
 				}
-		stepc=4;
+		stepc=5;
 		for (uint16_t i=0; i<(uniman_running_conf.stepper_config&0x0F)-1;i++){
 			stepc*=2;
 		}
@@ -343,16 +343,16 @@ gs_fin_cmd_error_t init_server(void) {
 		//for the stepper queue, the first 2 bits tell the task what stepper to move i.e 00 = stepper 1, 11 = stepper 4
 		// the remaining 14 bits are used for position
 		
-		uint16_t p=0x0115;
+		uint16_t p=0x0115 |0x2000;
 		
 		csp_queue_enqueue(uniman_stepper_q,&p,1000);
-			p=0x4117;
+			p=0x4117|0x2000;
 		
 		csp_queue_enqueue(uniman_stepper_q,&p,1000);
-			p=0x8119;
+			p=0x8119|0x2000;
 		
 		csp_queue_enqueue(uniman_stepper_q,&p,1000);
-			p=0xC11C;
+			p=0xC11C|0x2000;
 		
 		csp_queue_enqueue(uniman_stepper_q,&p,1000);
 		
