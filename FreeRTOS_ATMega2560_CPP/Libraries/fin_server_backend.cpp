@@ -361,13 +361,13 @@ gs_fin_cmd_error_t process_config(gs_fin_config_t * confin) {
 	uniman_step2_conf.GCONF=STEPPER_GCONF_DATA(	(uniman_running_conf.stepper_config&(STEPPER_INVC_1))>>6	,(uniman_running_conf.stepper_config&(STEPPER_INVD_1))>>7);
 	
 	//get step data
-	if((uniman_running_conf.stepper_config&0x0F)!=0) { //if manually setting ustep setting, rahter than auto
+	//if((uniman_running_conf.stepper_config&0x0F)!=0) { //if manually setting ustep setting, rahter than auto
 // 		uniman_step1_conf.CHOPCONF=(STEPPER_CHOPCONF_DEFAULT&~(0x0F000000))| (((uint32_t)(9-uniman_running_conf.stepper_config))<<24);
 // 		uniman_step2_conf.CHOPCONF=(STEPPER_CHOPCONF_DEFAULT&~(0x0F000000))| (((uint32_t)(9-uniman_running_conf.stepper_config))<<24);
 // 		
 		uniman_step1_conf.CHOPCONF=STEPPER_CHOPCONF_DEFAULT;
  		uniman_step2_conf.CHOPCONF=STEPPER_CHOPCONF_DEFAULT;
-	}
+	//}
 	
 
 	
