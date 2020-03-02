@@ -178,7 +178,7 @@ void read_temp_sensors(uint16_t *array){
 	}
 
 CSP_DEFINE_TASK(task_stepper) {
-
+	#define OVERSTEPS 12
 	uint16_t recbuf=0;
 	stepper_cmd_t stepcmd[4];
 	bool inmove[4]= {0,0,0,0};
@@ -198,7 +198,7 @@ CSP_DEFINE_TASK(task_stepper) {
 		}
 		
 		
-		uint16_t stepc=7;
+		uint16_t stepc=OVERSTEPS;
 		if(inmove[0]) {
 			stepper1.dirfunc(0,stepcmd[0].direction&0x01);
 		}
@@ -248,7 +248,7 @@ CSP_DEFINE_TASK(task_stepper) {
 				if(inmove[3]) {
 					stepper2.dirfunc(1,(!(stepcmd[3].direction))&0x01);
 				}
-		stepc=5;
+		stepc=OVERSTEPS-2;
 		for (uint16_t i=0; i<(uniman_running_conf.stepper_config&0x0F)-1;i++){
 			stepc*=2;
 		}
@@ -322,20 +322,21 @@ gs_fin_cmd_error_t init_server(void) {
 		// [12:0] no of steps
 		
 		
-		uint16_t p=0x0005;
+		uint16_t p=0x1005;
 		
 		csp_queue_enqueue(uniman_stepper_q,&p,1000);
-			p=0x4005;
+			p=0x5005;
 		
 		csp_queue_enqueue(uniman_stepper_q,&p,1000);
-			p=0x8005;
+			p=0x9005;
 		
 		csp_queue_enqueue(uniman_stepper_q,&p,1000);
-			p=0xC005;
+			p=0xd005;
 		
 		csp_queue_enqueue(uniman_stepper_q,&p,1000);
 		
 
+		save_fin_config();
 
 		if(load_fin_config()) error=FIN_CMD_FAIL;
 

@@ -61,8 +61,8 @@ extern "C" {
 
 #define FUSES __fuse_t __fuse FUSEMEM
 
-FUSES {.low = 0xBF, .high=0x01,.extended = 0xFF};
-// FUSES {.low = 0xBF, .high=0x11,.extended = 0xFF};
+//FUSES {.low = 0xBF, .high=0x01,.extended = 0xFF};
+ FUSES {.low = 0xBF, .high=0x11,.extended = 0xFF};
 
 
 
@@ -161,6 +161,16 @@ int main( void )
 {
 	usart_init(MYUBRR);
 fdevopen( &usart_putchar_printf,0);
+
+I2C_init();
+uint8_t ar[4];
+while (1) {
+for (int i=0;i<128;i++) {
+printf("add	%d	res %d\n",i,I2C_write(i,ar,1));
+_delay_ms(500);
+}
+}
+
 
 
 
