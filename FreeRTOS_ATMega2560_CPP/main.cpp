@@ -141,7 +141,6 @@ struct can_frame canMsg2;
 
 
 
-
 	
 	struct csp_can_config can_conf = {
 		.bitrate = 1000000UL,
@@ -164,12 +163,17 @@ fdevopen( &usart_putchar_printf,0);
 
 I2C_init();
 uint8_t ar[4];
-while (1) {
-for (int i=0;i<128;i++) {
-printf("add	%d	res %d\n",i,I2C_write(i,ar,1));
-_delay_ms(500);
-}
-}
+// while (1) {
+// for (int i=0;i<128;i++) {
+// printf("add	%d	res %d\n",i,I2C_write(i,NULL,1));
+// _delay_ms(500);
+// }
+// }
+
+	printf("read error = %d\n",I2C_read(0,0,ar,2));
+	uint16_t data = (((uint16_t)ar[0])<<8)|ar[1];
+	printf("data %lx\n",data);
+while(1);
 
 
 
