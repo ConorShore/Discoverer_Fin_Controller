@@ -42,7 +42,7 @@ your application. */
 #define configCPU_CLOCK_HZ			( ( unsigned long ) 16000000 )
 #define configTICK_RATE_HZ			( ( TickType_t ) 100 )
 #define configMAX_PRIORITIES                   ( 4 )
-#define configMINIMAL_STACK_SIZE	( ( unsigned short ) 100 )
+#define configMINIMAL_STACK_SIZE	( ( unsigned short ) 120 )
 #define configMAX_TASK_NAME_LEN                 16
 #define configUSE_16_BIT_TICKS                  1
 #define configIDLE_SHOULD_YIELD                 1
