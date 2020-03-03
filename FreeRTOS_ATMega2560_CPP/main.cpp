@@ -65,65 +65,15 @@ extern "C" {
  FUSES {.low = 0xBF, .high=0x11,.extended = 0xFF};
 
 
-
-
-
-
-
-
-
 //static char out[10]; //used for as placeholder for itoa function
 
 #define BAUD 500000 //UART baud
-
-
-
-
-
-
 
 /** Example defines */
 #define MY_ADDRESS  6			// Address of local CSP node
 #define CAN_CSP_ADDRESS 6		//
 #define OBC_ADDRESS 1
 #define MY_PORT		10			// Port to send test traffic to
-
-
-
-/* Priority definitions for most of the tasks in the demo application.  Some
-tasks just use the idle priority. */
-#define mainLED_TASK_PRIORITY			( tskIDLE_PRIORITY + 3 )
-#define mainCOM_TEST_PRIORITY			( tskIDLE_PRIORITY + 2 )
-#define mainQUEUE_POLL_PRIORITY			( tskIDLE_PRIORITY + 2 )
-#define mainCHECK_TASK_PRIORITY			( tskIDLE_PRIORITY + 3 )
-
-/* Baud rate used by the serial port tasks. */
-//#define mainCOM_TEST_BAUD_RATE			( ( unsigned long ) 38400 )
-
-/* LED used by the serial port tasks.  This is toggled on each character Tx,
-and mainCOM_TEST_LED + 1 is toggles on each character Rx. */
-#define mainCOM_TEST_LED				( 4 )
-
-/* LED that is toggled by the check task.  The check task periodically checks
-that all the other tasks are operating without error.  If no errors are found
-the LED is toggled.  If an error is found at any time the LED is never toggles
-again. */
-#define mainCHECK_TASK_LED				( 7 )
-
-/* The period between executions of the check task. */
-#define mainCHECK_PERIOD				( ( TickType_t ) 3000 / portTICK_PERIOD_MS  )
-
-/* An address in the EEPROM used to count resets.  This is used to check that
-the demo application is not unexpectedly resetting. */
-#define mainRESET_COUNT_ADDRESS			( ( uint8_t * ) 0x50 )
-
-/* The number of coroutines to create. */
-#define mainNUM_FLASH_COROUTINES		( 3 )
-
-
-
-static void TaskBlinkyellowLED(void* pvParameters);
-
 
 
 // CSP prototypes
@@ -137,9 +87,6 @@ struct can_frame canMsg1;
 struct can_frame canMsg2;
 
 	csp_thread_handle_t handle_canrx; // handle for RX interrupt
-
-
-
 
 	
 	struct csp_can_config can_conf = {
@@ -163,12 +110,12 @@ fdevopen( &usart_putchar_printf,0);
 
 I2C_init();
 
-	while (1) {
-		for (int i=1;i<128;i++) {
-			printf("add	%d	res %d\n",i,I2C_write(i,NULL,1,1));
-			_delay_ms(100);
-		}
-	}
+// 	while (1) {
+// 		for (int i=1;i<128;i++) {
+// 			printf("add	%d	res %d\n",i,I2C_write(i,NULL,1,1));
+// 			_delay_ms(100);
+// 		}
+// 	}
 
 // ar[0]=0;
 // ar[1]=0b0001101;
@@ -290,33 +237,6 @@ static void wdtr(void* pvParameters) {
 
 	}
 }
-
-static void TaskBlinkyellowLED(void* pvParameters)
-{	
-	// set pin 7 of PORTB for output
-	DDRB |= (1<<7);
-
-	TickType_t xLastWakeTime = xTaskGetTickCount();
-	for(;;)
-	{
-
-		// LED on
-		PORTB=(1<<PB7);
-		vTaskDelayUntil(&xLastWakeTime, (1000/ portTICK_PERIOD_MS));
-
-		// LED off
-
-		PORTB=0;
-		vTaskDelayUntil(&xLastWakeTime, (1000/ portTICK_PERIOD_MS));
-		
-
-
-	}
-
-	vTaskDelete(NULL);
-}
-
-
 
 ISR(INT2_vect){
 	//if((PORTB&PB5)>>PB5) return;

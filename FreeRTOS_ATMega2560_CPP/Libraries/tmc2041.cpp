@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <avr/eeprom.h>
 #include <FreeRTOS/portmacro.h>
-#include <avr/delay.h>
+#include <util/delay.h>
 
 void delay_us(uint16_t in) {
 	while(in--) {
@@ -185,7 +185,7 @@ void delay_us(uint16_t in) {
 	if((runconf.stepper_config&0x0F)!=0){
 		uint16_t stepc=4;
 		dirfunc(a,dir+1);
-		for (uint16_t i=0; i<(runconf.stepper_config&0x0F)-1;i++){
+		for (uint8_t i=0; i<(runconf.stepper_config&0x0F)-1;i++){
 			stepc*=2;
 		}
 		//portENTER_CRITICAL();
@@ -198,7 +198,7 @@ void delay_us(uint16_t in) {
 		//_delay_ms(1);
 		dirfunc(a,dir+2);
 		stepc=2;
-		for (uint16_t i=0; i<(runconf.stepper_config&0x0F)-1;i++){
+		for (uint8_t i=0; i<(runconf.stepper_config&0x0F)-1;i++){
 			stepc*=2;
 		}
 		i=0;

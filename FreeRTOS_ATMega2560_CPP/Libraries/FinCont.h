@@ -1,5 +1,9 @@
 
 #include <avr/io.h>
+#include <FreeRTOS/FreeRTOS.h>
+#include <FreeRTOS/task.h>
+
+#define FORCERESET vTaskSuspendAll(); cli(); printf("Error Reset\n"); while(1);
 
 #define TOGCON 0
 #define ONCON 1

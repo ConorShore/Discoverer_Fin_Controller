@@ -33,7 +33,6 @@ your application. */
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-#define FORCERESET vTaskSuspendAll(); cli(); printf("Error Reset\n"); while(1); 
 
 
 #define configUSE_PREEMPTION                    1

@@ -23,7 +23,7 @@
 			
 		if(I2C_read(address,REG_RPOS,tempdata,2)!=0) return -1;
 		
-		if((tempdata[0]&0xF0)==0) {
+		if((tempdata[0]&0xF0)==0) { //if this bit is set, data is invalid
 			*pos = (((uint16_t)tempdata[0])<<8)|tempdata[1];
 			return 0;
 		} else {
@@ -36,8 +36,8 @@
 		
 		if(I2C_read(address,REG_APOS,tempdata,2)!=0) return -1;
 		
-		if((tempdata[0]&0xF0)==0) {
-			uint16_t pos = (((uint16_t)tempdata[0])<<8)|tempdata[1];
+		if((tempdata[0]&0xF0)==0) { //if this bit is set, data is invalid
+			*pos = (((uint16_t)tempdata[0])<<8)|tempdata[1];
 			return 0;
 			} else {
 			return -1;

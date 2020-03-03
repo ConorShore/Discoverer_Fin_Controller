@@ -217,7 +217,7 @@ CSP_DEFINE_TASK(task_stepper) {
 			stepper2.dirfunc(1,stepcmd[3].direction&0x01);
 		}
 		
-		for (uint16_t i=0; i<(uniman_running_conf.stepper_config&0x0F)-1;i++){
+		for (uint8_t i=0; i<(uniman_running_conf.stepper_config&0x0F)-1;i++){
 			stepc*=2;
 		}
 		//portENTER_CRITICAL();
@@ -254,7 +254,7 @@ CSP_DEFINE_TASK(task_stepper) {
 					stepper2.dirfunc(1,(!(stepcmd[3].direction))&0x01);
 				}
 		stepc=OVERSTEPS-2;
-		for (uint16_t i=0; i<(uniman_running_conf.stepper_config&0x0F)-1;i++){
+		for (uint8_t i=0; i<(uniman_running_conf.stepper_config&0x0F)-1;i++){
 			stepc*=2;
 		}
 		i=0;
@@ -400,26 +400,26 @@ gs_fin_cmd_error_t get_fin_config(gs_fin_config_t * conf) {
 gs_fin_cmd_error_t set_fin_config(const gs_fin_config_t * conf) {
 	
 	gs_fin_cmd_error_t error=FIN_CMD_OK;
-	if(conf->system_reset_encoder_zero&(1<<4)!=0) {
+	if(((conf->system_reset_encoder_zero)&(1<<4))!=0) {
 		FORCERESET
 	}
 	
-	if (uniman_running_conf.system_reset_encoder_zero&(1<<3)!=0) {
+	if ((uniman_running_conf.system_reset_encoder_zero&(1<<3))!=0) {
 		uniman_running_conf.system_reset_encoder_zero&=~(1<<3);
 		if(encoder4.zeropos()!=0) error=FIN_CMD_FAIL;
 	}
 	
-	if (uniman_running_conf.system_reset_encoder_zero&(1<<2)!=0) {
+	if ((uniman_running_conf.system_reset_encoder_zero&(1<<2))!=0) {
 		uniman_running_conf.system_reset_encoder_zero&=~(1<<2);
 		if(encoder3.zeropos()!=0) error=FIN_CMD_FAIL;
 	}
 	
-	if (uniman_running_conf.system_reset_encoder_zero&(1<<1)!=0) {
+	if ((uniman_running_conf.system_reset_encoder_zero&(1<<1))!=0) {
 		uniman_running_conf.system_reset_encoder_zero&=~(1<<1);
 		if(encoder2.zeropos()!=0) error=FIN_CMD_FAIL;
 	}
 	
-	if (uniman_running_conf.system_reset_encoder_zero&(1<<0)!=0) {
+	if ((uniman_running_conf.system_reset_encoder_zero&(1<<0))!=0) {
 		uniman_running_conf.system_reset_encoder_zero&=~(1<<0);
 		if(encoder1.zeropos()!=0) error=FIN_CMD_FAIL;
 	}
