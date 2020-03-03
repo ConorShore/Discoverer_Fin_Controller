@@ -66,10 +66,10 @@ uniman_step2_conf,STEPPER_2_EEPROM_ADDRESS);
 	
 
 
-	AM4096 encoder1(0x50,4096);
-	AM4096 encoder2(0x51,4096);
-	AM4096 encoder3(0x52,4096);
-	AM4096 encoder4(0x53,4096);
+	AM4096 encoder1(0x50);
+	AM4096 encoder2(0x51);
+	AM4096 encoder3(0x52);
+	AM4096 encoder4(0x53);
 	
 
 
