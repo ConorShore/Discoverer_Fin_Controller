@@ -189,12 +189,17 @@ CSP_DEFINE_TASK(task_stepper) {
 		while(csp_queue_dequeue(uniman_stepper_q,&recbuf,0)==1) {
 			stepcmd[ (recbuf&0xC000)>>14 ] = {	//select correct stepper command
 					.direction = (uint8_t) ((recbuf&0x2000)>>13), //get direction from packet
-					.tarsteps = recbuf&0x1FFF // get steps
+					.tarsteps = recbuf&0x1FFF, // get steps
+					.cursteps=0
 					}; 
 					inmove[(recbuf&0xC000)>>14]=1;
 					if (inmove[0]==1||inmove[1]==1) stepper1.enstep();
 					if (inmove[2]==1||inmove[3]==1) stepper2.enstep();
 				csp_log_info("Queue rec for stepper %d	dir:%d	steps:%d",((recbuf&0xC000)>>14),stepcmd[ (recbuf&0xC000)>>14 ].direction,stepcmd[ (recbuf&0xC000)>>14 ].tarsteps);
+		}
+		
+		for(int i=0;i<4;i++) {
+			if((inmove[i]==1)&&(stepcmd[i].cursteps==stepcmd[i].tarsteps)) inmove[i]=0;
 		}
 		
 		
@@ -280,9 +285,7 @@ CSP_DEFINE_TASK(task_stepper) {
 				if(inmove[i]) stepcmd[i].cursteps++;
 			}
 			
-			for(int i=0;i<4;i++) {
-				if((inmove[i]==1)&&(stepcmd[i].cursteps==stepcmd[i].tarsteps)) inmove[i]=0;
-			}
+
 			
 
 		
@@ -356,6 +359,8 @@ uint8_t step_config_concat(uniman_ustep_mode_t a, uniman_invert_t b) {return a|b
 gs_fin_cmd_error_t process_config(gs_fin_config_t * confin) {
 	//get invert data
 	
+	gs_fin_cmd_error_t error=FIN_CMD_OK;
+	
 	uniman_running_conf=*confin;
 	
 	uniman_step1_conf.GCONF=STEPPER_GCONF_DATA(	(uniman_running_conf.stepper_config&(STEPPER_INVA_1))>>4	,(uniman_running_conf.stepper_config&(STEPPER_INVB_1))>>5);
@@ -379,10 +384,10 @@ gs_fin_cmd_error_t process_config(gs_fin_config_t * confin) {
 	uniman_step1_conf.IHOLD=uniman_running_conf.stepper_ihold;
 	uniman_step2_conf.IHOLD=uniman_running_conf.stepper_ihold;
 	
-	stepper1.updateconfig(&uniman_step1_conf,confin);
-	stepper2.updateconfig(&uniman_step2_conf,confin);
+	if(stepper1.updateconfig(&uniman_step1_conf,confin)!=0) error = FIN_CMD_FAIL;
+	if(stepper2.updateconfig(&uniman_step2_conf,confin)!=0) error = FIN_CMD_FAIL;
 	
-	return FIN_CMD_OK;
+	return error;
 
 }
 
@@ -393,13 +398,40 @@ gs_fin_cmd_error_t get_fin_config(gs_fin_config_t * conf) {
 }
 
 gs_fin_cmd_error_t set_fin_config(const gs_fin_config_t * conf) {
+	
+	gs_fin_cmd_error_t error=FIN_CMD_OK;
+	if(conf->system_reset_encoder_zero&(1<<4)!=0) {
+		FORCERESET
+	}
+	
+	if (uniman_running_conf.system_reset_encoder_zero&(1<<3)!=0) {
+		uniman_running_conf.system_reset_encoder_zero&=~(1<<3);
+		if(encoder4.zeropos()!=0) error=FIN_CMD_FAIL;
+	}
+	
+	if (uniman_running_conf.system_reset_encoder_zero&(1<<2)!=0) {
+		uniman_running_conf.system_reset_encoder_zero&=~(1<<2);
+		if(encoder3.zeropos()!=0) error=FIN_CMD_FAIL;
+	}
+	
+	if (uniman_running_conf.system_reset_encoder_zero&(1<<1)!=0) {
+		uniman_running_conf.system_reset_encoder_zero&=~(1<<1);
+		if(encoder2.zeropos()!=0) error=FIN_CMD_FAIL;
+	}
+	
+	if (uniman_running_conf.system_reset_encoder_zero&(1<<0)!=0) {
+		uniman_running_conf.system_reset_encoder_zero&=~(1<<0);
+		if(encoder1.zeropos()!=0) error=FIN_CMD_FAIL;
+	}
+	
 	uniman_running_conf=*conf;
-	process_config(&uniman_running_conf);
+	
+	if(process_config(&uniman_running_conf)!=0) error=FIN_CMD_FAIL;
 	csp_log_info("Setting running config");
 	//TODO - action things like reset, zeroing
 	
 	
-	return FIN_CMD_OK;
+	return error;
 }
 
 gs_fin_cmd_error_t load_fin_config(void) {
