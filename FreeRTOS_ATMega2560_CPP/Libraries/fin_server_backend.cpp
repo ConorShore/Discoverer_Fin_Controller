@@ -1,4 +1,5 @@
 ﻿#include <stdio.h>
+#include <stdlib.h>
 #include <fin.h>
 #include <fin_server.h>
 #include <SPI/spi.h>
@@ -64,6 +65,21 @@ tmc2041 stepper2(&stepper_2_pin_init,&stepper_2_cson,&stepper_2_csoff,&stepper_2
 uniman_step2_conf,STEPPER_2_EEPROM_ADDRESS);
 
 void print_conf(gs_fin_config_t * confin);
+void read_temp_sensors(uint16_t *array);
+
+
+gs_fin_status_t uniman_status = {
+	.pos_set_points= {0,0,0,0},
+	.encoder_pos = {0,0,0,0},
+	.temperatures = {0,0,0,0},
+	.currents = {0,0,0,0},
+	.mode = GS_FIN_MODE_INIT,
+	.status_code=0
+};
+
+uint16_t step_set_points[4] = {0,0,0,0};
+
+uint16_t enc_tar_points[4] = {0,0,0,0};
 
 	
 
@@ -72,6 +88,7 @@ void print_conf(gs_fin_config_t * confin);
 	AM4096 encoder2(0x51);
  	AM4096 encoder3(0x52);
  	AM4096 encoder4(0x53);
+	
 	
 
 
@@ -101,24 +118,70 @@ void print_conf(gs_fin_config_t * confin);
 
 gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
 
-//get setpoints
+//get setpoints, probably will done during normal operation
+
+	status->pos_set_points=uniman_status.pos_set_points;
 
 
 //get encoder values
+	double tempd=0;
+	uint16_t temp16=0;
+
+	encoder1.readpos(&temp16);
+	tempd=temp16*10;
+	tempd/=11.3777777778;
+	status->encoder_pos.pos_fin_a=(uint16_t)tempd;
+
+	encoder2.readpos(&temp16);
+	tempd=temp16*10;
+	tempd/=11.3777777778;
+	status->encoder_pos.pos_fin_b=(uint16_t)tempd;
+	
+	encoder3.readpos(&temp16);
+	tempd=temp16*10;
+	tempd/=11.3777777778;
+	status->encoder_pos.pos_fin_c=(uint16_t)tempd;
+	
+	encoder4.readpos(&temp16);
+	tempd=temp16*10;
+	tempd/=11.3777777778;
+	status->encoder_pos.pos_fin_d=(uint16_t)tempd;
 
 
 //get temps
+	read_temp_sensors(status->temperatures);
 
 
-//get currents
+//TODO - get currents
 
 //get mode
+	status->mode=uniman_status.mode;
 
 }
 
 
 
 gs_fin_cmd_error_t set_fin_pos(const gs_fin_positions_t * pos) {
+	uint16_t temp16=0;
+	int16_t tempi16=0;
+	uint16_t target=0;
+	double tempd=0;
+	
+	
+	encoder1.readpos(&temp16);
+	tempd=temp16*10;
+	tempd/=11.3777777778;
+	tempi16=(((int16_t)tempd)-((int16_t)pos->pos_fin_a));
+	temp16=abs(tempi16);
+	if(tempi16>=0) {
+		csp_log_info("dir %d steps %d",1,temp16);
+		//TODO - enqueue
+	} else {
+		csp_log_info("dir %d steps %d",0,temp16);
+		//TODO - enqueue
+	}
+
+	//TODO - other encoder stepper pairs
 	
 	//TODO - add eeprom save
 	
@@ -196,6 +259,9 @@ CSP_DEFINE_TASK(task_stepper) {
 					inmove[(recbuf&0xC000)>>14]=1;
 					if (inmove[0]==1||inmove[1]==1) stepper1.enstep();
 					if (inmove[2]==1||inmove[3]==1) stepper2.enstep();
+					if((inmove[0]+inmove[1]+inmove[2]+inmove[3])!=0) {
+						uniman_status.mode=GS_FIN_MODE_MOVING;
+					}
 				csp_log_info("Queue rec for stepper %d	dir:%d	steps:%d",((recbuf&0xC000)>>14),stepcmd[ (recbuf&0xC000)>>14 ].direction,stepcmd[ (recbuf&0xC000)>>14 ].tarsteps);
 		}
 		
@@ -214,7 +280,7 @@ CSP_DEFINE_TASK(task_stepper) {
 			stepper2.dirfunc(1,stepcmd[3].direction&0x01);
 		}
 		
-		for (uint16_t i=0; i<(uniman_running_conf.stepper_config&0x0F)-1;i++){
+		for (uint8_t i=0; i<(uniman_running_conf.stepper_config&0x0F)-1;i++){
 			stepc*=2;
 		}
 		//portENTER_CRITICAL();
@@ -251,7 +317,7 @@ CSP_DEFINE_TASK(task_stepper) {
 					stepper2.dirfunc(1,(!(stepcmd[3].direction))&0x01);
 				}
 		stepc=OVERSTEPS-2;
-		for (uint16_t i=0; i<(uniman_running_conf.stepper_config&0x0F)-1;i++){
+		for (uint8_t i=0; i<(uniman_running_conf.stepper_config&0x0F)-1;i++){
 			stepc*=2;
 		}
 		i=0;

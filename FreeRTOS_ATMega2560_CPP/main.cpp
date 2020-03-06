@@ -262,7 +262,6 @@ I2C_init();
 
 static void wdtr(void* pvParameters) {
 	 wdt_reset();
-	// wdt_disable();
 	 wdt_enable(WDTO_500MS);
 	 
 	
@@ -275,11 +274,9 @@ static void wdtr(void* pvParameters) {
 }
 
 ISR(INT2_vect){
-	//if((PORTB&PB5)>>PB5) return;
 		
 	PCIFR&=~(1<<PCIF0);
-	//printf("ISR ENTER");
-	//while(1);
+
 
 	volatile BaseType_t xYieldRequired;
 
