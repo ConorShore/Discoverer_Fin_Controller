@@ -156,22 +156,58 @@ I2C_init();
 
 		int error=0;
 		
-		error+=csp_buffer_init(4, MSGMAX);
+		error=csp_buffer_init(4, MSGMAX);
+	
+		if(error!=0) {
+			contled(ONCON,2);
+			csp_log_reset("Setup Error");
+			//FORCERESET
+		}
 
 	
 		// Init CSP with address MY_ADDRESS 
-		error+=csp_init(MY_ADDRESS);
+		error=csp_init(MY_ADDRESS);
 		
-		error+=csp_can_init(0,&can_conf);
+		if(error!=0) {
+			contled(ONCON,2);
+			csp_log_reset("Setup Error");
+			//FORCERESET
+		}
 		
-		error+=csp_route_set(CSP_DEFAULT_ROUTE, &csp_if_can, 0xFF);
+		error=csp_can_init(0,&can_conf);
+		
+		if(error!=0) {
+			contled(ONCON,2);
+			csp_log_reset("Setup Error");
+			//FORCERESET
+		}
+		
+		error=csp_route_set(CSP_DEFAULT_ROUTE, &csp_if_can, 0xFF);
+		
+		if(error!=0) {
+			contled(ONCON,2);
+			csp_log_reset("Setup Error");
+			//FORCERESET
+		}
 
 		// Start router task with 500 word stack, OS task priority 1 		
-		error+=csp_route_start_task(180, 2);
+		error=csp_route_start_task(180, 2);
+		
+		if(error!=0) {
+			contled(ONCON,2);
+			csp_log_reset("Setup Error");
+			//FORCERESET
+		}
+		
 		printf("%d\n",error);
 		
 		
-		error-=init_server();
+		error=init_server();
+		if(error!=0) {
+			contled(ONCON,2);
+			csp_log_reset("Setup Error");
+			//FORCERESET
+		}
 		//while(1);
 		printf("%d\n",error);
 
@@ -181,7 +217,7 @@ I2C_init();
 		//error+=csp_thread_create(task_client, "CLIENT", 220, NULL, 1, &handle_client);
 		
 		//csp_log_reset("test");
-		error+=csp_thread_create(CanRxFunc,"CANRX",180,NULL,3,&handle_canrx);
+		error=csp_thread_create(CanRxFunc,"CANRX",180,NULL,3,&handle_canrx);
 		
 		if(error!=0) {
 			contled(ONCON,2);

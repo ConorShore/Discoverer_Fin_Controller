@@ -63,13 +63,15 @@ tmc2041 stepper2(&stepper_2_pin_init,&stepper_2_cson,&stepper_2_csoff,&stepper_2
 &stepper_2_dis,  &stepper_2_tstep, &stepper_2_dir, 
 uniman_step2_conf,STEPPER_2_EEPROM_ADDRESS);
 
+void print_conf(gs_fin_config_t * confin);
+
 	
 
 
 	AM4096 encoder1(0x50);
 	AM4096 encoder2(0x51);
-	AM4096 encoder3(0x52);
-	AM4096 encoder4(0x53);
+ 	AM4096 encoder3(0x52);
+ 	AM4096 encoder4(0x53);
 	
 
 
@@ -189,17 +191,12 @@ CSP_DEFINE_TASK(task_stepper) {
 		while(csp_queue_dequeue(uniman_stepper_q,&recbuf,0)==1) {
 			stepcmd[ (recbuf&0xC000)>>14 ] = {	//select correct stepper command
 					.direction = (uint8_t) ((recbuf&0x2000)>>13), //get direction from packet
-					.tarsteps = recbuf&0x1FFF, // get steps
-					.cursteps=0
+					.tarsteps = recbuf&0x1FFF // get steps
 					}; 
 					inmove[(recbuf&0xC000)>>14]=1;
 					if (inmove[0]==1||inmove[1]==1) stepper1.enstep();
 					if (inmove[2]==1||inmove[3]==1) stepper2.enstep();
 				csp_log_info("Queue rec for stepper %d	dir:%d	steps:%d",((recbuf&0xC000)>>14),stepcmd[ (recbuf&0xC000)>>14 ].direction,stepcmd[ (recbuf&0xC000)>>14 ].tarsteps);
-		}
-		
-		for(int i=0;i<4;i++) {
-			if((inmove[i]==1)&&(stepcmd[i].cursteps==stepcmd[i].tarsteps)) inmove[i]=0;
 		}
 		
 		
@@ -217,7 +214,7 @@ CSP_DEFINE_TASK(task_stepper) {
 			stepper2.dirfunc(1,stepcmd[3].direction&0x01);
 		}
 		
-		for (uint8_t i=0; i<(uniman_running_conf.stepper_config&0x0F)-1;i++){
+		for (uint16_t i=0; i<(uniman_running_conf.stepper_config&0x0F)-1;i++){
 			stepc*=2;
 		}
 		//portENTER_CRITICAL();
@@ -254,7 +251,7 @@ CSP_DEFINE_TASK(task_stepper) {
 					stepper2.dirfunc(1,(!(stepcmd[3].direction))&0x01);
 				}
 		stepc=OVERSTEPS-2;
-		for (uint8_t i=0; i<(uniman_running_conf.stepper_config&0x0F)-1;i++){
+		for (uint16_t i=0; i<(uniman_running_conf.stepper_config&0x0F)-1;i++){
 			stepc*=2;
 		}
 		i=0;
@@ -285,7 +282,9 @@ CSP_DEFINE_TASK(task_stepper) {
 				if(inmove[i]) stepcmd[i].cursteps++;
 			}
 			
-
+			for(int i=0;i<4;i++) {
+				if((inmove[i]==1)&&(stepcmd[i].cursteps==stepcmd[i].tarsteps)) inmove[i]=0;
+			}
 			
 
 		
@@ -308,6 +307,7 @@ gs_fin_cmd_error_t init_server(void) {
 	
 	
 	setup_temp_sensors();
+	//process_config(&uniman_running_conf);
 
 
 	
@@ -325,22 +325,21 @@ gs_fin_cmd_error_t init_server(void) {
 		// [12:0] no of steps
 		
 		
-		uint16_t p=0x1005;
+		uint16_t p=0x0005;
 		
 		csp_queue_enqueue(uniman_stepper_q,&p,1000);
-			p=0x5005;
+			p=0x4005;
 		
 		csp_queue_enqueue(uniman_stepper_q,&p,1000);
-			p=0x9005;
+			p=0x8005;
 		
 		csp_queue_enqueue(uniman_stepper_q,&p,1000);
-			p=0xd005;
+			p=0xC005;
 		
 		csp_queue_enqueue(uniman_stepper_q,&p,1000);
 		
 
 		save_fin_config();
-
 		if(load_fin_config()) error=FIN_CMD_FAIL;
 
 		
@@ -368,11 +367,13 @@ gs_fin_cmd_error_t process_config(gs_fin_config_t * confin) {
 	
 	//get step data
 	//if((uniman_running_conf.stepper_config&0x0F)!=0) { //if manually setting ustep setting, rahter than auto
-// 		uniman_step1_conf.CHOPCONF=(STEPPER_CHOPCONF_DEFAULT&~(0x0F000000))| (((uint32_t)(9-uniman_running_conf.stepper_config))<<24);
-// 		uniman_step2_conf.CHOPCONF=(STEPPER_CHOPCONF_DEFAULT&~(0x0F000000))| (((uint32_t)(9-uniman_running_conf.stepper_config))<<24);
-// 		
-		uniman_step1_conf.CHOPCONF=STEPPER_CHOPCONF_DEFAULT;
- 		uniman_step2_conf.CHOPCONF=STEPPER_CHOPCONF_DEFAULT;
+	// 		uniman_step1_conf.CHOPCONF=(STEPPER_CHOPCONF_DEFAULT&~(0x0F000000))| (((uint32_t)(9-uniman_running_conf.stepper_config))<<24);
+	// 		uniman_step2_conf.CHOPCONF=(STEPPER_CHOPCONF_DEFAULT&~(0x0F000000))| (((uint32_t)(9-uniman_running_conf.stepper_config))<<24);
+	//
+	
+	// as discussed remote ustep is no longer allowed. code above would implement
+	uniman_step1_conf.CHOPCONF=STEPPER_CHOPCONF_DEFAULT;
+	uniman_step2_conf.CHOPCONF=STEPPER_CHOPCONF_DEFAULT;
 	//}
 	
 
@@ -398,8 +399,7 @@ gs_fin_cmd_error_t get_fin_config(gs_fin_config_t * conf) {
 }
 
 gs_fin_cmd_error_t set_fin_config(const gs_fin_config_t * conf) {
-	
-	gs_fin_cmd_error_t error=FIN_CMD_OK;
+gs_fin_cmd_error_t error=FIN_CMD_OK;
 	if(((conf->system_reset_encoder_zero)&(1<<4))!=0) {
 		FORCERESET
 	}
@@ -437,11 +437,14 @@ gs_fin_cmd_error_t set_fin_config(const gs_fin_config_t * conf) {
 gs_fin_cmd_error_t load_fin_config(void) {
 	gs_fin_config_t temp;
 	gs_fin_cmd_error_t error = FIN_CMD_OK;
+	print_conf(&uniman_running_conf);
 	csp_log_info("Loading config from EEPROM");
 	portENTER_CRITICAL();
 
 	eeprom_read_block(&temp,(uint16_t*) EEPROM_RUN_CONF_ADD,sizeof(gs_fin_config_t));
 	uniman_running_conf=temp;
+	print_conf(&uniman_running_conf);
+	process_config(&uniman_running_conf);
 	portEXIT_CRITICAL();
 	csp_log_info("Error = %d",error);
 	return FIN_CMD_OK;
@@ -474,12 +477,11 @@ return error;
 }
 
 void print_conf(gs_fin_config_t * confin) {
-			printf("%x\n",confin->stepper_config);
-		printf("%x\n",confin->stepper_ihold);
-		printf("%x\n",confin->stepper_irun);
-		printf("%x\n",confin->stepper_speed);
-		printf("%x\n",confin->system_reset_encoder_zero);
+			printf("%x ",confin->stepper_config);
+		printf("%x ",confin->stepper_ihold);
+		printf("%x ",confin->stepper_irun);
+		printf("%x ",confin->stepper_speed);
+		printf("%x ",confin->system_reset_encoder_zero);
 		printf("%x\n\n",confin->system_extra);
 }
-
 
