@@ -102,7 +102,7 @@ struct can_frame canMsg2;
 #include <I2C.h>
 #include <AM4096.h>
 
-AM4096 test(50);	
+AM4096 test(0x51);	
 
 uint8_t ar[4];
 
@@ -110,8 +110,8 @@ int main( void )
 {
 	usart_init(MYUBRR);
 fdevopen( &usart_putchar_printf,0);
-
-I2C_init();
+// 
+ I2C_init();
 
 // 	while (1) {
 // 		for (int i=0;i<128;i++) {
@@ -120,40 +120,40 @@ I2C_init();
 // 		}
 // 	}
 
-ar[0]=0;
-ar[1]=0b0001101;
-ar[2]=50;
-	
-// 	printf("write %d\n",I2C_write(50,ar,3,1));
+// ar[0]=0;
+// ar[1]=0b0001101;
+// ar[2]=0x51;
+// 	
+// 	printf("write %d\n",I2C_write(0x50,ar,3,1));
 // 	ar[0] =0;
 // 	ar[1] =0;
 // 	ar[2]=0;
 // 	_delay_ms(100);
-// 	printf("read error = %d\n",I2C_read(50,48,ar,2));
+// 	printf("read error = %d\n",I2C_read(0x51,48,ar,2));
 //  	uint16_t data = (((uint16_t)ar[0])<<8)|ar[1];
 //  	printf("data %x	%x\n",ar[0],ar[1]);
+// 
+// printf("started\n");
+// 	
+// 	while(1) {
+// 		uint16_t pos=0;
+// 		uint8_t error=0;
+// 		_delay_ms(100);
+// 		error = test.readpos(&pos);
+// 		printf("data valid %d	pos %d\n",error,pos);
+// 		error = test.readabspos(&pos);
+// 		printf("data valid %d	abspos %d\n",error,pos);
+// 		uint8_t err=0;
+// 		error = test.readerror(&err);
+// 		printf("read err %d, ret er %x\n",error,err);
+// 		
+// 		}
 
-printf("startsed\n");
+
+
+
 	
-	while(1) {
-		uint16_t pos=0;
-		uint8_t error=0;
-		_delay_ms(100);
-		error = test.readpos(&pos);
-		printf("data valid %d	pos %d\n",error,pos);
-		error = test.readabspos(&pos);
-		printf("data valid %d	abspos %d\n",error,pos);
-		uint8_t err=0;
-		error = test.readerror(&err);
-		printf("read err %d, ret er %x\n",error,err);
-		
-		}
-
-
-
-
-	
-	wdt_enable(WDTO_500MS); // set watchdog up to reset if not called after 2s
+	//wdt_enable(WDTO_500MS); // set watchdog up to reset if not called after 2s
 	//pwrredinit();
 	enableleds();
 

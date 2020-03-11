@@ -17,6 +17,14 @@
 			return 0;
 		}
 	}
+
+	uint8_t AM4096::check(void) {
+		if(I2C_write(address,NULL,1,1)!=0) {
+			return -1;
+		} else {
+			return 0;
+		}
+	}
 	
 	uint8_t AM4096::readpos(uint16_t * pos) {
 		uint8_t tempdata[2] = {0,0};
