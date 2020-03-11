@@ -63,3 +63,13 @@
 		
 	}
 	
+	uint8_t AM4096::readerror(uint8_t * err) {
+		uint8_t tempdata[2] = {0,0};
+		
+		if(I2C_read(address,REG_ERR,tempdata,2)!=0) return -1;
+		
+		*err=tempdata[0];
+		
+		return 0;
+	}
+	
