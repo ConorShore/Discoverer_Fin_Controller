@@ -112,6 +112,13 @@ int main( void )
 fdevopen( &usart_putchar_printf,0);
 // 
  I2C_init();
+ 
+ if(MCUSR & (1<<PORF )) printf(("Power-on reset.\n"));
+if(MCUSR & (1<<EXTRF)) printf(("External reset!\n"));
+if(MCUSR & (1<<BORF )) printf(("Brownout reset!\n"));
+if(MCUSR & (1<<WDRF )) printf(("Watchdog reset!\n"));
+if(MCUSR & (1<<JTRF )) printf(("JTAG reset!\n"));
+MCUSR = 0;
 
 // 	while (1) {
 // 		for (int i=0;i<128;i++) {
@@ -123,31 +130,31 @@ fdevopen( &usart_putchar_printf,0);
 // ar[0]=0;
 // ar[1]=0b0001101;
 // ar[2]=0x51;
-// 	
-// 	printf("write %d\n",I2C_write(0x50,ar,3,1));
-// 	ar[0] =0;
-// 	ar[1] =0;
-// 	ar[2]=0;
-// 	_delay_ms(100);
-// 	printf("read error = %d\n",I2C_read(0x51,48,ar,2));
-//  	uint16_t data = (((uint16_t)ar[0])<<8)|ar[1];
-//  	printf("data %x	%x\n",ar[0],ar[1]);
-// 
-// printf("started\n");
-// 	
-// 	while(1) {
-// 		uint16_t pos=0;
-// 		uint8_t error=0;
-// 		_delay_ms(100);
-// 		error = test.readpos(&pos);
-// 		printf("data valid %d	pos %d\n",error,pos);
-// 		error = test.readabspos(&pos);
-// 		printf("data valid %d	abspos %d\n",error,pos);
-// 		uint8_t err=0;
-// 		error = test.readerror(&err);
-// 		printf("read err %d, ret er %x\n",error,err);
-// 		
-// 		}
+// // 	
+// 	//printf("write %d\n",I2C_write(0x50,ar,3,1));
+	ar[0] =0;
+	ar[1] =0;
+	ar[2]=0;
+	_delay_ms(100);
+	printf("read error = %d\n",I2C_read(0x51,48,ar,2));
+ 	uint16_t data = (((uint16_t)ar[0])<<8)|ar[1];
+ 	printf("data %x	%x\n",ar[0],ar[1]);
+
+printf("started\n");
+	
+	while(1) {
+		uint16_t pos=0;
+		uint8_t error=0;
+		_delay_ms(100);
+		error = test.readpos(&pos);
+		printf("data valid %d	pos %d\n",error,pos);
+		error = test.readabspos(&pos);
+		printf("data valid %d	abspos %d\n",error,pos);
+		uint8_t err=0;
+		error = test.readerror(&err);
+		printf("read err %d, ret er %x\n",error,err);
+		
+		}
 
 
 

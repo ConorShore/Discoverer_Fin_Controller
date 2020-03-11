@@ -376,7 +376,7 @@ gs_fin_cmd_error_t init_server(void) {
 	//process_config(&uniman_running_conf);
 	
 	 gs_fin_config_t uniman_test_conf = {
-		.stepper_config=0x01,
+		.stepper_config=0x09,
 		.stepper_ihold=STEPPER_DEFAULT_IHOLD,
 		.stepper_irun=STEPPER_DEFAULT_IRUN,
 		.stepper_speed = 60,
@@ -386,16 +386,8 @@ gs_fin_cmd_error_t init_server(void) {
 	process_config(&uniman_test_conf);
 	
 	uint16_t testar[4];
-	
-		stepper1.enstep();
-		stepper2.enstep();
-	for (int i=0;i<216;i++) {
-		stepper1.stepfunc(0);
-		stepper1.stepfunc(1);
-		stepper2.stepfunc(0);
-		stepper2.stepfunc(1);
-		_delay_us(1000);
-	}
+	uint8_t encer[4]= {0,0,0,0};
+
 	
  	enableleds();
 	 printf("Test started\n");
@@ -406,11 +398,15 @@ gs_fin_cmd_error_t init_server(void) {
 	 
 	 //test thermistors
 	 
+
+	
+	 
 	contled(1,1);
  	_delay_ms(1000);
  	contled(0,1);
  	_delay_ms(2000);
-	
+	 
+
 	
 	
 	read_temp_sensors(testar);
@@ -440,6 +436,7 @@ gs_fin_cmd_error_t init_server(void) {
  	_delay_ms(2000);
 	
 	if(encoder1.check()!=0) {
+		encer[0]=1;
 		printf("enc 1 er\n");
 			contled(1,1);
  			_delay_ms(500);
@@ -449,6 +446,7 @@ gs_fin_cmd_error_t init_server(void) {
 	_delay_ms(2000);
 	
 	if(encoder2.check()!=0) {
+		encer[1]=1;
 		printf("enc 2 er\n");
 			contled(1,1);
  			_delay_ms(500);
@@ -462,6 +460,7 @@ gs_fin_cmd_error_t init_server(void) {
 	_delay_ms(2000);
 	
 	if(encoder3.check()!=0) {
+		encer[2]=1;
 		printf("enc 3 er\n");
 			contled(1,1);
  			_delay_ms(500);
@@ -479,6 +478,7 @@ gs_fin_cmd_error_t init_server(void) {
 	_delay_ms(2000);
 	
 	if(encoder4.check()!=0) {
+		encer[3]=1;
 		printf("enc 4 er\n");
 			contled(1,1);
  			_delay_ms(500);
@@ -499,8 +499,99 @@ gs_fin_cmd_error_t init_server(void) {
 	}
 	_delay_ms(2000);
 	
+	//encoder mag position check
+	
+	contled(1,1);
+	_delay_ms(1000);
+	contled(0,1);
+	_delay_ms(1000);
+	contled(1,1);
+	_delay_ms(1000);
+	contled(0,1);
+	_delay_ms(1000);
+	contled(1,1);
+	_delay_ms(1000);
+	contled(0,1);
+	_delay_ms(2000);
+	uint8_t poser=0;
+	for (int i=0;i<4;i++) {
+		if (encer[i]==0) {
+			switch (i) {
+				case 0 :
+				poser=0;
+				encoder1.readerror(&poser);
+				if (poser!=0) {
+					printf("enc pos er 1\n");
+					for (int a=0;a<i+1;a++) {
+						contled(1,1);
+						_delay_ms(500);
+						contled(0,1);
+						_delay_ms(500);
+					}
+				}
+				break;
+				
+				case 1 :
+				poser=0;
+				encoder2.readerror(&poser);
+				if (poser!=0) {
+					printf("enc pos er 2\n");
+					for (int a=0;a<i+1;a++) {
+						contled(1,1);
+						_delay_ms(500);
+						contled(0,1);
+						_delay_ms(500);
+					}
+				}
+				break;
+				
+				case 2 :
+				poser=0;
+				encoder3.readerror(&poser);
+				if (poser!=0) {
+					printf("enc pos er 3\n");
+					for (int a=0;a<i+1;a++) {
+						contled(1,1);
+						_delay_ms(500);
+						contled(0,1);
+						_delay_ms(500);
+					}
+				}
+				break;
+				
+				case 3 :
+				poser=0;
+				encoder4.readerror(&poser);
+				if (poser!=0) {
+					printf("enc pos er 4\n");
+					for (int a=0;a<i+1;a++) {
+						contled(1,1);
+						_delay_ms(500);
+						contled(0,1);
+						_delay_ms(500);
+					}
+				}
+				break;
+			}
+		} else {
+			for (int a=0;a<i+1;a++) {
+				contled(1,1);
+				_delay_ms(500);
+				contled(0,1);
+				_delay_ms(500);
+			}
+			_delay_ms(2000);
+		}
+		
+		}
+	
+	
 	//steppers
 	
+	contled(1,1);
+ 	_delay_ms(1000);
+ 	contled(0,1);
+ 	_delay_ms(1000);
 	contled(1,1);
  	_delay_ms(1000);
  	contled(0,1);
@@ -514,24 +605,113 @@ gs_fin_cmd_error_t init_server(void) {
  	contled(0,1);
  	_delay_ms(2000);
 	 
-
-	 
-	
-	
-	uint16_t lastpos=0;
+	 uint16_t lastpos=0;
+	 uint16_t newpos=0;
 	encoder1.readabspos(&lastpos);
 	stepper1.enstep();
-	for (int i=0;i<216;i++) {
+	for (unsigned long i=0;i<55296*2;i++) {
 		stepper1.stepfunc(0);
-		_delay_us(10);
+		_delay_us(6);
+		//wdt_reset();
 	}
 	
+	encoder1.readabspos(&newpos);
+	if ((newpos<=lastpos+100)||(newpos>=lastpos-100)) {
+			printf("feedback 1 er\n");
+			contled(1,1);
+ 			_delay_ms(500);
+ 			contled(0,1);
+ 			_delay_ms(500);
+	}
 	
+	_delay_ms(2000);
 	
+	 lastpos=0;
+	newpos=0;
+	encoder2.readabspos(&lastpos);
+	stepper1.enstep();
+	for (unsigned long i=0;i<55296*2;i++) {
+		stepper1.stepfunc(1);
+		_delay_us(6);
+		//wdt_reset();
+	}
 	
+	encoder2.readabspos(&newpos);
+	if ((newpos<=lastpos+100)||(newpos>=lastpos-100)) {
+			printf("feedback 2 er\n");
+			contled(1,1);
+ 			_delay_ms(500);
+ 			contled(0,1);
+ 			_delay_ms(500);
+			contled(1,1);
+ 			_delay_ms(500);
+ 			contled(0,1);
+ 			_delay_ms(500);
+	}
 	
+	_delay_ms(2000);
+	 
+	 lastpos=0;
+	newpos=0;
+	encoder3.readabspos(&lastpos);
+	stepper2.enstep();
+	for (unsigned long i=0;i<55296*2;i++) {
+		stepper2.stepfunc(0);
+		_delay_us(6);
+		//wdt_reset();
+	}
 	
+	encoder3.readabspos(&newpos);
+	if ((newpos<=lastpos+100)||(newpos>=lastpos-100)) {
+			printf("feedback 3 er\n");
+			contled(1,1);
+ 			_delay_ms(500);
+ 			contled(0,1);
+ 			_delay_ms(500);
+			contled(1,1);
+ 			_delay_ms(500);
+ 			contled(0,1);
+ 			_delay_ms(500);
+			contled(1,1);
+ 			_delay_ms(500);
+ 			contled(0,1);
+ 			_delay_ms(500);
+	}
 	
+	_delay_ms(2000);
+	
+	 lastpos=0;
+	newpos=0;
+	encoder4.readabspos(&lastpos);
+	stepper2.enstep();
+	for (unsigned long i=0;i<55296*2;i++) {
+		stepper2.stepfunc(1);
+		_delay_us(6);
+		//wdt_reset();
+	}
+	
+	encoder4.readabspos(&newpos);
+	if ((newpos<=lastpos+100)||(newpos>=lastpos-100)) {
+			printf("feedback 4 er\n");
+			contled(1,1);
+ 			_delay_ms(500);
+ 			contled(0,1);
+ 			_delay_ms(500);
+			contled(1,1);
+ 			_delay_ms(500);
+ 			contled(0,1);
+ 			_delay_ms(500);
+			contled(1,1);
+ 			_delay_ms(500);
+ 			contled(0,1);
+ 			_delay_ms(500);
+			contled(1,1);
+ 			_delay_ms(500);
+ 			contled(0,1);
+ 			_delay_ms(500);
+	}
+	
+	_delay_ms(2000);
 	
 	while(1) {wdt_reset(); _delay_ms(100);}
 

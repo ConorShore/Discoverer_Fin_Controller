@@ -11,12 +11,12 @@
 class AM4096 {
 	
 	private:
-	uint8_t address;
+	volatile uint8_t address;
 	public:
 	AM4096(uint8_t addressin);
 	uint8_t init(void);
 	uint8_t readpos(uint16_t * pos);
-	uint8_t readabspos(uint16_t * pos);
+	int8_t readabspos(uint16_t * pos);
 	uint8_t zeropos(void);
 	uint8_t readerror(uint8_t *err);
 	uint8_t check(void);

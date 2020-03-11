@@ -39,7 +39,7 @@
 		}
 	}
 	
-	uint8_t AM4096::readabspos(uint16_t * pos) {
+	int8_t AM4096::readabspos(uint16_t * pos) {
 		uint8_t tempdata[2] = {0,0};
 		
 		if(I2C_read(address,REG_APOS,tempdata,2)!=0) return -1;
@@ -76,7 +76,7 @@
 		
 		if(I2C_read(address,REG_ERR,tempdata,2)!=0) return -1;
 		
-		*err=tempdata[0];
+		*err=tempdata[0]&0xC0;
 		
 		return 0;
 	}

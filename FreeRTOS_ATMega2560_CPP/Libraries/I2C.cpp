@@ -15,21 +15,21 @@
 
 static int started=0;
 
-void I2C_init(void) {
+void volatile I2C_init(void) {
 	if(started==0) {
-	portENTER_CRITICAL();
+	//portENTER_CRITICAL();
 	TWBR=12; //12 =400kHz
 	TWSR=0;
 	TWCR|= (1<<TWEA) | (1<<TWEN) | (1<<TWINT);
 	PORTD|=((1<<PD0) | (1<<PD1)); 
 	started++;
-	portEXIT_CRITICAL();
+	//portEXIT_CRITICAL();
 	}
 }
 
 
 
-uint8_t I2C_write(const uint8_t address,const uint8_t * data,
+int8_t I2C_write(const uint8_t address,const uint8_t * data,
 					const uint8_t number,const uint8_t stop) { 
 	//write command without stop at the end
 	// the write command is split up so the read command can use this version
@@ -88,11 +88,12 @@ uint8_t I2C_write(const uint8_t address,const uint8_t * data,
 // 	
 // }
 
-uint8_t I2C_read(const uint8_t address,uint8_t reg,uint8_t * data,const uint8_t number) {
+int8_t I2C_read(const uint8_t address,const uint8_t reg, uint8_t * data,const uint8_t number) {
+
 	
-	if(I2C_write(address,&reg,0,0)!=0){
+	if(I2C_write(address,&reg,1,0)!=0){
 		TWCR = (1<<TWINT)|(1<<TWEN)| (1<<TWSTO);
-		portEXIT_CRITICAL();
+	
 		return 2;
 		} //write address and reg request
 	
