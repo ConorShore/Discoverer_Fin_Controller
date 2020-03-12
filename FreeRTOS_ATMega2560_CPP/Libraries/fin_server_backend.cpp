@@ -383,6 +383,8 @@ gs_fin_cmd_error_t init_server(void) {
 		.system_reset_encoder_zero = (1<<5),
 		.system_extra = 0
 	};
+	
+
 	process_config(&uniman_test_conf);
 	
 	uint16_t testar[4];
@@ -534,6 +536,7 @@ gs_fin_cmd_error_t init_server(void) {
 				case 1 :
 				poser=0;
 				encoder2.readerror(&poser);
+				
 				if (poser!=0) {
 					printf("enc pos er 2\n");
 					for (int a=0;a<i+1;a++) {

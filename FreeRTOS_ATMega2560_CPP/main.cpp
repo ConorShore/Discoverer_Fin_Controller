@@ -63,6 +63,8 @@ extern "C" {
 
 //FUSES {.low = 0xBF, .high=0x01,.extended = 0xFF};
  FUSES {.low = 0xBF, .high=0x11,.extended = 0xFF};
+	 
+//int EEMEM tester = 0xF3;
 
 
 //static char out[10]; //used for as placeholder for itoa function
@@ -130,31 +132,31 @@ MCUSR = 0;
 // ar[0]=0;
 // ar[1]=0b0001101;
 // ar[2]=0x51;
-// // 	
-// 	//printf("write %d\n",I2C_write(0x50,ar,3,1));
-	ar[0] =0;
-	ar[1] =0;
-	ar[2]=0;
-	_delay_ms(100);
-	printf("read error = %d\n",I2C_read(0x51,48,ar,2));
- 	uint16_t data = (((uint16_t)ar[0])<<8)|ar[1];
- 	printf("data %x	%x\n",ar[0],ar[1]);
-
-printf("started\n");
-	
-	while(1) {
-		uint16_t pos=0;
-		uint8_t error=0;
-		_delay_ms(100);
-		error = test.readpos(&pos);
-		printf("data valid %d	pos %d\n",error,pos);
-		error = test.readabspos(&pos);
-		printf("data valid %d	abspos %d\n",error,pos);
-		uint8_t err=0;
-		error = test.readerror(&err);
-		printf("read err %d, ret er %x\n",error,err);
-		
-		}
+// 	
+	//printf("write %d\n",I2C_write(0x50,ar,3,1));
+// 	ar[0] =0;
+// 	ar[1] =0;
+// 	ar[2]=0;
+// 	_delay_ms(100);
+// 	printf("read error = %d\n",I2C_read(0x51,48,ar,2));
+//  	uint16_t data = (((uint16_t)ar[0])<<8)|ar[1];
+//  	printf("data %x	%x\n",ar[0],ar[1]);
+// 
+// printf("started\n");
+// 	
+// 	while(1) {
+// 		uint16_t pos=0;
+// 		uint8_t error=0;
+// 		_delay_ms(100);
+// 		error = test.readpos(&pos);
+// 		printf("data valid %d	pos %d\n",error,pos);
+// 		error = test.readabspos(&pos);
+// 		printf("data valid %d	abspos %d\n",error,pos);
+// 		uint8_t err=0;
+// 		error = test.readerror(&err);
+// 		printf("read err %d, ret er %x\n",error,err);
+// 		
+// 		}
 
 
 
