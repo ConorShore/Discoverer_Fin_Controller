@@ -13,6 +13,7 @@
 #include <csp/arch/csp_queue.h>
 #include <avr/eeprom.h>
 #include <FinCont.h>
+#include <I2C.h>
 
 
 uniman_step_config_t uniman_step1_conf = {
@@ -42,12 +43,15 @@ gs_fin_config_t uniman_running_conf = {
 
 csp_queue_handle_t uniman_stepper_q;
 
-#define STEPPER_QUEUE_LENGTH 5
+#define STEPPER_QUEUE_LENGTH 8
 
 typedef struct stepper_cmd {
 	uint8_t direction;
 	uint16_t tarsteps;
 	uint16_t cursteps;
+	uint16_t startenc;
+	uint16_t tarenc;
+	uint8_t retry;
 }stepper_cmd_t;
 
 
@@ -126,30 +130,30 @@ gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
 
 
 //get encoder values
-	double tempd=0;
+	float tempd=0;
 	uint16_t temp16=0;
 
 	if(encoder1.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
-	tempd=temp16*10;
-	tempd/=11.3777777778;
+	tempd=(float)temp16;
+	tempd/=1.13777777778;
 	status->encoder_pos.pos_fin_a=(uint16_t)tempd;
 	
 	temp16=0;
 	if(encoder2.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
-	tempd=temp16*10;
-	tempd/=11.3777777778;
+	tempd=(float)temp16;
+	tempd/=1.13777777778;
 	status->encoder_pos.pos_fin_b=(uint16_t)tempd;
 	
 	temp16=0;
 	if(encoder3.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
-	tempd=temp16*10;
-	tempd/=11.3777777778;
+	tempd=(float)temp16;
+	tempd/=1.13777777778;
 	status->encoder_pos.pos_fin_c=(uint16_t)tempd;
 	
 	temp16=0;
 	if(encoder4.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
-	tempd=temp16*10;
-	tempd/=11.3777777778;
+	tempd=(float)temp16;
+	tempd/=1.13777777778;
 	status->encoder_pos.pos_fin_d=(uint16_t)tempd;
 
 
@@ -164,18 +168,17 @@ gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
 
 }
 
-
-
 gs_fin_cmd_error_t set_fin_pos(const gs_fin_positions_t * pos) {
 	uint16_t temp16=0;
+
 	int16_t tempi16=0;
 	uint16_t target=0;
 	double tempd=0;
 	
 	
 	encoder1.readpos(&temp16);
-	tempd=temp16*10;
-	tempd/=11.3777777778;
+	tempd=(float)temp16;
+	tempd/=1.13777777778;
 	tempi16=(((int16_t)tempd)-((int16_t)pos->pos_fin_a));
 	temp16=abs(tempi16);
 	if(tempi16>=0) {
@@ -248,26 +251,55 @@ void read_temp_sensors(uint16_t *array){
 	}
 
 CSP_DEFINE_TASK(task_stepper) {
-	#define OVERSTEPS 12
+	#define OVERSTEPS 8
+	#define RETRYMAX 5
+	#define RETRYMARGIN 10
 	uint16_t recbuf=0;
 	stepper_cmd_t stepcmd[4];
+	stepcmd[0]={0,0,0,0,0,0};
+		stepcmd[1]=stepcmd[0];
+		stepcmd[2]=stepcmd[0];
+		stepcmd[3]=stepcmd[0];
 	bool inmove[4]= {0,0,0,0};
 		
 	for(;;) {
 		TickType_t funcstarttime=xTaskGetTickCount();
 		
 		while(csp_queue_dequeue(uniman_stepper_q,&recbuf,0)==1) {
-			stepcmd[ (recbuf&0xC000)>>14 ] = {	//select correct stepper command
-					.direction = (uint8_t) ((recbuf&0x2000)>>13), //get direction from packet
-					.tarsteps = recbuf&0x1FFF // get steps
-					}; 
-					inmove[(recbuf&0xC000)>>14]=1;
-					if (inmove[0]==1||inmove[1]==1) stepper1.enstep();
-					if (inmove[2]==1||inmove[3]==1) stepper2.enstep();
-					if((inmove[0]+inmove[1]+inmove[2]+inmove[3])!=0) {
-						uniman_status.mode=GS_FIN_MODE_MOVING;
-					}
-				csp_log_info("Queue rec for stepper %d	dir:%d	steps:%d",((recbuf&0xC000)>>14),stepcmd[ (recbuf&0xC000)>>14 ].direction,stepcmd[ (recbuf&0xC000)>>14 ].tarsteps);
+			stepcmd[ (recbuf&0xC000)>>14 ].direction = (uint8_t) ((recbuf&0x2000)>>13);
+			stepcmd[ (recbuf&0xC000)>>14 ].tarsteps=recbuf&0x1FFF;
+			stepcmd[ (recbuf&0xC000)>>14 ].cursteps=0;
+
+
+			
+				inmove[(recbuf&0xC000)>>14]=1;
+				if (inmove[0]==1||inmove[1]==1) stepper1.enstep();
+				if (inmove[2]==1||inmove[3]==1) stepper2.enstep();
+				if((inmove[0]+inmove[1]+inmove[2]+inmove[3])!=0) uniman_status.mode=GS_FIN_MODE_MOVING;
+				
+				uint16_t posrec=0;
+				switch ((recbuf&0xC000)>>14) {
+					case 0:
+						encoder1.readpos(&posrec);
+					break;
+					
+					case 1:
+						encoder2.readpos(&posrec);
+					break;	
+					
+					case 2:
+						encoder3.readpos(&posrec);
+					break;
+					
+					case 3:
+						encoder4.readpos(&posrec);
+					break;
+				}
+				stepcmd[ (recbuf&0xC000)>>14 ].startenc=posrec;
+				stepcmd[ (recbuf&0xC000)>>14 ].tarenc=posrec+(uint16_t)(((float)stepcmd[ (recbuf&0xC000)>>14 ].tarsteps)*9.48148148148);
+				if(stepcmd[ (recbuf&0xC000)>>14 ].tarenc>4095) stepcmd[ (recbuf&0xC000)>>14 ].tarenc-=4096;
+				
+				csp_log_info("Queue rec for stepper %d	dir:%u	steps:%u cur e:%u tar e %u\n",((recbuf&0xC000)>>14),stepcmd[ (recbuf&0xC000)>>14 ].direction,stepcmd[ (recbuf&0xC000)>>14 ].tarsteps,stepcmd[ (recbuf&0xC000)>>14 ].startenc,stepcmd[ (recbuf&0xC000)>>14 ].tarenc);
 		}
 		
 		
@@ -354,7 +386,49 @@ CSP_DEFINE_TASK(task_stepper) {
 			}
 			
 			for(int i=0;i<4;i++) {
-				if((inmove[i]==1)&&(stepcmd[i].cursteps==stepcmd[i].tarsteps)) inmove[i]=0;
+				if((inmove[i]==1)&&(stepcmd[i].cursteps==stepcmd[i].tarsteps)) {
+					inmove[i]=0;
+					uint16_t posrec=0;
+					switch (i) {
+						case 0:
+							encoder1.readpos(&posrec);
+						break;
+					
+						case 1:
+							encoder2.readpos(&posrec);
+						break;	
+					
+						case 2:
+							encoder3.readpos(&posrec);
+						break;
+					
+						case 3:
+							encoder4.readpos(&posrec);
+						break;
+					}
+										
+					uint16_t targetfind=abs(2048-stepcmd[i].tarenc);
+					uint16_t encfind=abs(2048-posrec);
+					
+					
+					csp_log_info("Stepper No %d Target %d Actual %d \n",i,stepcmd[i].tarenc,posrec,targetfind,encfind);
+					if(abs(targetfind-encfind)<=RETRYMARGIN) {
+						//if position is correct
+						csp_log_info("Command Success, Delta %d Retry %d \n",abs(targetfind-encfind),stepcmd[i].retry);
+						stepcmd[i].retry=0;
+					} else {
+						if(stepcmd[i].retry<RETRYMAX) {
+							csp_log_warn("Command Fail, Retry, Delta %d Retry %d\n",abs(targetfind-encfind),stepcmd[i].retry);
+							//TODO - retry
+							
+							uint16_t command2Q=((i*4)<<12)	|	stepcmd[i].direction<<13	|	uint16_t(((float)abs(targetfind-encfind))/9.48148148148);
+							stepcmd[i].retry++;
+							csp_queue_enqueue(uniman_stepper_q,&command2Q,1000);
+							} else {
+								csp_log_error("Command Fail, Delta %d Retry %d\n",abs(targetfind-encfind),stepcmd[i].retry);
+							}
+					}
+				}
 			}
 			
 
@@ -363,15 +437,19 @@ CSP_DEFINE_TASK(task_stepper) {
 		vTaskDelayUntil(&funcstarttime,(uint16_t)(1000*(uint32_t)60)/(uniman_running_conf.stepper_speed*(uint32_t)portTICK_PERIOD_MS));
 		if ((uniman_running_conf.system_reset_encoder_zero&(1<<5))&&inmove[0]==0&&inmove[1]==0) stepper1.disstep();
 		if ((uniman_running_conf.system_reset_encoder_zero&(1<<5))&&inmove[2]==0&&inmove[3]==0) stepper2.disstep();
-		get_fin_status(&uniman_status);
-		printf("pos %d %d %d %d\n",uniman_status.encoder_pos.pos_fin_a,uniman_status.encoder_pos.pos_fin_b,uniman_status.encoder_pos.pos_fin_c,uniman_status.encoder_pos.pos_fin_d);	
-		uint16_t enctestar[4]= {0,0,0,0};
-			encoder1.readpos(&enctestar[0]);
-			encoder2.readpos(&enctestar[1]);
-			encoder3.readpos(&enctestar[2]);
-			encoder4.readpos(&enctestar[4]);
-		printf("pos from enc %d %d %d %d\n",enctestar[0],enctestar[1],enctestar[2],enctestar[3]);
 		
+		if((inmove[0]+inmove[1]+inmove[2]+inmove[3])==0) uniman_status.mode=GS_FIN_MODE_CUSTOM;
+		
+		
+// 		get_fin_status(&uniman_status);
+// 		printf("pos %d %d %d %d\n",uniman_status.encoder_pos.pos_fin_a,uniman_status.encoder_pos.pos_fin_b,uniman_status.encoder_pos.pos_fin_c,uniman_status.encoder_pos.pos_fin_d);	
+// 		uint16_t enctestar[4]= {0,0,0,0};
+// 		encoder1.readpos(&enctestar[0]);
+// 		encoder2.readpos(&enctestar[1]);
+// 		encoder3.readpos(&enctestar[2]);
+// 		encoder4.readpos(&enctestar[3]);
+// 		printf("pos from enc %d %d %d %d\n",enctestar[0],enctestar[1],enctestar[2],enctestar[3]);
+// 		
 	}
 	
 	vTaskSuspend(NULL);
@@ -385,7 +463,8 @@ gs_fin_cmd_error_t init_server(void) {
 	
 	gs_fin_cmd_error_t error=FIN_CMD_OK;
 	
-	
+	I2C_init();
+	if(encoder2.init()!=0) error=FIN_CMD_FAIL;
 	setup_temp_sensors();
 	//process_config(&uniman_running_conf);
 
@@ -393,7 +472,7 @@ gs_fin_cmd_error_t init_server(void) {
 	
 	if(csp_thread_create(task_server, "SERVER", 270, NULL, 2, &handle_server)) error=FIN_CMD_FAIL;
 	
-	if(csp_thread_create(task_stepper, "STEP",configMINIMAL_STACK_SIZE+80, NULL, 1, NULL)) error=FIN_CMD_FAIL;
+	if(csp_thread_create(task_stepper, "STEP",configMINIMAL_STACK_SIZE+140, NULL, 1, NULL)) error=FIN_CMD_FAIL;
 	
 		uniman_stepper_q = csp_queue_create(STEPPER_QUEUE_LENGTH,sizeof(uint16_t));
 		if (uniman_stepper_q==NULL) error =FIN_CMD_FAIL;
@@ -404,19 +483,19 @@ gs_fin_cmd_error_t init_server(void) {
 		// [13] direction
 		// [12:0] no of steps
 		
+		uint16_t p=0;
+		//uint16_t p=0x0005;
 		
-		uint16_t p=0x0005;
-		
-		csp_queue_enqueue(uniman_stepper_q,&p,1000);
-			p=0x4FF5;
-		
-		csp_queue_enqueue(uniman_stepper_q,&p,1000);
-			p=0x8005;
+		//csp_queue_enqueue(uniman_stepper_q,&p,1000);
+			p=0x400F;
 		
 		csp_queue_enqueue(uniman_stepper_q,&p,1000);
-			p=0xC005;
-		
-		csp_queue_enqueue(uniman_stepper_q,&p,1000);
+// 			p=0x8005;
+// 		
+// 		csp_queue_enqueue(uniman_stepper_q,&p,1000);
+// 			p=0xC005;
+// 		
+// 		csp_queue_enqueue(uniman_stepper_q,&p,1000);
 		
 
 		save_fin_config();

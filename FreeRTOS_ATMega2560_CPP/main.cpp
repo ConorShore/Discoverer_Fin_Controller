@@ -61,8 +61,8 @@ extern "C" {
 
 #define FUSES __fuse_t __fuse FUSEMEM
 
-//FUSES {.low = 0xBF, .high=0x01,.extended = 0xFF};
- FUSES {.low = 0xBF, .high=0x11,.extended = 0xFF};
+FUSES {.low = 0xBF, .high=0x01,.extended = 0xFF};
+// FUSES {.low = 0xBF, .high=0x11,.extended = 0xFF};
 
 
 //static char out[10]; //used for as placeholder for itoa function
@@ -112,29 +112,30 @@ int main( void )
 fdevopen( &usart_putchar_printf,0);
 
 I2C_init();
-
+// 
 // 	while (1) {
 // 		for (int i=0;i<128;i++) {
 // 			printf("add	%d	res %d\n",i,I2C_write(i,NULL,1,1));
+// 			wdt_reset();
 // 			_delay_ms(100);
 // 		}
 // 	}
 
-// ar[0]=0;
-// ar[1]=0b0001101;
-// ar[2]=50;
-	
-// 	printf("write %d\n",I2C_write(50,ar,3,1));
+//  ar[0]=0;
+//  ar[1]=0b0001101;
+//  ar[2]=0x51;
+// 	
+//  	printf("write %d\n",I2C_write(77,ar,3,1));
 // 	ar[0] =0;
 // 	ar[1] =0;
 // 	ar[2]=0;
-// 	_delay_ms(100);
+// 	_delay_ms(100);soli
 // 	printf("read error = %d\n",I2C_read(50,48,ar,2));
 //  	uint16_t data = (((uint16_t)ar[0])<<8)|ar[1];
 //  	printf("data %x	%x\n",ar[0],ar[1]);
 // test.zeropos();
-// _delay_ms(20);
-// 
+//   _delay_ms(20);
+ 
 // printf("startsed\n");
 // 	
 // 	while(1) {
@@ -170,7 +171,7 @@ I2C_init();
 	
 		if(error!=0) {
 			contled(ONCON,2);
-			csp_log_reset("Setup Error");
+			//csp_log_reset("Setup Error");
 			//FORCERESET
 		}
 
@@ -180,7 +181,7 @@ I2C_init();
 		
 		if(error!=0) {
 			contled(ONCON,2);
-			csp_log_reset("Setup Error");
+			//csp_log_reset("Setup Error");
 			//FORCERESET
 		}
 		
@@ -188,7 +189,7 @@ I2C_init();
 		
 		if(error!=0) {
 			contled(ONCON,2);
-			csp_log_reset("Setup Error");
+			//csp_log_reset("Setup Error");
 			//FORCERESET
 		}
 		
@@ -196,7 +197,7 @@ I2C_init();
 		
 		if(error!=0) {
 			contled(ONCON,2);
-			csp_log_reset("Setup Error");
+			//csp_log_reset("Setup Error");
 			//FORCERESET
 		}
 
@@ -205,17 +206,17 @@ I2C_init();
 		
 		if(error!=0) {
 			contled(ONCON,2);
-			csp_log_reset("Setup Error");
+			//csp_log_reset("Setup Error");
 			//FORCERESET
 		}
 		
-		printf("%d\n",error);
+		
 		
 		
 		error=init_server();
 		if(error!=0) {
 			contled(ONCON,2);
-			csp_log_reset("Setup Error");
+			//csp_log_reset("Setup Error");
 			//FORCERESET
 		}
 		//while(1);

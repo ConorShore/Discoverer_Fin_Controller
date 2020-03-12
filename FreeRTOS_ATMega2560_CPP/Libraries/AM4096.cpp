@@ -1,6 +1,7 @@
 ﻿#include <AM4096.h>
 #include <stdint.h>
 #include <I2C.h>
+#include <util/delay.h>
 
 //assumbed 4096 res
 
@@ -10,12 +11,16 @@ AM4096::AM4096(uint8_t addressin) {
 }
 
 uint8_t AM4096::init(void) {
-	uint8_t tempdata[3] = {REG_ADD,0b0001101,address}; //first byte is mem address
-	if(I2C_write(address,tempdata,3,1)!=0) {
-		return -1;
-		} else {
-		return 0;
-	}
+	uint8_t tempdata[3] = {REG_ADD,0b00011101,address}; //first byte is mem address
+	if(I2C_write(address,tempdata,3,1)!=0) return -1;
+	_delay_ms(30);
+	if(I2C_read(address,REG_ZIN_E,&tempdata[1],2)!=0) return -1; //get current zin setting
+	tempdata[1] |= (1<<4);
+	tempdata[0]=REG_ZIN_E;
+	if(I2C_write(address,tempdata,3,1)!=0) return -1; //this inverts direction
+	
+	return 0;
+
 }
 
 uint8_t AM4096::check(void) {
