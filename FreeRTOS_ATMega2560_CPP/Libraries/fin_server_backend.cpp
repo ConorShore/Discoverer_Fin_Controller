@@ -173,20 +173,57 @@ gs_fin_cmd_error_t set_fin_pos(const gs_fin_positions_t * pos) {
 
 	int16_t tempi16=0;
 	uint16_t target=0;
-	double tempd=0;
+	float tempd[4]={0,0,0,0};
 	
+	//TODO - catch input errors
+	for (int i=0; i<4; i++) {
+		
+		switch (i) {
+			case 0:
+				encoder1.readpos(&temp16);
+				tempd[4]=float(pos->pos_fin_a);
+			break;
+			
+			case 1:
+				encoder2.readpos(&temp16);
+				tempd[4]=float(pos->pos_fin_b);
+			break;
+		
+			case 2:
+				encoder3.readpos(&temp16);
+				tempd[4]=float(pos->pos_fin_c);
+			break;
+
+			case 3:
+				encoder4.readpos(&temp16);
+				tempd[4]=float(pos->pos_fin_d);	
+			break;		
+		}
+		printf("Step %d, enc %d, to %l asgasas\n\n",i,temp16,tempd[4]);
+		encoder1.readpos(&temp16);
+		tempd[0]=(float)temp16;
+		tempd[0]/=1.13777777778;
+		tempd[1]=tempd[4]-tempd[0];
+		tempd[2]=3600-tempd[0]+tempd[4];
+		uint8_t direction=0;
 	
-	encoder1.readpos(&temp16);
-	tempd=(float)temp16;
-	tempd/=1.13777777778;
-	tempi16=(((int16_t)tempd)-((int16_t)pos->pos_fin_a));
-	temp16=abs(tempi16);
-	if(tempi16>=0) {
-		csp_log_info("dir %d steps %d",1,temp16);
-		//TODO - enqueue
-	} else {
-		csp_log_info("dir %d steps %d",0,temp16);
-		//TODO - enqueue
+		if(abs(tempd[1])<abs(tempd[2])) {
+			temp16=uint16_t(abs(tempd[1]/8.333333333));
+			if(tempd[1]<0) {
+				direction=1;
+			}
+		} else {
+			temp16=uint16_t(abs(tempd[2]/8.333333333));
+			if(tempd[2]<0) {
+				direction=1;
+			}
+		}
+		
+			
+			uint16_t commandinc=(i)<<14 | direction<<13 | temp16&0x1FFF;
+			printf("hello %d %x\n",i,commandinc);
+			csp_queue_enqueue(uniman_stepper_q,&commandinc,1000);
+
 	}
 
 	//TODO - other encoder stepper pairs
@@ -295,13 +332,19 @@ CSP_DEFINE_TASK(task_stepper) {
 						encoder4.readpos(&posrec);
 					break;
 				}
+			
 				stepcmd[ (recbuf&0xC000)>>14 ].startenc=posrec;
 				if(stepcmd[ (recbuf&0xC000)>>14 ].direction==0) {
 					stepcmd[ (recbuf&0xC000)>>14 ].tarenc=posrec+(uint16_t)(((float)stepcmd[ (recbuf&0xC000)>>14 ].tarsteps)*9.48148148148);
 				} else {
-					stepcmd[ (recbuf&0xC000)>>14 ].tarenc=posrec-(uint16_t)(((float)stepcmd[ (recbuf&0xC000)>>14 ].tarsteps)*9.48148148148);
+					int16_t temptarenc=posrec-(uint16_t)(((float)stepcmd[ (recbuf&0xC000)>>14 ].tarsteps)*9.48148148148);
+					if(temptarenc>=0) {
+					stepcmd[ (recbuf&0xC000)>>14 ].tarenc=temptarenc;
+					} else {
+						stepcmd[ (recbuf&0xC000)>>14 ].tarenc=4096+temptarenc;
+					}
 				}
-				if(stepcmd[ (recbuf&0xC000)>>14 ].tarenc>4095) stepcmd[ (recbuf&0xC000)>>14 ].tarenc-=4096;
+				if(stepcmd[ (recbuf&0xC000)>>14 ].tarenc>4095) stepcmd[ (recbuf&0xC000)>>14 ].tarenc=stepcmd[ (recbuf&0xC000)>>14 ].tarenc%4096;
 				
 				csp_log_info("Queue rec for stepper %d	dir:%u	steps:%u cur e:%u tar e %u\n",((recbuf&0xC000)>>14),stepcmd[ (recbuf&0xC000)>>14 ].direction,stepcmd[ (recbuf&0xC000)>>14 ].tarsteps,stepcmd[ (recbuf&0xC000)>>14 ].startenc,stepcmd[ (recbuf&0xC000)>>14 ].tarenc);
 		}
@@ -467,16 +510,14 @@ gs_fin_cmd_error_t init_server(void) {
 	
 	gs_fin_cmd_error_t error=FIN_CMD_OK;
 	
-	I2C_init();
-	if(encoder2.init()!=0) error=FIN_CMD_FAIL;
+	//I2C_init();
+	
 	setup_temp_sensors();
 	//process_config(&uniman_running_conf);
 
 
 	
-	if(csp_thread_create(task_server, "SERVER", 270, NULL, 2, &handle_server)) error=FIN_CMD_FAIL;
-	
-	if(csp_thread_create(task_stepper, "STEP",configMINIMAL_STACK_SIZE+140, NULL, 1, NULL)) error=FIN_CMD_FAIL;
+
 	
 		uniman_stepper_q = csp_queue_create(STEPPER_QUEUE_LENGTH,sizeof(uint16_t));
 		if (uniman_stepper_q==NULL) error =FIN_CMD_FAIL;
@@ -487,13 +528,16 @@ gs_fin_cmd_error_t init_server(void) {
 		// [13] direction
 		// [12:0] no of steps
 		
+		gs_fin_positions_t tempos = {0,0,0,0};
+			set_fin_pos(&tempos);
+		
 		uint16_t p=0;
 		//uint16_t p=0x0005;
 		
 		//csp_queue_enqueue(uniman_stepper_q,&p,1000);
-			p=0x600F;
+		//p=0x600F;
 		
-		csp_queue_enqueue(uniman_stepper_q,&p,1000);
+		//csp_queue_enqueue(uniman_stepper_q,&p,1000);
 // 			p=0x8005;
 // 		
 // 		csp_queue_enqueue(uniman_stepper_q,&p,1000);
@@ -505,7 +549,9 @@ gs_fin_cmd_error_t init_server(void) {
 		save_fin_config();
 		if(load_fin_config()) error=FIN_CMD_FAIL;
 
-		
+			if(csp_thread_create(task_server, "SERVER", 270, NULL, 2, &handle_server)) error=FIN_CMD_FAIL;
+	
+	if(csp_thread_create(task_stepper, "STEP",configMINIMAL_STACK_SIZE+140, NULL, 1, NULL)) error=FIN_CMD_FAIL;
 
 
 	
