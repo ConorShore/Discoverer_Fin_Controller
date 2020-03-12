@@ -669,6 +669,9 @@
     <Compile Include="Libraries\I2C.cpp">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="Libraries\I2C.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="Libraries\SPI\SPI.cpp">
       <SubType>compile</SubType>
     </Compile>

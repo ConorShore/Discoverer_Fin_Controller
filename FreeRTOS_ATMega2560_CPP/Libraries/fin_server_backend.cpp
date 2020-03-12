@@ -121,28 +121,33 @@ gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
 //get setpoints, probably will done during normal operation
 
 	status->pos_set_points=uniman_status.pos_set_points;
+	
+	gs_fin_cmd_error_t error=FIN_CMD_OK;
 
 
 //get encoder values
 	double tempd=0;
 	uint16_t temp16=0;
 
-	encoder1.readpos(&temp16);
+	if(encoder1.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
 	tempd=temp16*10;
 	tempd/=11.3777777778;
 	status->encoder_pos.pos_fin_a=(uint16_t)tempd;
-
-	encoder2.readpos(&temp16);
+	
+	temp16=0;
+	if(encoder2.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
 	tempd=temp16*10;
 	tempd/=11.3777777778;
 	status->encoder_pos.pos_fin_b=(uint16_t)tempd;
 	
-	encoder3.readpos(&temp16);
+	temp16=0;
+	if(encoder3.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
 	tempd=temp16*10;
 	tempd/=11.3777777778;
 	status->encoder_pos.pos_fin_c=(uint16_t)tempd;
 	
-	encoder4.readpos(&temp16);
+	temp16=0;
+	if(encoder4.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
 	tempd=temp16*10;
 	tempd/=11.3777777778;
 	status->encoder_pos.pos_fin_d=(uint16_t)tempd;
@@ -358,6 +363,15 @@ CSP_DEFINE_TASK(task_stepper) {
 		vTaskDelayUntil(&funcstarttime,(uint16_t)(1000*(uint32_t)60)/(uniman_running_conf.stepper_speed*(uint32_t)portTICK_PERIOD_MS));
 		if ((uniman_running_conf.system_reset_encoder_zero&(1<<5))&&inmove[0]==0&&inmove[1]==0) stepper1.disstep();
 		if ((uniman_running_conf.system_reset_encoder_zero&(1<<5))&&inmove[2]==0&&inmove[3]==0) stepper2.disstep();
+		get_fin_status(&uniman_status);
+		printf("pos %d %d %d %d\n",uniman_status.encoder_pos.pos_fin_a,uniman_status.encoder_pos.pos_fin_b,uniman_status.encoder_pos.pos_fin_c,uniman_status.encoder_pos.pos_fin_d);	
+		uint16_t enctestar[4]= {0,0,0,0};
+			encoder1.readpos(&enctestar[0]);
+			encoder2.readpos(&enctestar[1]);
+			encoder3.readpos(&enctestar[2]);
+			encoder4.readpos(&enctestar[4]);
+		printf("pos from enc %d %d %d %d\n",enctestar[0],enctestar[1],enctestar[2],enctestar[3]);
+		
 	}
 	
 	vTaskSuspend(NULL);
@@ -394,7 +408,7 @@ gs_fin_cmd_error_t init_server(void) {
 		uint16_t p=0x0005;
 		
 		csp_queue_enqueue(uniman_stepper_q,&p,1000);
-			p=0x4005;
+			p=0x4FF5;
 		
 		csp_queue_enqueue(uniman_stepper_q,&p,1000);
 			p=0x8005;

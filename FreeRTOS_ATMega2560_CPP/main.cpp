@@ -102,7 +102,7 @@ struct can_frame canMsg2;
 #include <I2C.h>
 #include <AM4096.h>
 
-AM4096 test(50);	
+AM4096 test(0x51);	
 
 uint8_t ar[4];
 
@@ -132,7 +132,9 @@ I2C_init();
 // 	printf("read error = %d\n",I2C_read(50,48,ar,2));
 //  	uint16_t data = (((uint16_t)ar[0])<<8)|ar[1];
 //  	printf("data %x	%x\n",ar[0],ar[1]);
-
+// test.zeropos();
+// _delay_ms(20);
+// 
 // printf("startsed\n");
 // 	
 // 	while(1) {
