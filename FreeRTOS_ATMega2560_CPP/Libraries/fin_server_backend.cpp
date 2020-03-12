@@ -296,7 +296,11 @@ CSP_DEFINE_TASK(task_stepper) {
 					break;
 				}
 				stepcmd[ (recbuf&0xC000)>>14 ].startenc=posrec;
-				stepcmd[ (recbuf&0xC000)>>14 ].tarenc=posrec+(uint16_t)(((float)stepcmd[ (recbuf&0xC000)>>14 ].tarsteps)*9.48148148148);
+				if(stepcmd[ (recbuf&0xC000)>>14 ].direction==0) {
+					stepcmd[ (recbuf&0xC000)>>14 ].tarenc=posrec+(uint16_t)(((float)stepcmd[ (recbuf&0xC000)>>14 ].tarsteps)*9.48148148148);
+				} else {
+					stepcmd[ (recbuf&0xC000)>>14 ].tarenc=posrec-(uint16_t)(((float)stepcmd[ (recbuf&0xC000)>>14 ].tarsteps)*9.48148148148);
+				}
 				if(stepcmd[ (recbuf&0xC000)>>14 ].tarenc>4095) stepcmd[ (recbuf&0xC000)>>14 ].tarenc-=4096;
 				
 				csp_log_info("Queue rec for stepper %d	dir:%u	steps:%u cur e:%u tar e %u\n",((recbuf&0xC000)>>14),stepcmd[ (recbuf&0xC000)>>14 ].direction,stepcmd[ (recbuf&0xC000)>>14 ].tarsteps,stepcmd[ (recbuf&0xC000)>>14 ].startenc,stepcmd[ (recbuf&0xC000)>>14 ].tarenc);
@@ -487,7 +491,7 @@ gs_fin_cmd_error_t init_server(void) {
 		//uint16_t p=0x0005;
 		
 		//csp_queue_enqueue(uniman_stepper_q,&p,1000);
-			p=0x400F;
+			p=0x600F;
 		
 		csp_queue_enqueue(uniman_stepper_q,&p,1000);
 // 			p=0x8005;
