@@ -249,7 +249,7 @@ gs_fin_cmd_error_t set_fin_pos(const gs_fin_positions_t * pos) {
 			csp_log_error("Enc %d error",i+1);
 			continue;
 		}
-		printf("Step %d, enc %d, to %l asgasas\n\n",i,temp16,tempd[4]);
+		//printf("Step %d, enc %d, to %l asgasas\n\n",i,temp16,tempd[4]);
 		tempd[0]=(float)temp16;
 		tempd[0]/=1.13777777778;
 		tempd[1]=tempd[4]-tempd[0];

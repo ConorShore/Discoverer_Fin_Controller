@@ -32,7 +32,7 @@ static void process_fin_cmd(csp_conn_t * conn, csp_packet_t * packet)
 			
             if (error == FIN_CMD_OK) {
                 /* Copy status to response buffer */
-                memcpy(&packet->data[0], &status, sizeof(status));
+                memcpy(&packet->data[1], &status, sizeof(status));
                 reply_length += sizeof(status);
             }
             break;
