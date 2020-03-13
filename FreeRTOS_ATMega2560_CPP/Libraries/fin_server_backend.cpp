@@ -121,6 +121,26 @@ uint16_t enc_tar_points[4] = {0,0,0,0};
  */
 
 gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
+	
+	//TODO - remove this test code
+	gs_fin_positions_t test2 = {
+		.pos_fin_a=15,
+		.pos_fin_b=15,
+		.pos_fin_c=15,
+		.pos_fin_d=15
+	};
+	
+	gs_fin_status_t test = {
+		.pos_set_points=test2,
+		.encoder_pos=test2,
+		.temperatures={290,290,290,290},
+		.currents={290,290,290,290},
+		.mode=GS_FIN_MODE_CUSTOM,
+		.status_code=0
+	};
+	
+	*status=test;
+	return FIN_CMD_OK;
 
 //get setpoints, probably will done during normal operation
 
@@ -136,39 +156,52 @@ gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
 	if(encoder1.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
-	status->encoder_pos.pos_fin_a=(uint16_t)tempd;
+	status->encoder_pos.pos_fin_a=uint16_t(tempd);
 	
 	temp16=0;
 	if(encoder2.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
-	status->encoder_pos.pos_fin_b=(uint16_t)tempd;
+	status->encoder_pos.pos_fin_b=uint16_t(tempd);
 	
 	temp16=0;
 	if(encoder3.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
-	status->encoder_pos.pos_fin_c=(uint16_t)tempd;
+	status->encoder_pos.pos_fin_c=uint16_t(tempd);
 	
 	temp16=0;
 	if(encoder4.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
-	status->encoder_pos.pos_fin_d=(uint16_t)tempd;
+	status->encoder_pos.pos_fin_d=uint16_t(tempd);
 
 
 //get temps
-	read_temp_sensors(status->temperatures);
+	read_temp_sensors(&status->temperatures[0]);
 
 
-//TODO - get currents
+//TODO - get currents remove test code
+	status->currents[0] = 15;
+	status->currents[1] = 15;
+	status->currents[2] = 15;
+	status->currents[3] = 15;
+	
 
 //get mode
 	status->mode=uniman_status.mode;
+	
+	
+	//TODO - remove following test statement
+	error=FIN_CMD_OK;
+	return error;
 
 }
 
 gs_fin_cmd_error_t set_fin_pos(const gs_fin_positions_t * pos) {
+	
+	gs_fin_cmd_error_t error=FIN_CMD_OK;
+	
 	uint16_t temp16=0;
 
 	int16_t tempi16=0;
@@ -177,30 +210,46 @@ gs_fin_cmd_error_t set_fin_pos(const gs_fin_positions_t * pos) {
 	
 	//TODO - catch input errors
 	for (int i=0; i<4; i++) {
-		
+		uint8_t internalerror=0;
 		switch (i) {
 			case 0:
-				encoder1.readpos(&temp16);
+		
+				if(encoder1.readpos(&temp16)!=0) {
+					error=FIN_CMD_FAIL;
+					internalerror=1;
+				}
 				tempd[4]=float(pos->pos_fin_a);
 			break;
 			
 			case 1:
-				encoder2.readpos(&temp16);
+				if(encoder2.readpos(&temp16)!=0) {
+					error=FIN_CMD_FAIL;
+					internalerror=1;
+				}
 				tempd[4]=float(pos->pos_fin_b);
 			break;
 		
 			case 2:
-				encoder3.readpos(&temp16);
+				if(encoder3.readpos(&temp16)!=0) {
+					error=FIN_CMD_FAIL;
+					internalerror=1;
+				}
 				tempd[4]=float(pos->pos_fin_c);
 			break;
 
 			case 3:
-				encoder4.readpos(&temp16);
+				if(encoder4.readpos(&temp16)!=0) {
+					error=FIN_CMD_FAIL;
+					internalerror=1;
+				}
 				tempd[4]=float(pos->pos_fin_d);	
 			break;		
 		}
+		if(internalerror!=0)  {
+			csp_log_error("Enc %d error",i+1);
+			continue;
+		}
 		printf("Step %d, enc %d, to %l asgasas\n\n",i,temp16,tempd[4]);
-		encoder1.readpos(&temp16);
 		tempd[0]=(float)temp16;
 		tempd[0]/=1.13777777778;
 		tempd[1]=tempd[4]-tempd[0];
@@ -220,15 +269,19 @@ gs_fin_cmd_error_t set_fin_pos(const gs_fin_positions_t * pos) {
 		}
 		
 			
-			uint16_t commandinc=(i)<<14 | direction<<13 | temp16&0x1FFF;
-			printf("hello %d %x\n",i,commandinc);
-			csp_queue_enqueue(uniman_stepper_q,&commandinc,1000);
+			uint16_t commandinc=((i)<<14) | (direction<<13) | (temp16&0x1FFF);
+		
+			if(csp_queue_enqueue(uniman_stepper_q,&commandinc,1000)!=0) error=FIN_CMD_FAIL;
 
 	}
 
 	//TODO - other encoder stepper pairs
 	
 	//TODO - add eeprom save
+	
+	//TODO - remove this test statement
+	error=FIN_CMD_OK;
+	return error;
 	
 }
 
@@ -303,9 +356,13 @@ CSP_DEFINE_TASK(task_stepper) {
 		TickType_t funcstarttime=xTaskGetTickCount();
 		
 		while(csp_queue_dequeue(uniman_stepper_q,&recbuf,0)==1) {
+			if((recbuf&0x1FFF)==0) {
+				continue;
+			}
 			stepcmd[ (recbuf&0xC000)>>14 ].direction = (uint8_t) ((recbuf&0x2000)>>13);
 			stepcmd[ (recbuf&0xC000)>>14 ].tarsteps=recbuf&0x1FFF;
 			stepcmd[ (recbuf&0xC000)>>14 ].cursteps=0;
+			
 
 
 			
@@ -346,7 +403,7 @@ CSP_DEFINE_TASK(task_stepper) {
 				}
 				if(stepcmd[ (recbuf&0xC000)>>14 ].tarenc>4095) stepcmd[ (recbuf&0xC000)>>14 ].tarenc=stepcmd[ (recbuf&0xC000)>>14 ].tarenc%4096;
 				
-				csp_log_info("Queue rec for stepper %d	dir:%u	steps:%u cur e:%u tar e %u\n",((recbuf&0xC000)>>14),stepcmd[ (recbuf&0xC000)>>14 ].direction,stepcmd[ (recbuf&0xC000)>>14 ].tarsteps,stepcmd[ (recbuf&0xC000)>>14 ].startenc,stepcmd[ (recbuf&0xC000)>>14 ].tarenc);
+				csp_log_info("Queue rec for stepper %d	dir:%u	steps:%u cur e:%u tar e %u\n",((recbuf&0xC000)>>14)+1,stepcmd[ (recbuf&0xC000)>>14 ].direction,stepcmd[ (recbuf&0xC000)>>14 ].tarsteps,stepcmd[ (recbuf&0xC000)>>14 ].startenc,stepcmd[ (recbuf&0xC000)>>14 ].tarenc);
 		}
 		
 		
@@ -458,7 +515,7 @@ CSP_DEFINE_TASK(task_stepper) {
 					uint16_t encfind=abs(2048-posrec);
 					
 					
-					csp_log_info("Stepper No %d Target %d Actual %d \n",i,stepcmd[i].tarenc,posrec,targetfind,encfind);
+					csp_log_info("Stepper No %d Target %d Actual %d \n",i+1,stepcmd[i].tarenc,posrec,targetfind,encfind);
 					if(abs(targetfind-encfind)<=RETRYMARGIN) {
 						//if position is correct
 						csp_log_info("Command Success, Delta %d Retry %d \n",abs(targetfind-encfind),stepcmd[i].retry);
@@ -474,9 +531,9 @@ CSP_DEFINE_TASK(task_stepper) {
 							} else {
 								csp_log_error("Command Fail, Delta %d Retry %d\n",abs(targetfind-encfind),stepcmd[i].retry);
 							}
+						}
 					}
 				}
-			}
 			
 
 		
@@ -528,8 +585,8 @@ gs_fin_cmd_error_t init_server(void) {
 		// [13] direction
 		// [12:0] no of steps
 		
-		gs_fin_positions_t tempos = {0,0,0,0};
-			set_fin_pos(&tempos);
+		//gs_fin_positions_t tempos = {0,0,0,0};
+			//set_fin_pos(&tempos);
 		
 		uint16_t p=0;
 		//uint16_t p=0x0005;

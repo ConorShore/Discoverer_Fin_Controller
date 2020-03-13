@@ -173,7 +173,7 @@ I2C_init();
 	
 		if(error!=0) {
 			contled(ONCON,2);
-			//csp_log_reset("Setup Error");
+			csp_log_reset("Setup Error");
 			//FORCERESET
 		}
 
@@ -183,7 +183,7 @@ I2C_init();
 		
 		if(error!=0) {
 			contled(ONCON,2);
-			//csp_log_reset("Setup Error");
+			csp_log_reset("Setup Error");
 			//FORCERESET
 		}
 		
@@ -191,7 +191,7 @@ I2C_init();
 		
 		if(error!=0) {
 			contled(ONCON,2);
-			//csp_log_reset("Setup Error");
+			csp_log_reset("Setup Error");
 			//FORCERESET
 		}
 		
@@ -199,7 +199,7 @@ I2C_init();
 		
 		if(error!=0) {
 			contled(ONCON,2);
-			//csp_log_reset("Setup Error");
+			csp_log_reset("Setup Error");
 			//FORCERESET
 		}
 
@@ -208,7 +208,7 @@ I2C_init();
 		
 		if(error!=0) {
 			contled(ONCON,2);
-			//csp_log_reset("Setup Error");
+			csp_log_reset("Setup Error");
 			//FORCERESET
 		}
 		
@@ -218,7 +218,7 @@ I2C_init();
 		error=init_server();
 		if(error!=0) {
 			contled(ONCON,2);
-			//csp_log_reset("Setup Error");
+			csp_log_reset("Setup Error");
 			//FORCERESET
 		}
 		//while(1);

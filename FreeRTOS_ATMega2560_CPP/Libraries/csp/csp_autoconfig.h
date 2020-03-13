@@ -36,7 +36,7 @@
 #define CSP_HAVE_STDBOOL_H 1
 #define LIBCSP_VERSION "1.4"
 
-#define CSP_CAN_MTU		50
-#define MSGMAX			50
+#define CSP_CAN_MTU		60
+#define MSGMAX			60
 
 #endif /* W_INCLUDE_CSP_CSP_AUTOCONFIG_H_WAF */
