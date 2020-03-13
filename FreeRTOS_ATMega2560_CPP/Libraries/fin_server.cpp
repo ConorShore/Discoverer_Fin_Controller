@@ -17,7 +17,7 @@
  */
 static void process_fin_cmd(csp_conn_t * conn, csp_packet_t * packet)
 {
-    uint16_t reply_length = 1;
+    uint8_t reply_length = 1;
     uint8_t cmd_id = packet->data[0]; // First byte is command ID
 
     switch(cmd_id) {
@@ -28,12 +28,24 @@ static void process_fin_cmd(csp_conn_t * conn, csp_packet_t * packet)
             int8_t error = get_fin_status(&status);
 
             /* Set error code in response */
-            packet->data[0] = error;
+			printf("sizeof enum %d\n",sizeof(error));
+            packet->data[1] = error;
 			
             if (error == FIN_CMD_OK) {
                 /* Copy status to response buffer */
-                memcpy(&packet->data[1], &status, sizeof(status));
-                reply_length += sizeof(status);
+				packet->data[0]=0;
+				//packet->data[1]=0;
+				//packet->data[2]=0;
+				
+                memcpy(&packet->data[2], &status, sizeof(status)-2);
+				
+				packet->data[33]=status.mode;
+				packet->data[34]=0;
+				packet->data[35]=0;
+				packet->data[36]=0;
+				packet->data[37]=status.status_code;
+                reply_length += sizeof(status)+3;
+				csp_log_info("sizeof sat %d\n",reply_length);
             }
             break;
         }

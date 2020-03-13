@@ -123,24 +123,24 @@ uint16_t enc_tar_points[4] = {0,0,0,0};
 gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
 	
 	//TODO - remove this test code
-	gs_fin_positions_t test2 = {
-		.pos_fin_a=15,
-		.pos_fin_b=15,
-		.pos_fin_c=15,
-		.pos_fin_d=15
-	};
-	
-	gs_fin_status_t test = {
-		.pos_set_points=test2,
-		.encoder_pos=test2,
-		.temperatures={290,290,290,290},
-		.currents={290,290,290,290},
-		.mode=GS_FIN_MODE_CUSTOM,
-		.status_code=0
-	};
-	
-	*status=test;
-	return FIN_CMD_OK;
+// 	gs_fin_positions_t test2 = {
+// 		.pos_fin_a=1,
+// 		.pos_fin_b=2,
+// 		.pos_fin_c=3,
+// 		.pos_fin_d=4
+// 	};
+// 	
+// 	gs_fin_status_t test = {
+// 		.pos_set_points=test2,
+// 		.encoder_pos=test2,
+// 		.temperatures={77,78,79,80},
+// 		.currents={81,82,83,84},
+// 		.mode=GS_FIN_MODE_CUSTOM,
+// 		.status_code=7
+// 	};
+// 	
+// 	*status=test;
+// 	return FIN_CMD_OK;
 
 //get setpoints, probably will done during normal operation
 
