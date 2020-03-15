@@ -124,17 +124,17 @@ gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
 	
 	//TODO - remove this test code
 // 	gs_fin_positions_t test2 = {
-// 		.pos_fin_a=1,
-// 		.pos_fin_b=2,
-// 		.pos_fin_c=3,
-// 		.pos_fin_d=4
+// 		.pos_fin_a=0x01F1,
+// 		.pos_fin_b=0x02F2,
+// 		.pos_fin_c=0x03F3,
+// 		.pos_fin_d=0x04F4
 // 	};
 // 	
 // 	gs_fin_status_t test = {
 // 		.pos_set_points=test2,
 // 		.encoder_pos=test2,
-// 		.temperatures={77,78,79,80},
-// 		.currents={81,82,83,84},
+// 		.temperatures={0x05F5,0x06F6,0x07F7,0x08F8},
+// 		.currents={0x09F9,0x10F0,0x11F1,0x12F2},
 // 		.mode=GS_FIN_MODE_CUSTOM,
 // 		.status_code=7
 // 	};
@@ -179,6 +179,7 @@ gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
 
 //get temps
 	read_temp_sensors(&status->temperatures[0]);
+	//printf("temps %d %d %d %d\n",status->temperatures[0],status->temperatures[1],status->temperatures[2],status->temperatures[3]);
 
 
 //TODO - get currents remove test code
@@ -275,7 +276,7 @@ gs_fin_cmd_error_t set_fin_pos(const gs_fin_positions_t * pos) {
 
 	}
 
-	//TODO - other encoder stepper pairs
+	
 	
 	//TODO - add eeprom save
 	
@@ -523,7 +524,8 @@ CSP_DEFINE_TASK(task_stepper) {
 					} else {
 						if(stepcmd[i].retry<RETRYMAX) {
 							csp_log_warn("Command Fail, Retry, Delta %d Retry %d\n",abs(targetfind-encfind),stepcmd[i].retry);
-							//TODO - retry
+							//TODO - Auto overstep control
+							//TODO - take into account going past setpoint, not jsut being less than it
 							
 							uint16_t command2Q=((i*4)<<12)	|	stepcmd[i].direction<<13	|	uint16_t(((float)abs(targetfind-encfind))/9.48148148148);
 							stepcmd[i].retry++;

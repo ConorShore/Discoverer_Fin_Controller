@@ -28,22 +28,34 @@ static void process_fin_cmd(csp_conn_t * conn, csp_packet_t * packet)
             int8_t error = get_fin_status(&status);
 
             /* Set error code in response */
-			printf("sizeof enum %d\n",sizeof(error));
-            packet->data[1] = error;
+            packet->data[0] = error;
 			
             if (error == FIN_CMD_OK) {
                 /* Copy status to response buffer */
-				packet->data[0]=0;
+				//packet->data[0]=0;
 				//packet->data[1]=0;
 				//packet->data[2]=0;
 				
-                memcpy(&packet->data[2], &status, sizeof(status)-2);
+                memcpy(&packet->data[1], &status, sizeof(status));
+				
+				for (int i=1; i<sizeof(uint16_t)*16+1;i+=2){
+					uint8_t temp =packet->data[i+1];
+					packet->data[i+1]=packet->data[i];
+					packet->data[i]=temp;
+				}
+	
+				printf("\n");
 				
 				packet->data[33]=status.mode;
 				packet->data[34]=0;
 				packet->data[35]=0;
 				packet->data[36]=0;
 				packet->data[37]=status.status_code;
+			
+// 				for(int i=0 ;i<38;i++) {
+// 					printf("%x ",packet->data[i]);
+// 				}
+// 				
                 reply_length += sizeof(status)+3;
 				csp_log_info("sizeof sat %d\n",reply_length);
             }
