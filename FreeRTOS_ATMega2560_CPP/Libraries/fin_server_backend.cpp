@@ -14,6 +14,9 @@
 #include <avr/eeprom.h>
 #include <FinCont.h>
 #include <I2C.h>
+#include <R_EEPROM.h>
+
+//R_EEPROM running_conf_EEPROM;
 
 
 uniman_step_config_t uniman_step1_conf = {
@@ -570,10 +573,13 @@ gs_fin_cmd_error_t init_server(void) {
 	gs_fin_cmd_error_t error=FIN_CMD_OK;
 	
 	//I2C_init();
+	R_EEPROM test_EEPROM;
 	
 	setup_temp_sensors();
 	//process_config(&uniman_running_conf);
-
+	//test_EEPROM.init(30,2,&uniman_running_conf);
+	
+	test_EEPROM.read(&uniman_running_conf);
 
 	
 

@@ -672,6 +672,12 @@
     <Compile Include="Libraries\I2C.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="Libraries\R_EEPROM.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="Libraries\R_EEPROM.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="Libraries\SPI\SPI.cpp">
       <SubType>compile</SubType>
     </Compile>

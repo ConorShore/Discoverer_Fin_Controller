@@ -38,7 +38,7 @@ static void process_fin_cmd(csp_conn_t * conn, csp_packet_t * packet)
 				
                 memcpy(&packet->data[1], &status, sizeof(status));
 				
-				for (int i=1; i<sizeof(uint16_t)*16+1;i+=2){
+				for (uint16_t i=1; i<sizeof(uint16_t)*16+1;i+=2){
 					uint8_t temp =packet->data[i+1];
 					packet->data[i+1]=packet->data[i];
 					packet->data[i]=temp;
