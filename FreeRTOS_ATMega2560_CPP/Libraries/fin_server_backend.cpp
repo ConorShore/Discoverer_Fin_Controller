@@ -574,12 +574,17 @@ gs_fin_cmd_error_t init_server(void) {
 	
 	//I2C_init();
 	R_EEPROM test_EEPROM;
+	R_EEPROM test_EEPROM2;
+	
+	test_EEPROM.initclass();
 	
 	setup_temp_sensors();
 	//process_config(&uniman_running_conf);
 	//test_EEPROM.init(30,2,&uniman_running_conf);
 	
-	test_EEPROM.read(&uniman_running_conf);
+	printf("test %d\n",test_EEPROM.init(64,5,sizeof(uniman_running_conf)));
+	printf("test %d\n",test_EEPROM2.init(0,5,sizeof(uniman_running_conf)));
+	printf("size of runn %d\n",sizeof(uniman_running_conf));
 
 	
 
