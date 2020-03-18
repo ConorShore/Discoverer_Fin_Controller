@@ -17,7 +17,7 @@ class R_EEPROM {
 		uint8_t sizeofin;
 		uint8_t initr;
 		static uint8_t initc;
-		uint16_t blocks;
+		uint8_t blocks;
 		static uint8_t firstrun;	
 		int startadd;
 		int curaddress;

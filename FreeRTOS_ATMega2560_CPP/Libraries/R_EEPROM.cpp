@@ -62,7 +62,7 @@
 		
 		uint8_t uninit=1;
 		
-		for (int i=0;i<sizeofin+COUNTERSIZE+CRCSIZE;i++) {
+		for (uint16_t i=0;i<sizeofin+COUNTERSIZE+CRCSIZE;i++) {
 			
 			if(eeprom_read_byte((uint8_t *) startadd+i)!=0xFF) { //check to see if there's real data there
 				uninit=0;
@@ -99,7 +99,7 @@
 		crc_t crcread=0;
 
 		
-		for(int i=0; i<CRCSIZE;i++) {
+		for(uint16_t i=0; i<CRCSIZE;i++) {
 
 			crcread += (crc_t(array[sizeofin+COUNTERSIZE+i]) //get the crc read
 									<<i*8);
@@ -147,7 +147,7 @@
 		
 		eeprom_read_block(countbuff,(int *) curaddress,COUNTERSIZE); //read current val
 		
-		for(int i=0; i<COUNTERSIZE;i++) {
+		for(uint16_t i=0; i<COUNTERSIZE;i++) {
 			readcount |= (countbuff[i]<<i*8);
 		}
 		
@@ -168,7 +168,7 @@
 
 		crc_t crc=csp_crc32_memory(array,sizeofin+COUNTERSIZE); //calculate the crc
 		
-		for (int i=0;i<CRCSIZE;i++) {
+		for (uint16_t i=0;i<CRCSIZE;i++) {
 			array[sizeofin+COUNTERSIZE+i]=(crc&(0xFFL<<i*8))>>i*8;
 		}
 		

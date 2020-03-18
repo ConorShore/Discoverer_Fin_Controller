@@ -35,9 +35,7 @@ static void process_fin_cmd(csp_conn_t * conn, csp_packet_t * packet)
 			
             if (error == FIN_CMD_OK) {
                 /* Copy status to response buffer */
-				//packet->data[0]=0;
-				//packet->data[1]=0;
-				//packet->data[2]=0;
+
 				
 				//R_EEPROM testg;
 				
@@ -49,6 +47,7 @@ static void process_fin_cmd(csp_conn_t * conn, csp_packet_t * packet)
 				
 				
 				for (uint16_t i=1; i<sizeof(uint16_t)*16+1;i+=2){
+					//correct endianness
 					uint8_t temp =packet->data[i+1];
 					packet->data[i+1]=packet->data[i];
 					packet->data[i]=temp;

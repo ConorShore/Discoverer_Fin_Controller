@@ -209,8 +209,6 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 	
 	uint16_t temp16=0;
 
-	int16_t tempi16=0;
-	uint16_t target=0;
 	float tempd[4]={0.0,0.0,0.0,0.0};
 	
 	//TODO - catch input errors
