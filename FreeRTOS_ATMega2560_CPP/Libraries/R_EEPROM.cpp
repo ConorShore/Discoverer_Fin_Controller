@@ -3,15 +3,17 @@
 #include <csp/csp_crc32.h>
 #include <R_EEPROM.h>
 
+//this uses the CRC32 found in libcsp
+
 	unsigned int R_EEPROM::addressspace[ADDRESSSPACESIZE];
 	unsigned int R_EEPROM::blockreserve[ADDRESSSPACESIZE];
 	 uint8_t R_EEPROM::initc;
 	 
 	 uint8_t R_EEPROM::initcheck(void) {
 		 if(initc==0||initr==0) {
-			return 0; 
+			return -1; 
 		 } else {
-			return 1; 
+			return 0; 
 		 }
 	 }
 
@@ -26,8 +28,8 @@
 		
 	};
 	
-	uint8_t R_EEPROM::init(uint16_t add, uint16_t blocksin, uint16_t sizeofdata) {
-		if(initcheck()) return -1;
+	uint8_t R_EEPROM::begin(uint16_t add, uint16_t blocksin, uint16_t sizeofdata, void * data) {
+		if(initc==0) return -1;
 		sizeofin=sizeofdata;
 		uint8_t error = 0;
 		uint16_t resamount=(uint16_t(sizeofin)+CRCSIZE+COUNTERSIZE)*blocksin;
@@ -56,14 +58,61 @@
 		}
 		blocks=blocksin;
 		startadd=add;
+		curaddress=startadd;
+		
+		uint8_t uninit=1;
+		
+		for (int i=0;i<sizeofin+COUNTERSIZE+CRCSIZE;i++) {
+			if(eeprom_read_byte((uint8_t *) startadd+i)!=0xFF) {
+				uninit=0;
+				break;
+			}
+		}
 		initr=1;
+		if(uninit) {
+			printf("init eeprom area\n");
+			if(write(data)!=0) return -1;
+		}
+		
+		
 		
 		// TODO - check that data isnt all 0xFF
 		
 		return error;
 	};
 	
-	uint8_t R_EEPROM::read(uint8_t * data) {
+	uint8_t R_EEPROM::read(void * data) {
+		
+		if(initcheck()!=0) return -1;
+		if(sizeofin>=BUFFSIZE) return -1;
+		if(data==NULL) return -1;	
+		
+		uint8_t array[BUFFSIZE];
+
+		eeprom_read_block(array,(int *) curaddress,sizeofin+CRCSIZE+sizeof(count_t));
+		
+// 		for (int i=0;i<sizeofin+CRCSIZE+COUNTERSIZE;i++) {
+// 			printf("%x ",array[i]);
+// 		}
+		
+		crc_t crccalc=csp_crc32_memory(array,sizeofin+COUNTERSIZE);
+		crc_t crcread=0;
+
+		
+		for(int i=0; i<CRCSIZE;i++) {
+
+			crcread += (crc_t(array[sizeofin+COUNTERSIZE+i])
+									<<i*8);
+		}
+		
+		//printf("\ncrc read %lx crc calc %lx\n",crcread,crccalc);
+		
+		if((crccalc-crcread)!=0) return -2;
+		
+		memcpy(data,array+COUNTERSIZE,sizeofin);
+		
+		return 0;
+		
 		
 	}
 	
@@ -77,44 +126,58 @@
 			initc=1;
 		}
 		initr=0;
+		blockpoint=0;
 	}
 	
-	uint8_t R_EEPROM::write(void * data, uint8_t sizeofdata) {
+	uint8_t R_EEPROM::write(void * data) {
 		
 		if(initcheck()!=0) return -1;
-		if(sizeofdata>=BUFFSIZE) return -1;
+		if(sizeofin>=BUFFSIZE) return -1;
 		if(data==NULL) return -1;
 		
 		uint8_t array[BUFFSIZE];
-		array[0]=0;
-		array[1]=0;
-		
-		memcpy(array+sizeof(count_t),data,sizeofdata+sizeof(count_t));
+
+		memcpy(array+COUNTERSIZE,data,sizeofin+COUNTERSIZE); //copy data to new array, leaving room for counter
 				
-		uint8_t countbuff[sizeof(count_t)];
+		uint8_t countbuff[COUNTERSIZE];
 		count_t readcount=0;
 		
-		eeprom_read_block(countbuff,(int *) startadd,sizeof(count_t));
 		
-		for(int i=0; i<sizeof(count_t);i++) {
+		
+		eeprom_read_block(countbuff,(int *) curaddress,COUNTERSIZE); //read current val
+		
+		for(int i=0; i<COUNTERSIZE;i++) {
 			readcount |= (countbuff[i]<<i*8);
 		}
 		
-		printf("read %u\n",readcount);
+		count_t comp=0;
+		comp=~comp;
+		
+		if(readcount==comp) { //this checks if area is initalised, if not start the count
+			readcount=0;
+		} else if(readcount>=MAXWRITES) {
+			if(incrementblock()!=0) return -1;
+		
+			return write(data);
+		}
+		
+	
 		readcount++;
-		memcpy(array,&readcount,sizeof(count_t));
+		memcpy(array,&readcount,COUNTERSIZE);
 
-		crc_t crc=csp_crc32_memory(array,sizeofdata+sizeof(count_t));
+		crc_t crc=csp_crc32_memory(array,sizeofin+COUNTERSIZE);
 		
 		printf("\n crc %lx\n",crc);
 		
-		for (int i=0;i<sizeof(crc_t);i++) {
-			array[sizeofdata+sizeof(count_t)+i]=(crc&(0xFFL<<i*8))>>i*8;
+		for (int i=0;i<CRCSIZE;i++) {
+			array[sizeofin+COUNTERSIZE+i]=(crc&(0xFFL<<i*8))>>i*8;
 		}
 		
-		for (int i=0;i<sizeofdata+sizeof(crc_t)+sizeof(count_t);i++) {
-			printf("%x ",array[i]);
-		}
+// 		for (int i=0;i<sizeofin+CRCSIZE+COUNTERSIZE;i++) {
+// 			printf("%x ",array[i]);
+// 		}
+		
+		eeprom_write_block(array,(int *) curaddress,sizeofin+CRCSIZE+COUNTERSIZE);
 				
 
 		

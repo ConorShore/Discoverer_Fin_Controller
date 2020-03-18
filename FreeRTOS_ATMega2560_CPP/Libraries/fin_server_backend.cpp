@@ -574,17 +574,23 @@ gs_fin_cmd_error_t init_server(void) {
 	
 	//I2C_init();
 	R_EEPROM test_EEPROM;
-	R_EEPROM test_EEPROM2;
+
 	
 	
 	
 	setup_temp_sensors();
-	//process_config(&uniman_running_conf);
-	//test_EEPROM.init(30,2,&uniman_running_conf);
+
 	
-	printf("test %d\n",test_EEPROM.init(64,5,sizeof(uniman_running_conf)));
-	printf("test %d\n",test_EEPROM2.init(0,5,sizeof(uniman_running_conf)));
-	printf("size of runn %d\n",sizeof(uniman_running_conf));
+
+// 	printf("test %d\n",test_EEPROM.begin(0,8,sizeof(uniman_running_conf),&uniman_running_conf));
+// 		print_conf(&uniman_running_conf);
+// 	uniman_running_conf.stepper_config=0x34;
+// 
+// 	printf("write test %d\n",test_EEPROM.write(&uniman_running_conf));
+// 	
+// 	printf("write read %d\n",test_EEPROM.read(&uniman_running_conf));
+// 	print_conf(&uniman_running_conf);
+
 
 	
 
@@ -756,7 +762,7 @@ return error;
 }
 
 void print_conf(gs_fin_config_t * confin) {
-			printf("%x ",confin->stepper_config);
+			printf("\nconf %x ",confin->stepper_config);
 		printf("%x ",confin->stepper_ihold);
 		printf("%x ",confin->stepper_irun);
 		printf("%x ",confin->stepper_speed);

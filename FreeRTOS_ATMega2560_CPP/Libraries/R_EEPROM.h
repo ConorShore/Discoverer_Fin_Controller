@@ -20,17 +20,19 @@ class R_EEPROM {
 		uint16_t blocks;
 		static uint8_t firstrun;	
 		int startadd;
+		int curaddress;
 		static unsigned int addressspace[ADDRESSSPACESIZE];
 		static unsigned int blockreserve[ADDRESSSPACESIZE];
 		int qsortcomp(uint16_t in1,uint16_t in2);
 		uint8_t initcheck(void);
+		uint8_t incrementblock(void);
 	
 	public:
 		R_EEPROM(void);
-		void initclass(void);
-		uint8_t init(uint16_t add, uint16_t blocksin, uint16_t sizeofdata);
-		uint8_t write(void * data, uint8_t sizeofdata);
-		uint8_t read(uint8_t * data);
+		
+		uint8_t begin(uint16_t add, uint16_t blocksin, uint16_t sizeofdata, void * data);
+		uint8_t write(void * data);
+		uint8_t read(void * data);
 
 };
 
