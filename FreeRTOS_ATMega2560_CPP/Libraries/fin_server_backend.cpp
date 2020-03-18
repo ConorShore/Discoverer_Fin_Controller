@@ -729,14 +729,14 @@ gs_fin_cmd_error_t error=FIN_CMD_OK;
 gs_fin_cmd_error_t load_fin_config(void) {
 	gs_fin_config_t temp;
 	gs_fin_cmd_error_t error = FIN_CMD_OK;
-	print_conf(&uniman_running_conf);
+	//print_conf(&uniman_running_conf);
 	csp_log_info("Loading config from EEPROM");
 	portENTER_CRITICAL();
 
 	running_conf_EEPROM.read(&temp);
 	//eeprom_read_block(&temp,(uint16_t*) EEPROM_RUN_CONF_ADD,sizeof(gs_fin_config_t));
 	uniman_running_conf=temp;
-	print_conf(&uniman_running_conf);
+	//print_conf(&uniman_running_conf);
 	process_config(&uniman_running_conf);
 	portEXIT_CRITICAL();
 	csp_log_info("Error = %d",error);

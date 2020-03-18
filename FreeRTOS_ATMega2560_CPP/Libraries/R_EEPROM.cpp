@@ -50,7 +50,7 @@
 				blocks=blocksin;
 				break;
 			}
-			if(i==ADDRESSSPACESIZE-1) {
+			if(i==ADDRESSSPACESIZE-1) { //if theres no space left
 				error=-1;
 			
 				return error;
@@ -64,7 +64,7 @@
 		
 		for (int i=0;i<sizeofin+COUNTERSIZE+CRCSIZE;i++) {
 			
-			if(eeprom_read_byte((uint8_t *) startadd+i)!=0xFF) {
+			if(eeprom_read_byte((uint8_t *) startadd+i)!=0xFF) { //check to see if there's real data there
 				uninit=0;
 				break;
 			}
@@ -72,7 +72,7 @@
 		initr=1;
 		if(uninit) {
 			printf("init eeprom area\n");
-			if(write(data)!=0) return -1;
+			if(write(data)!=0) return -1; // if theres no real data, write something there
 		}
 		
 		
@@ -84,32 +84,32 @@
 	uint8_t R_EEPROM::read(void * data) {
 		
 		if(initcheck()!=0) return -1;
-		if(sizeofin>=BUFFSIZE) return -1;
+		if(sizeofin>=BUFFSIZE) return -1;  //various sanity checks
 		if(data==NULL) return -1;	
 		
 		uint8_t array[BUFFSIZE];
 
-		eeprom_read_block(array,(int *) curaddress,sizeofin+CRCSIZE+sizeof(count_t));
+		eeprom_read_block(array,(int *) curaddress,sizeofin+CRCSIZE+COUNTERSIZE); //read the data
 		
 // 		for (int i=0;i<sizeofin+CRCSIZE+COUNTERSIZE;i++) {
 // 			printf("%x ",array[i]);
 // 		}
 		
-		crc_t crccalc=csp_crc32_memory(array,sizeofin+COUNTERSIZE);
+		crc_t crccalc=csp_crc32_memory(array,sizeofin+COUNTERSIZE); //calculate the crc of read data
 		crc_t crcread=0;
 
 		
 		for(int i=0; i<CRCSIZE;i++) {
 
-			crcread += (crc_t(array[sizeofin+COUNTERSIZE+i])
+			crcread += (crc_t(array[sizeofin+COUNTERSIZE+i]) //get the crc read
 									<<i*8);
 		}
 		
 		//printf("\ncrc read %lx crc calc %lx\n",crcread,crccalc);
 		
-		if((crccalc-crcread)!=0) return -2;
+		if((crccalc-crcread)!=0) return -2; //compare crc's
 		
-		memcpy(data, array+COUNTERSIZE,sizeofin);
+		memcpy(data, array+COUNTERSIZE,sizeofin); // if everything checks out, pass that data out
 		
 		return 0;
 		
@@ -132,7 +132,7 @@
 	uint8_t R_EEPROM::write(const void * data) {
 		
 		if(initcheck()!=0) return -1;
-		if(sizeofin>=BUFFSIZE) return -1;
+		if(sizeofin>=BUFFSIZE) return -1; //sanity checks
 		if(data==NULL) return -1;
 		
 		uint8_t array[BUFFSIZE];
@@ -157,29 +157,28 @@
 		if(readcount==comp) { //this checks if area is initalised, if not start the count
 			readcount=0;
 		} else if(readcount>=MAXWRITES) {
-			if(incrementblock()!=0) return -1;
+			if(incrementblock()!=0) return -1; //if we need to increment the block, go ahead
 		
-			return write(data);
+			return write(data); //write data to new block
 		}
 		
 	
 		readcount++;
 		memcpy(array,&readcount,COUNTERSIZE);
 
-		crc_t crc=csp_crc32_memory(array,sizeofin+COUNTERSIZE);
-		
-		//printf("\n crc %lx\n",crc);
+		crc_t crc=csp_crc32_memory(array,sizeofin+COUNTERSIZE); //calculate the crc
 		
 		for (int i=0;i<CRCSIZE;i++) {
 			array[sizeofin+COUNTERSIZE+i]=(crc&(0xFFL<<i*8))>>i*8;
 		}
 		
-		for (int i=0;i<sizeofin+CRCSIZE+COUNTERSIZE;i++) {
-			printf("%x ",array[i]);
-		}
-		
+// 		for (int i=0;i<sizeofin+CRCSIZE+COUNTERSIZE;i++) {
+// 			printf("%x ",array[i]);
+// 		}
+// 		
 		eeprom_write_block(array,(int *) curaddress,sizeofin+CRCSIZE+COUNTERSIZE);
 				
+				return 0;
 
 		
 	}
