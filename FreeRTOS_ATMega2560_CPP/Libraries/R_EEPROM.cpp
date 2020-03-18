@@ -1,12 +1,12 @@
 ﻿ #include <stdio.h>
 #include <avr/eeprom.h>
+#include <avr/pgmspace.h>
+#include <string.h>
 
 #include <R_EEPROM.h>
 
-extern "C" {
-#include <csp/csp_crc32.h>
-};
-//this uses the CRC32 found in libcsp
+//this implementation is copied and sightly modified to reduce memory usage
+// originally comes from libcsp https://github.com/GomSpace/libcsp
 
 static const uint32_t crc_tab[256] PROGMEM = {
 		0x00000000, 0xF26B8303, 0xE13B70F7, 0x1350F3F4, 0xC79A971F, 0x35F1141C, 0x26A1E7E8, 0xD4CA64EB,
@@ -124,29 +124,52 @@ static const uint32_t crc_tab[256] PROGMEM = {
 		if(sizeofin>=BUFFSIZE) return -1;  //various sanity checks
 		if(data==NULL) return -1;	
 		
-		uint8_t array[BUFFSIZE];
+		//uint8_t array[BUFFSIZE];
+		uint8_t crcbuff[CRCSIZE];
 
-		eeprom_read_block(array,(int *) curaddress,sizeofin+CRCSIZE+COUNTERSIZE); //read the data
+		//eeprom_read_block(array,(int *) curaddress,sizeofin+CRCSIZE+COUNTERSIZE); //read the data
 		
 // 		for (int i=0;i<sizeofin+CRCSIZE+COUNTERSIZE;i++) {
 // 			printf("%x ",array[i]);
 // 		}
+
+		crc_t crccalc;
+		crccalc = 0xFFFFFFFF;
+		for (uint16_t i=0;i<sizeofin+COUNTERSIZE+CRCSIZE;i++) {
+
+			if (i<sizeofin+COUNTERSIZE) {
+				crccalc = pgm_read_dword(&(crc_tab[(crccalc ^ (eeprom_read_byte((uint8_t*)curaddress+i))) & 0xFFL])) ^ (crccalc >> 8);
+			} else {
+				crcbuff[i-(sizeofin+COUNTERSIZE)]=eeprom_read_byte((uint8_t*)curaddress+i);
+			}
+		}
+		crccalc ^= 0xFFFFFFFF;
 		
-		crc_t crccalc=csp_crc32_memory(array,sizeofin+COUNTERSIZE); //calculate the crc of read data
+		//printf("\ncrc 1 %lx\n",crccalc);
+		
+		//crc_t crccalc=csp_crc32_memory(array,sizeofin+COUNTERSIZE); //calculate the crc of read data
 		crc_t crcread=0;
 
 		
 		for(uint16_t i=0; i<CRCSIZE;i++) {
 
-			crcread += (crc_t(array[sizeofin+COUNTERSIZE+i]) //get the crc read
-									<<i*8);
+			crcread += (crc_t(crcbuff[i])<<i*8); //get the crc read
+									
 		}
 		
 		//printf("\ncrc read %lx crc calc %lx\n",crcread,crccalc);
 		
 		if((crccalc-crcread)!=0) return -2; //compare crc's
 		
-		memcpy(data, array+COUNTERSIZE,sizeofin); // if everything checks out, pass that data out
+		// if everything checks out, pass that data out
+		for(uint16_t i=0;i<sizeofin;i++) {
+			uint8_t * point;
+
+			uint8_t in=eeprom_read_byte((uint8_t*)curaddress+i+COUNTERSIZE);
+			*point=in;
+			memcpy(data+i, point,1); 
+			
+		}
 		
 		return 0;
 		
@@ -172,9 +195,9 @@ static const uint32_t crc_tab[256] PROGMEM = {
 		if(sizeofin>=BUFFSIZE) return -1; //sanity checks
 		if(data==NULL) return -1;
 		
-		uint8_t array[BUFFSIZE];
+		//uint8_t array[BUFFSIZE];
 
-		memcpy(array+COUNTERSIZE,data,sizeofin+COUNTERSIZE); //copy data to new array, leaving room for counter
+		//memcpy(array+COUNTERSIZE,data,sizeofin+COUNTERSIZE); //copy data to new array, leaving room for counter
 				
 		uint8_t countbuff[COUNTERSIZE];
 		uint8_t crcbuff[CRCSIZE];
@@ -203,7 +226,7 @@ static const uint32_t crc_tab[256] PROGMEM = {
 	
 		readcount++;
 		memcpy(countbuff,&readcount,COUNTERSIZE);
-		memcpy(array,&readcount,COUNTERSIZE);
+		//memcpy(array,&readcount,COUNTERSIZE);
 
 		crc_t crc;
 		crc = 0xFFFFFFFF;
@@ -216,11 +239,11 @@ static const uint32_t crc_tab[256] PROGMEM = {
 			}
 
 			crc = pgm_read_dword(&(crc_tab[(crc ^ in) & 0xFFL])) ^ (crc >> 8);
-			printf("%x ",in);
+			//printf("%x ",in);
 		}
 		crc ^= 0xFFFFFFFF;
 		
-		printf("\ncrc 1 %lx\n",crc);
+		//printf("\ncrc 1 %lx\n",crc);
 
 		
 		//crc=csp_crc32_memory(array,sizeofin+COUNTERSIZE); //calculate the crc
