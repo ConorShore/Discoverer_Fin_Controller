@@ -126,24 +126,24 @@ uint16_t enc_tar_points[4] = {0,0,0,0};
 gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
 	
 	//TODO - remove this test code
-// 	gs_fin_positions_t test2 = {
-// 		.pos_fin_a=0x01F1,
-// 		.pos_fin_b=0x02F2,
-// 		.pos_fin_c=0x03F3,
-// 		.pos_fin_d=0x04F4
-// 	};
-// 	
-// 	gs_fin_status_t test = {
-// 		.pos_set_points=test2,
-// 		.encoder_pos=test2,
-// 		.temperatures={0x05F5,0x06F6,0x07F7,0x08F8},
-// 		.currents={0x09F9,0x10F0,0x11F1,0x12F2},
-// 		.mode=GS_FIN_MODE_CUSTOM,
-// 		.status_code=7
-// 	};
-// 	
-// 	*status=test;
-// 	return FIN_CMD_OK;
+	gs_fin_positions_t test2 = {
+		.pos_fin_a=0x01F1,
+		.pos_fin_b=0x02F2,
+		.pos_fin_c=0x03F3,
+		.pos_fin_d=0x04F4
+	};
+	
+	gs_fin_status_t test = {
+		.pos_set_points=test2,
+		.encoder_pos=test2,
+		.temperatures={0x05F5,0x06F6,0x07F7,0x08F8},
+		.currents={0x09F9,0x10F0,0x11F1,0x12F2},
+		.mode=GS_FIN_MODE_CUSTOM,
+		.status_code=7
+	};
+	
+	*status=test;
+	return FIN_CMD_OK;
 
 //get setpoints, probably will done during normal operation
 
@@ -576,7 +576,7 @@ gs_fin_cmd_error_t init_server(void) {
 	R_EEPROM test_EEPROM;
 	R_EEPROM test_EEPROM2;
 	
-	test_EEPROM.initclass();
+	
 	
 	setup_temp_sensors();
 	//process_config(&uniman_running_conf);
@@ -601,7 +601,7 @@ gs_fin_cmd_error_t init_server(void) {
 		//gs_fin_positions_t tempos = {0,0,0,0};
 			//set_fin_pos(&tempos);
 		
-		uint16_t p=0;
+		//uint16_t p=0;
 		//uint16_t p=0x0005;
 		
 		//csp_queue_enqueue(uniman_stepper_q,&p,1000);
