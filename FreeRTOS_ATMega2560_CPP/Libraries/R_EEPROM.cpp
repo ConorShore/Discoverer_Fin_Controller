@@ -33,9 +33,9 @@
 		sizeofin=sizeofdata;
 		uint8_t error = 0;
 		uint16_t resamount=(uint16_t(sizeofin)+CRCSIZE+COUNTERSIZE)*blocksin;
-		printf("add %d resam %u sizeofin %d\n",add,resamount,sizeofin);
+		//printf("add %d resam %u sizeofin %d\n",add,resamount,sizeofin);
 		for (int i=0;i<ADDRESSSPACESIZE;i++) {
-					printf("%x\n",addressspace[i]);
+					//printf("%x\n",addressspace[i]);
 					
 			if (addressspace[i]!=0xFFFF) { //array initalised to 0xFFFF, so if not this there is data here
 				if (((add>=addressspace[i])&&(add<addressspace[i]+blockreserve[i]))||
@@ -63,6 +63,7 @@
 		uint8_t uninit=1;
 		
 		for (int i=0;i<sizeofin+COUNTERSIZE+CRCSIZE;i++) {
+			
 			if(eeprom_read_byte((uint8_t *) startadd+i)!=0xFF) {
 				uninit=0;
 				break;
@@ -75,8 +76,7 @@
 		}
 		
 		
-		
-		// TODO - check that data isnt all 0xFF
+	
 		
 		return error;
 	};
@@ -109,7 +109,7 @@
 		
 		if((crccalc-crcread)!=0) return -2;
 		
-		memcpy(data,array+COUNTERSIZE,sizeofin);
+		memcpy(data, array+COUNTERSIZE,sizeofin);
 		
 		return 0;
 		
@@ -129,7 +129,7 @@
 		blockpoint=0;
 	}
 	
-	uint8_t R_EEPROM::write(void * data) {
+	uint8_t R_EEPROM::write(const void * data) {
 		
 		if(initcheck()!=0) return -1;
 		if(sizeofin>=BUFFSIZE) return -1;
@@ -142,6 +142,7 @@
 		uint8_t countbuff[COUNTERSIZE];
 		count_t readcount=0;
 		
+		//printf("start add %u cur add %u",startadd,curaddress);
 		
 		
 		eeprom_read_block(countbuff,(int *) curaddress,COUNTERSIZE); //read current val
@@ -167,15 +168,15 @@
 
 		crc_t crc=csp_crc32_memory(array,sizeofin+COUNTERSIZE);
 		
-		printf("\n crc %lx\n",crc);
+		//printf("\n crc %lx\n",crc);
 		
 		for (int i=0;i<CRCSIZE;i++) {
 			array[sizeofin+COUNTERSIZE+i]=(crc&(0xFFL<<i*8))>>i*8;
 		}
 		
-// 		for (int i=0;i<sizeofin+CRCSIZE+COUNTERSIZE;i++) {
-// 			printf("%x ",array[i]);
-// 		}
+		for (int i=0;i<sizeofin+CRCSIZE+COUNTERSIZE;i++) {
+			printf("%x ",array[i]);
+		}
 		
 		eeprom_write_block(array,(int *) curaddress,sizeofin+CRCSIZE+COUNTERSIZE);
 				
@@ -183,6 +184,14 @@
 		
 	}
 
+	
+	uint8_t R_EEPROM::incrementblock(void) {
+		if(blockpoint+1>=blocks) return -1;
+		blockpoint++;
+		printf("block incr\n");
+		curaddress=startadd+(sizeofin*blockpoint);
+		return 0;
+	}
 
 	
 	

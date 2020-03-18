@@ -14,8 +14,6 @@
 #include <SPI/spi.h>
 #include <arduino-mcp2515-master/mcp2515.h>
 
-//#define MSGMAX 50 // maximum CSP message size
-
 extern "C" {
 
 

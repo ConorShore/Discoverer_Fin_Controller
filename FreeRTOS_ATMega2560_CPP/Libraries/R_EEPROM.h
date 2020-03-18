@@ -1,4 +1,4 @@
-#define MAXWRITES 100000
+#define MAXWRITES 65530
 #define ADDRESSSPACESIZE 8
 #define BUFFSIZE 64
 
@@ -31,7 +31,7 @@ class R_EEPROM {
 		R_EEPROM(void);
 		
 		uint8_t begin(uint16_t add, uint16_t blocksin, uint16_t sizeofdata, void * data);
-		uint8_t write(void * data);
+		uint8_t write(const void * data);
 		uint8_t read(void * data);
 
 };

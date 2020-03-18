@@ -38,11 +38,14 @@ static void process_fin_cmd(csp_conn_t * conn, csp_packet_t * packet)
 				//packet->data[0]=0;
 				//packet->data[1]=0;
 				//packet->data[2]=0;
-
+				
+				//R_EEPROM testg;
 				
                 memcpy(&packet->data[1], &status, sizeof(status));
 
-		
+				
+				printf("\n");
+				//testg.write(&status,sizeof(status));
 				
 				
 				for (uint16_t i=1; i<sizeof(uint16_t)*16+1;i+=2){
@@ -64,7 +67,7 @@ static void process_fin_cmd(csp_conn_t * conn, csp_packet_t * packet)
 // 				}
 // 				
                 reply_length += sizeof(status)+3;
-			
+				csp_log_info("sizeof sat %d\n",reply_length);
             }
             break;
         }

@@ -16,7 +16,8 @@
 #include <I2C.h>
 #include <R_EEPROM.h>
 
-//R_EEPROM running_conf_EEPROM;
+R_EEPROM running_conf_EEPROM;
+R_EEPROM last_pos_rec;
 
 
 uniman_step_config_t uniman_step1_conf = {
@@ -43,6 +44,7 @@ gs_fin_config_t uniman_running_conf = {
 };
 
 #define EEPROM_RUN_CONF_ADD 0x00
+#define EEPROM_LAST_POS_REC 0x20
 
 csp_queue_handle_t uniman_stepper_q;
 
@@ -185,11 +187,10 @@ gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
 	//printf("temps %d %d %d %d\n",status->temperatures[0],status->temperatures[1],status->temperatures[2],status->temperatures[3]);
 
 
-//TODO - get currents remove test code
-	status->currents[0] = 15;
-	status->currents[1] = 15;
-	status->currents[2] = 15;
-	status->currents[3] = 15;
+	status->currents[0] = 0;
+	status->currents[1] = 0;
+	status->currents[2] = 0;
+	status->currents[3] = 0;
 	
 
 //get mode
@@ -202,7 +203,7 @@ gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
 
 }
 
-gs_fin_cmd_error_t set_fin_pos(const gs_fin_positions_t * pos) {
+gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 	
 	gs_fin_cmd_error_t error=FIN_CMD_OK;
 	
@@ -210,7 +211,7 @@ gs_fin_cmd_error_t set_fin_pos(const gs_fin_positions_t * pos) {
 
 	int16_t tempi16=0;
 	uint16_t target=0;
-	float tempd[4]={0,0,0,0};
+	float tempd[4]={0.0,0.0,0.0,0.0};
 	
 	//TODO - catch input errors
 	for (int i=0; i<4; i++) {
@@ -249,11 +250,20 @@ gs_fin_cmd_error_t set_fin_pos(const gs_fin_positions_t * pos) {
 				tempd[4]=float(pos->pos_fin_d);	
 			break;		
 		}
+		
+		printf("Step %d, enc %d, to %d \n\n",i,temp16,uint16_t(tempd[4]));
+		
 		if(internalerror!=0)  {
 			csp_log_error("Enc %d error",i+1);
 			continue;
 		}
-		//printf("Step %d, enc %d, to %l asgasas\n\n",i,temp16,tempd[4]);
+		
+		if(tempd[4]>3600) {
+			csp_log_error("invalid data for stepper from comms");
+			continue;
+		}
+		
+		
 		tempd[0]=(float)temp16;
 		tempd[0]/=1.13777777778;
 		tempd[1]=tempd[4]-tempd[0];
@@ -278,15 +288,18 @@ gs_fin_cmd_error_t set_fin_pos(const gs_fin_positions_t * pos) {
 			if(csp_queue_enqueue(uniman_stepper_q,&commandinc,1000)!=0) error=FIN_CMD_FAIL;
 
 	}
-
-	
-	
-	//TODO - add eeprom save
 	
 	//TODO - remove this test statement
 	error=FIN_CMD_OK;
 	return error;
+}
+
+gs_fin_cmd_error_t set_fin_pos(const gs_fin_positions_t * pos) {
 	
+	last_pos_rec.write(pos);
+	
+	return set_fin_pos_ns(pos);
+
 }
 
 void setup_temp_sensors(void) {
@@ -344,8 +357,10 @@ void read_temp_sensors(uint16_t *array){
 		
 	}
 
+
 CSP_DEFINE_TASK(task_stepper) {
-	#define OVERSTEPS 8
+	#define BASEOVERSTEPS 2;
+	uint8_t oversteps = 4;
 	#define RETRYMAX 5
 	#define RETRYMARGIN 10
 	uint16_t recbuf=0;
@@ -411,7 +426,7 @@ CSP_DEFINE_TASK(task_stepper) {
 		}
 		
 		
-		uint16_t stepc=OVERSTEPS;
+		uint16_t stepc=oversteps;
 		if(inmove[0]) {
 			stepper1.dirfunc(0,stepcmd[0].direction&0x01);
 		}
@@ -461,7 +476,7 @@ CSP_DEFINE_TASK(task_stepper) {
 				if(inmove[3]) {
 					stepper2.dirfunc(1,(!(stepcmd[3].direction))&0x01);
 				}
-		stepc=OVERSTEPS-2;
+		stepc=oversteps-2;
 		for (uint8_t i=0; i<(uniman_running_conf.stepper_config&0x0F)-1;i++){
 			stepc*=2;
 		}
@@ -495,7 +510,7 @@ CSP_DEFINE_TASK(task_stepper) {
 			
 			for(int i=0;i<4;i++) {
 				if((inmove[i]==1)&&(stepcmd[i].cursteps==stepcmd[i].tarsteps)) {
-					inmove[i]=0;
+				
 					uint16_t posrec=0;
 					switch (i) {
 						case 0:
@@ -524,6 +539,7 @@ CSP_DEFINE_TASK(task_stepper) {
 						//if position is correct
 						csp_log_info("Command Success, Delta %d Retry %d \n",abs(targetfind-encfind),stepcmd[i].retry);
 						stepcmd[i].retry=0;
+						inmove[i]=0;
 					} else {
 						if(stepcmd[i].retry<RETRYMAX) {
 							csp_log_warn("Command Fail, Retry, Delta %d Retry %d\n",abs(targetfind-encfind),stepcmd[i].retry);
@@ -532,8 +548,11 @@ CSP_DEFINE_TASK(task_stepper) {
 							
 							uint16_t command2Q=((i*4)<<12)	|	stepcmd[i].direction<<13	|	uint16_t(((float)abs(targetfind-encfind))/9.48148148148);
 							stepcmd[i].retry++;
+							oversteps*=2;
+							csp_log_info("new over %d",oversteps);
 							csp_queue_enqueue(uniman_stepper_q,&command2Q,1000);
 							} else {
+								oversteps=BASEOVERSTEPS;
 								csp_log_error("Command Fail, Delta %d Retry %d\n",abs(targetfind-encfind),stepcmd[i].retry);
 							}
 						}
@@ -547,7 +566,10 @@ CSP_DEFINE_TASK(task_stepper) {
 		if ((uniman_running_conf.system_reset_encoder_zero&(1<<5))&&inmove[0]==0&&inmove[1]==0) stepper1.disstep();
 		if ((uniman_running_conf.system_reset_encoder_zero&(1<<5))&&inmove[2]==0&&inmove[3]==0) stepper2.disstep();
 		
-		if((inmove[0]+inmove[1]+inmove[2]+inmove[3])==0) uniman_status.mode=GS_FIN_MODE_CUSTOM;
+		if((inmove[0]+inmove[1]+inmove[2]+inmove[3])==0)  {
+			uniman_status.mode=GS_FIN_MODE_CUSTOM;
+			oversteps=BASEOVERSTEPS;
+		}
 		
 		
 // 		get_fin_status(&uniman_status);
@@ -573,59 +595,44 @@ gs_fin_cmd_error_t init_server(void) {
 	gs_fin_cmd_error_t error=FIN_CMD_OK;
 	
 	//I2C_init();
-	R_EEPROM test_EEPROM;
 
-	
-	
 	
 	setup_temp_sensors();
-
 	
+	uniman_stepper_q = csp_queue_create(STEPPER_QUEUE_LENGTH,sizeof(uint16_t));
+	if (uniman_stepper_q==NULL) error =FIN_CMD_FAIL;
+		
+		
+	// stepper q layout
+	// [15:14] Which stepper, 00 is stepper 1, 01 is stepper 2 etc.
+	// [13] direction
+	// [12:0] no of steps
+		
 
-// 	printf("test %d\n",test_EEPROM.begin(0,8,sizeof(uniman_running_conf),&uniman_running_conf));
-// 		print_conf(&uniman_running_conf);
-// 	uniman_running_conf.stepper_config=0x34;
-// 
-// 	printf("write test %d\n",test_EEPROM.write(&uniman_running_conf));
-// 	
-// 	printf("write read %d\n",test_EEPROM.read(&uniman_running_conf));
-// 	print_conf(&uniman_running_conf);
+		
+	running_conf_EEPROM.begin(EEPROM_RUN_CONF_ADD,2,sizeof(uniman_running_conf),&uniman_running_conf);
 
+	gs_fin_positions_t temp = {
+		.pos_fin_a=0,
+		.pos_fin_b=0,
+		.pos_fin_c=0,
+		.pos_fin_d=0
+	};
+		
 
+		
+		
+
+	if(load_fin_config()) error=FIN_CMD_FAIL;
 	
+	print_conf(&uniman_running_conf);
+		
+	last_pos_rec.begin(EEPROM_LAST_POS_REC,8,sizeof(temp),&temp);
 
-	
-		uniman_stepper_q = csp_queue_create(STEPPER_QUEUE_LENGTH,sizeof(uint16_t));
-		if (uniman_stepper_q==NULL) error =FIN_CMD_FAIL;
-		
-		
-		// stepper q layout
-		// [15:14] Which stepper, 00 is stepper 1, 01 is stepper 2 etc.
-		// [13] direction
-		// [12:0] no of steps
-		
-		//gs_fin_positions_t tempos = {0,0,0,0};
-			//set_fin_pos(&tempos);
-		
-		//uint16_t p=0;
-		//uint16_t p=0x0005;
-		
-		//csp_queue_enqueue(uniman_stepper_q,&p,1000);
-		//p=0x600F;
-		
-		//csp_queue_enqueue(uniman_stepper_q,&p,1000);
-// 			p=0x8005;
-// 		
-// 		csp_queue_enqueue(uniman_stepper_q,&p,1000);
-// 			p=0xC005;
-// 		
-// 		csp_queue_enqueue(uniman_stepper_q,&p,1000);
-		
+	last_pos_rec.read(&temp);
+	set_fin_pos_ns(&temp);
 
-		save_fin_config();
-		if(load_fin_config()) error=FIN_CMD_FAIL;
-
-			if(csp_thread_create(task_server, "SERVER", 270, NULL, 2, &handle_server)) error=FIN_CMD_FAIL;
+		if(csp_thread_create(task_server, "SERVER", 270, NULL, 2, &handle_server)) error=FIN_CMD_FAIL;
 	
 	if(csp_thread_create(task_stepper, "STEP",configMINIMAL_STACK_SIZE+140, NULL, 1, NULL)) error=FIN_CMD_FAIL;
 
@@ -726,7 +733,8 @@ gs_fin_cmd_error_t load_fin_config(void) {
 	csp_log_info("Loading config from EEPROM");
 	portENTER_CRITICAL();
 
-	eeprom_read_block(&temp,(uint16_t*) EEPROM_RUN_CONF_ADD,sizeof(gs_fin_config_t));
+	running_conf_EEPROM.read(&temp);
+	//eeprom_read_block(&temp,(uint16_t*) EEPROM_RUN_CONF_ADD,sizeof(gs_fin_config_t));
 	uniman_running_conf=temp;
 	print_conf(&uniman_running_conf);
 	process_config(&uniman_running_conf);
@@ -741,10 +749,11 @@ gs_fin_cmd_error_t save_fin_config(void) {
 	gs_fin_cmd_error_t error = FIN_CMD_OK;
 	csp_log_info("Saving running config to EEPROM");
 	portENTER_CRITICAL();
-	
-eeprom_write_block(&uniman_running_conf,(uint16_t*) EEPROM_RUN_CONF_ADD,sizeof(gs_fin_config_t));
+	running_conf_EEPROM.write(&uniman_running_conf);
+	//eeprom_write_block(&uniman_running_conf,(uint16_t*) EEPROM_RUN_CONF_ADD,sizeof(gs_fin_config_t));
 
-eeprom_read_block(&temp,(uint16_t*) EEPROM_RUN_CONF_ADD,sizeof(gs_fin_config_t));
+	running_conf_EEPROM.read(&temp);
+	//eeprom_read_block(&temp,(uint16_t*) EEPROM_RUN_CONF_ADD,sizeof(gs_fin_config_t));
 
 if(temp.stepper_config!=uniman_running_conf.stepper_config) error = FIN_CMD_FAIL;
 if(temp.stepper_ihold!=uniman_running_conf.stepper_ihold) error = FIN_CMD_FAIL;
@@ -762,7 +771,7 @@ return error;
 }
 
 void print_conf(gs_fin_config_t * confin) {
-			printf("\nconf %x ",confin->stepper_config);
+		printf("\nconf %x ",confin->stepper_config);
 		printf("%x ",confin->stepper_ihold);
 		printf("%x ",confin->stepper_irun);
 		printf("%x ",confin->stepper_speed);

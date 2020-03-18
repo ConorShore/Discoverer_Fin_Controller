@@ -30,7 +30,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <csp/arch/csp_semaphore.h>
 
 #ifndef CSP_BUFFER_ALIGN
-#define CSP_BUFFER_ALIGN	(sizeof( uint8_t *)) //(sizeof( int *))
+#define CSP_BUFFER_ALIGN	(sizeof( uint8_t)) //(sizeof( int *))
 #endif
 
 typedef struct csp_skbf_s {
@@ -178,7 +178,7 @@ void csp_buffer_free(void *packet) {
 	csp_skbf_t * buf = packet - sizeof(csp_skbf_t);
 
 	if (((intptr_t) buf % CSP_BUFFER_ALIGN) > 0) {
-		//printf("unali = %d",((intptr_t) buf) % CSP_BUFFER_ALIGN);
+		printf("unali = %d",((intptr_t) buf) % CSP_BUFFER_ALIGN);
 		csp_log_error("FREE: Unaligned CSP buffer pointer %p", packet);
 		
 		return;
