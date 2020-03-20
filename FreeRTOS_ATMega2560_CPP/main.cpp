@@ -191,7 +191,7 @@ I2C_init();
 
 		//printf("Debug enabed\r\n");
 		
-		csp_debug_toggle_level(CSP_INFO);
+		//csp_debug_toggle_level(CSP_INFO);
 		//csp_debug_toggle_level((CSP_PACKET));
 		//csp_debug_toggle_level(CSP_WARN);
 		//csp_debug_toggle_level(CSP_ERROR);

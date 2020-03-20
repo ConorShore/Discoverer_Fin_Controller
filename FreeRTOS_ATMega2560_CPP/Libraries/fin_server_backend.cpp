@@ -78,8 +78,8 @@ void read_temp_sensors(uint16_t *array);
 
 
 gs_fin_status_t uniman_status = {
-	.pos_set_points= {0,0,0,0},
-	.encoder_pos = {0,0,0,0},
+	.pos_set_points= {100,100,100,100},
+	.encoder_pos = {100,100,100,100},
 	.temperatures = {0,0,0,0},
 	.currents = {0,0,0,0},
 	.mode = GS_FIN_MODE_INIT,
@@ -126,78 +126,23 @@ uint16_t enc_tar_points[4] = {0,0,0,0};
  */
 
 gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
+	#define RANDOMPOS 18
+	#define RANDOMTEMP 6
+	#define TEMPSET 298
 	
-	//TODO - remove this test code
-	gs_fin_positions_t test2 = {
-		.pos_fin_a=0x01F1,
-		.pos_fin_b=0x02F2,
-		.pos_fin_c=0x03F3,
-		.pos_fin_d=0x04F4
-	};
+	gs_fin_cmd_error_t error;
 	
-	gs_fin_status_t test = {
-		.pos_set_points=test2,
-		.encoder_pos=test2,
-		.temperatures={0x05F5,0x06F6,0x07F7,0x08F8},
-		.currents={0x09F9,0x10F0,0x11F1,0x12F2},
-		.mode=GS_FIN_MODE_CUSTOM,
-		.status_code=7
-	};
+	uniman_status.encoder_pos.pos_fin_a=((uniman_status.pos_set_points.pos_fin_a)+(rand()%RANDOMPOS)-(RANDOMPOS/2));
+	uniman_status.encoder_pos.pos_fin_b=((uniman_status.pos_set_points.pos_fin_b)+(rand()%RANDOMPOS)-(RANDOMPOS/2));
+	uniman_status.encoder_pos.pos_fin_c=((uniman_status.pos_set_points.pos_fin_c)+(rand()%RANDOMPOS)-(RANDOMPOS/2));
+	uniman_status.encoder_pos.pos_fin_d=((uniman_status.pos_set_points.pos_fin_d)+(rand()%RANDOMPOS)-(RANDOMPOS/2));
+	for (int i=0;i<4;i++){
+		uniman_status.temperatures[i]=TEMPSET+(rand()%RANDOMTEMP)-(RANDOMTEMP/2);
+	}
+	uniman_status.mode=GS_FIN_MODE_CUSTOM;
 	
-	*status=test;
-	return FIN_CMD_OK;
-
-//get setpoints, probably will done during normal operation
-
-	status->pos_set_points=uniman_status.pos_set_points;
+	*status=uniman_status;
 	
-	gs_fin_cmd_error_t error=FIN_CMD_OK;
-
-
-//get encoder values
-	float tempd=0;
-	uint16_t temp16=0;
-
-	if(encoder1.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
-	tempd=(float)temp16;
-	tempd/=1.13777777778;
-	status->encoder_pos.pos_fin_a=uint16_t(tempd);
-	
-	temp16=0;
-	if(encoder2.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
-	tempd=(float)temp16;
-	tempd/=1.13777777778;
-	status->encoder_pos.pos_fin_b=uint16_t(tempd);
-	
-	temp16=0;
-	if(encoder3.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
-	tempd=(float)temp16;
-	tempd/=1.13777777778;
-	status->encoder_pos.pos_fin_c=uint16_t(tempd);
-	
-	temp16=0;
-	if(encoder4.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
-	tempd=(float)temp16;
-	tempd/=1.13777777778;
-	status->encoder_pos.pos_fin_d=uint16_t(tempd);
-
-
-//get temps
-	read_temp_sensors(&status->temperatures[0]);
-	//printf("temps %d %d %d %d\n",status->temperatures[0],status->temperatures[1],status->temperatures[2],status->temperatures[3]);
-
-
-	status->currents[0] = 0;
-	status->currents[1] = 0;
-	status->currents[2] = 0;
-	status->currents[3] = 0;
-	
-
-//get mode
-	status->mode=uniman_status.mode;
-	
-	
-	//TODO - remove following test statement
 	error=FIN_CMD_OK;
 	return error;
 
@@ -205,89 +150,16 @@ gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
 
 gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 	
+	
+	uniman_status.pos_set_points.pos_fin_a=pos->pos_fin_a;
+	uniman_status.pos_set_points.pos_fin_b=pos->pos_fin_b;
+	uniman_status.pos_set_points.pos_fin_c=pos->pos_fin_c;
+	uniman_status.pos_set_points.pos_fin_d=pos->pos_fin_d;
+	
+	
 	gs_fin_cmd_error_t error=FIN_CMD_OK;
 	
-	uint16_t temp16=0;
-
-	float tempd[4]={0.0,0.0,0.0,0.0};
 	
-	//TODO - catch input errors
-	for (int i=0; i<4; i++) {
-		uint8_t internalerror=0;
-		switch (i) {
-			case 0:
-		
-				if(encoder1.readpos(&temp16)!=0) {
-					error=FIN_CMD_FAIL;
-					internalerror=1;
-				}
-				tempd[4]=float(pos->pos_fin_a);
-			break;
-			
-			case 1:
-				if(encoder2.readpos(&temp16)!=0) {
-					error=FIN_CMD_FAIL;
-					internalerror=1;
-				}
-				tempd[4]=float(pos->pos_fin_b);
-			break;
-		
-			case 2:
-				if(encoder3.readpos(&temp16)!=0) {
-					error=FIN_CMD_FAIL;
-					internalerror=1;
-				}
-				tempd[4]=float(pos->pos_fin_c);
-			break;
-
-			case 3:
-				if(encoder4.readpos(&temp16)!=0) {
-					error=FIN_CMD_FAIL;
-					internalerror=1;
-				}
-				tempd[4]=float(pos->pos_fin_d);	
-			break;		
-		}
-		
-		//printf("Step %d, enc %d, to %d \n\n",i,temp16,uint16_t(tempd[4]));
-		
-		if(internalerror!=0)  {
-			csp_log_error("Enc %d error",i+1);
-			continue;
-		}
-		
-		if(tempd[4]>3600) {
-			csp_log_error("invalid data for stepper from comms");
-			continue;
-		}
-		
-		
-		tempd[0]=(float)temp16;
-		tempd[0]/=1.13777777778;
-		tempd[1]=tempd[4]-tempd[0];
-		tempd[2]=3600-tempd[0]+tempd[4];
-		uint8_t direction=0;
-	
-		if(abs(tempd[1])<abs(tempd[2])) {
-			temp16=uint16_t(abs(tempd[1]/8.333333333));
-			if(tempd[1]<0) {
-				direction=1;
-			}
-		} else {
-			temp16=uint16_t(abs(tempd[2]/8.333333333));
-			if(tempd[2]<0) {
-				direction=1;
-			}
-		}
-		
-			
-			uint16_t commandinc=((i)<<14) | (direction<<13) | (temp16&0x1FFF);
-		
-			if(csp_queue_enqueue(uniman_stepper_q,&commandinc,1000)!=0) error=FIN_CMD_FAIL;
-
-	}
-	
-	//TODO - remove this test statement
 	error=FIN_CMD_OK;
 	return error;
 }
