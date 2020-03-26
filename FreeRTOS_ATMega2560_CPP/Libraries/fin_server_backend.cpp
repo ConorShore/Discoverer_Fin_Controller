@@ -515,6 +515,7 @@ gs_fin_cmd_error_t init_server(void) {
 	_delay_ms(1000);
 	contled(0,1);
 	_delay_ms(2000);
+	
 	uint8_t poser=0;
 	for (int i=0;i<4;i++) {
 		if (encer[i]==0) {
@@ -575,6 +576,7 @@ gs_fin_cmd_error_t init_server(void) {
 					}
 				}
 				break;
+				_delay_ms(2000);
 			}
 		} else {
 			for (int a=0;a<i+1;a++) {
