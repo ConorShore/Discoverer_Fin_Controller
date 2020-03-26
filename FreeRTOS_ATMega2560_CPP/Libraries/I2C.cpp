@@ -17,31 +17,31 @@ static int started=0;
 
 void volatile I2C_init(void) {
 	if(started==0) {
-	//portENTER_CRITICAL();
-	TWBR=12; //12 =400kHz
-	TWSR=0;
-	TWCR|= (1<<TWEA) | (1<<TWEN) | (1<<TWINT);
-	PORTD|=((1<<PD0) | (1<<PD1)); 
-	started++;
-	//portEXIT_CRITICAL();
+		//portENTER_CRITICAL();
+		TWBR=12; //12 =400kHz
+		TWSR=0;
+		TWCR|= (1<<TWEA) | (1<<TWEN) | (1<<TWINT);
+		PORTD|=((1<<PD0) | (1<<PD1));
+		started++;
+		//portEXIT_CRITICAL();
 	}
 }
 
 
 
 int8_t I2C_write(const uint8_t address,const uint8_t * data,
-					const uint8_t number,const uint8_t stop) { 
+const uint8_t number,const uint8_t stop) {
 	//write command without stop at the end
 	// the write command is split up so the read command can use this version
 	// at the start of a read frame
-	 
+	
 
 	TWCR|=(1<<TWSTA);
 	
 	while (!(TWCR & (1<<TWINT))); //wait for I2C to be ready
 	if ((TWSR & 0xF8) != START) {
 		TWCR = (1<<TWINT)|(1<<TWEN)| (1<<TWSTO);
-	
+		
 		return -1;
 	}
 	
@@ -52,7 +52,7 @@ int8_t I2C_write(const uint8_t address,const uint8_t * data,
 	
 	if ((TWSR & 0xF8) !=MT_SLA_ACK) {
 		TWCR = (1<<TWINT)|(1<<TWEN)| (1<<TWSTO);
-	
+		
 		return -1;
 	}
 	if(data!=NULL) {
@@ -60,10 +60,10 @@ int8_t I2C_write(const uint8_t address,const uint8_t * data,
 			TWDR = *(data+i);
 			TWCR = (1<<TWINT) | (1<<TWEN);
 			while (!(TWCR & (1<<TWINT)));
-	
+			
 			if ((TWSR & 0xF8) != MT_DATA_ACK) {
 				TWCR = (1<<TWINT)|(1<<TWEN)| (1<<TWSTO);
-			
+				
 				return -1;
 			}
 		}
@@ -72,7 +72,7 @@ int8_t I2C_write(const uint8_t address,const uint8_t * data,
 	if(stop==1) {
 		TWCR = (1<<TWINT)|(1<<TWEN)|(1<<TWSTO);
 		return 0;
-		} 
+	}
 	
 
 	return 0;
@@ -85,7 +85,7 @@ int8_t I2C_write(const uint8_t address,const uint8_t * data,
 // 		} else {
 // 		return -1;
 // 	}
-// 	
+//
 // }
 
 int8_t I2C_read(const uint8_t address,const uint8_t reg, uint8_t * data,const uint8_t number) {
@@ -93,9 +93,9 @@ int8_t I2C_read(const uint8_t address,const uint8_t reg, uint8_t * data,const ui
 	
 	if(I2C_write(address,&reg,1,0)!=0){
 		TWCR = (1<<TWINT)|(1<<TWEN)| (1<<TWSTO);
-	
+		
 		return 2;
-		} //write address and reg request
+	} //write address and reg request
 	
 	
 	TWCR|=(1<<TWSTA); //repeated start
@@ -103,7 +103,7 @@ int8_t I2C_read(const uint8_t address,const uint8_t reg, uint8_t * data,const ui
 	while (!(TWCR & (1<<TWINT))); //wait for I2C to be ready
 	if ((TWSR & 0xF8) != RSTART) { //check RS was transmitted
 		TWCR = (1<<TWINT)|(1<<TWEN)| (1<<TWSTO);
-	
+		
 		return 3;
 	}
 	
@@ -114,43 +114,25 @@ int8_t I2C_read(const uint8_t address,const uint8_t reg, uint8_t * data,const ui
 	
 	if ((TWSR & 0xF8) !=MR_SLA_ACK) { //wait for ack of address
 		TWCR = (1<<TWINT)|(1<<TWEN)| (1<<TWSTO);
-	
+		
 		return 4;
 	}
-		
+	
 	for(int i=0;i<number;i++) {
 		TWCR = (1<<TWINT) | (1<<TWEN);
 		
-	while (!(TWCR & (1<<TWINT))); //wait for ready again
-			if ((TWSR & 0xF8) == MR_DATA_NACK||(TWSR & 0xF8) == MR_DATA_ACK) { //if data
-				*(data+i)=TWDR;
+		while (!(TWCR & (1<<TWINT))); //wait for ready again
+		if ((TWSR & 0xF8) == MR_DATA_NACK||(TWSR & 0xF8) == MR_DATA_ACK) { //if data
+			*(data+i)=TWDR;
 			} else {
-				TWCR = (1<<TWINT)|(1<<TWEN)| (1<<TWSTO);
-	
-				return 5;
-			}
+			TWCR = (1<<TWINT)|(1<<TWEN)| (1<<TWSTO);
 			
-			
+			return 5;
+		}
+		
+		
 	}
 
-// 		TWCR = (1<<TWINT) | (1<<TWEN);
-// 		
-// 	while (!(TWCR & (1<<TWINT))); //wait for ready again
-// 	
-// 			*(data+1)=TWDR;
-	
-// 	for(int i=0;i<number;i++) {
-// 		if ((TWSR & 0xF8) != MR_DATA_ACK) { //if data
-// 			TWCR = (1<<TWINT)|(1<<TWEN)| (1<<TWSTO);
-// 			portEXIT_CRITICAL();
-// 			return 5;
-// 		} else {
-// 		
-// 		*(data+i)=TWDR;
-// 		while (!(TWCR & (1<<TWINT)));
-// 
-// 		}
-// 	}
 
 	TWCR = (1<<TWINT)|(1<<TWEN)| (1<<TWSTO);
 
@@ -159,4 +141,3 @@ int8_t I2C_read(const uint8_t address,const uint8_t reg, uint8_t * data,const ui
 	
 	
 }
-
