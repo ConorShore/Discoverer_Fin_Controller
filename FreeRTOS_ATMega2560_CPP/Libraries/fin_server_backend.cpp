@@ -392,6 +392,19 @@ gs_fin_cmd_error_t init_server(void) {
 
 	
  	enableleds();
+	  	contled(1,1);
+	  	_delay_ms(250);
+	  	contled(0,1);
+	  	_delay_ms(250);
+		 	  	contled(1,1);
+		 	  	_delay_ms(250);
+		 	  	contled(0,1);
+		 	  	_delay_ms(250);
+				   	  	contled(1,1);
+				   	  	_delay_ms(250);
+				   	  	contled(0,1);
+				   	  	_delay_ms(250);
+							 _delay_ms(2000);
 	 printf("Test started\n");
  	contled(1,1);
  	_delay_ms(4000);
@@ -576,8 +589,9 @@ gs_fin_cmd_error_t init_server(void) {
 					}
 				}
 				break;
-				_delay_ms(2000);
+
 			}
+		_delay_ms(2000);
 		} else {
 			for (int a=0;a<i+1;a++) {
 				contled(1,1);
