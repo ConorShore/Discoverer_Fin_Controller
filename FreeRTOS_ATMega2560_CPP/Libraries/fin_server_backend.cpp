@@ -409,8 +409,6 @@ CSP_DEFINE_TASK(task_stepper) {
 
 			
 				inmove[(recbuf&0xC000)>>14]=1;
-				if (inmove[0]==1||inmove[1]==1) stepper1.enstep();
-				if (inmove[2]==1||inmove[3]==1) stepper2.enstep();
 				if((inmove[0]+inmove[1]+inmove[2]+inmove[3])!=0) uniman_status.mode=GS_FIN_MODE_MOVING;
 				
 				uint16_t posrec=0;
@@ -450,6 +448,8 @@ CSP_DEFINE_TASK(task_stepper) {
 		
 		
 		uint16_t stepc=oversteps;
+		if (inmove[0]==1||inmove[1]==1) stepper1.enstep();
+		if (inmove[2]==1||inmove[3]==1) stepper2.enstep();
 		if(inmove[0]) {
 			stepper1.dirfunc(0,stepcmd[0].direction&0x01);
 		}
@@ -536,6 +536,8 @@ CSP_DEFINE_TASK(task_stepper) {
 
 		
 		//vTaskDelay((uint16_t)(1000*(uint32_t)60)/(uniman_running_conf.stepper_speed*(uint32_t)portTICK_PERIOD_MS));
+		stepper1.disstep();
+		stepper2.disstep();
 		vTaskDelayUntil(&funcstarttime,(uint16_t)(1000*(uint32_t)60)/(uniman_running_conf.stepper_speed*(uint32_t)portTICK_PERIOD_MS));
 		for(int i=0;i<4;i++) {
 			if((inmove[i]==1)&&(stepcmd[i].cursteps==stepcmd[i].tarsteps)) {
@@ -587,11 +589,6 @@ CSP_DEFINE_TASK(task_stepper) {
 				}
 			}
 		}
-		
-		
-		
-		if ((uniman_running_conf.system_reset_encoder_zero&(1<<5))&&inmove[0]==0&&inmove[1]==0) stepper1.disstep();
-		if ((uniman_running_conf.system_reset_encoder_zero&(1<<5))&&inmove[2]==0&&inmove[3]==0) stepper2.disstep();
 		
 		if((inmove[0]+inmove[1]+inmove[2]+inmove[3])==0)  {
 			uniman_status.mode=GS_FIN_MODE_CUSTOM;
