@@ -59,7 +59,10 @@ static void process_fin_cmd(csp_conn_t * conn, csp_packet_t * packet)
 // 				packet->data[34]=0;
 // 				packet->data[35]=0;
 // 				packet->data[36]=0;
-				packet->data[37]=status.status_code;
+// 				packet->data[37]=status.status_code;
+				packet->data[34]=status.status_code;
+				
+				
 			
 // 				for(int i=0 ;i<38;i++) {
 // 					printf("%x ",packet->data[i]);

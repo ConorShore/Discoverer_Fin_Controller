@@ -206,6 +206,7 @@ gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
 gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 	
 	gs_fin_cmd_error_t error=FIN_CMD_OK;
+	uniman_status.pos_set_points=*pos;
 	
 	uint16_t temp16=0;
 
@@ -506,61 +507,65 @@ CSP_DEFINE_TASK(task_stepper) {
 				if(inmove[i]) stepcmd[i].cursteps++;
 			}
 			
-			for(int i=0;i<4;i++) {
-				if((inmove[i]==1)&&(stepcmd[i].cursteps==stepcmd[i].tarsteps)) {
-				
-					uint16_t posrec=0;
-					switch (i) {
-						case 0:
-							encoder1.readpos(&posrec);
-						break;
-					
-						case 1:
-							encoder2.readpos(&posrec);
-						break;	
-					
-						case 2:
-							encoder3.readpos(&posrec);
-						break;
-					
-						case 3:
-							encoder4.readpos(&posrec);
-						break;
-					}
-										
-					uint16_t targetfind=abs(2048-stepcmd[i].tarenc);
-					uint16_t encfind=abs(2048-posrec);
-					
-					
-					csp_log_info("Stepper No %d Target %d Actual %d \n",i+1,stepcmd[i].tarenc,posrec,targetfind,encfind);
-					if(abs(targetfind-encfind)<=RETRYMARGIN) {
-						//if position is correct
-						csp_log_info("Command Success, Delta %d Retry %d \n",abs(targetfind-encfind),stepcmd[i].retry);
-						stepcmd[i].retry=0;
-						inmove[i]=0;
-					} else {
-						if(stepcmd[i].retry<RETRYMAX) {
-							csp_log_warn("Command Fail, Retry, Delta %d Retry %d\n",abs(targetfind-encfind),stepcmd[i].retry);
-							//TODO - Auto overstep control
-							//TODO - take into account going past setpoint, not jsut being less than it
-							
-							uint16_t command2Q=((i*4)<<12)	|	stepcmd[i].direction<<13	|	uint16_t(((float)abs(targetfind-encfind))/9.48148148148);
-							stepcmd[i].retry++;
-							oversteps*=2;
-							csp_log_info("new over %d",oversteps);
-							csp_queue_enqueue(uniman_stepper_q,&command2Q,1000);
-							} else {
-								oversteps=BASEOVERSTEPS;
-								csp_log_error("Command Fail, Delta %d Retry %d\n",abs(targetfind-encfind),stepcmd[i].retry);
-							}
-						}
-					}
-				}
+			
 			
 
 		
 		//vTaskDelay((uint16_t)(1000*(uint32_t)60)/(uniman_running_conf.stepper_speed*(uint32_t)portTICK_PERIOD_MS));
 		vTaskDelayUntil(&funcstarttime,(uint16_t)(1000*(uint32_t)60)/(uniman_running_conf.stepper_speed*(uint32_t)portTICK_PERIOD_MS));
+		for(int i=0;i<4;i++) {
+			if((inmove[i]==1)&&(stepcmd[i].cursteps==stepcmd[i].tarsteps)) {
+				
+				uint16_t posrec=0;
+				switch (i) {
+					case 0:
+					encoder1.readpos(&posrec);
+					break;
+					
+					case 1:
+					encoder2.readpos(&posrec);
+					break;
+					
+					case 2:
+					encoder3.readpos(&posrec);
+					break;
+					
+					case 3:
+					encoder4.readpos(&posrec);
+					break;
+				}
+				
+				uint16_t targetfind=abs(2048-stepcmd[i].tarenc);
+				uint16_t encfind=abs(2048-posrec);
+				
+				
+				csp_log_info("Stepper No %d Target %d Actual %d \n",i+1,stepcmd[i].tarenc,posrec,targetfind,encfind);
+				if(abs(targetfind-encfind)<=RETRYMARGIN) {
+					//if position is correct
+					csp_log_info("Command Success, Delta %d Retry %d \n",abs(targetfind-encfind),stepcmd[i].retry);
+					stepcmd[i].retry=0;
+					inmove[i]=0;
+					} else {
+					if(stepcmd[i].retry<RETRYMAX) {
+						csp_log_warn("Command Fail, Retry, Delta %d Retry %d\n",abs(targetfind-encfind),stepcmd[i].retry);
+						//TODO - Auto overstep control
+						//TODO - take into account going past setpoint, not jsut being less than it
+						
+						uint16_t command2Q=((i*4)<<12)	|	stepcmd[i].direction<<13	|	uint16_t(((float)abs(targetfind-encfind))/9.48148148148);
+						stepcmd[i].retry++;
+						oversteps*=2;
+						csp_log_info("new over %d",oversteps);
+						csp_queue_enqueue(uniman_stepper_q,&command2Q,1000);
+						} else {
+						oversteps=BASEOVERSTEPS;
+						csp_log_error("Command Fail, Delta %d Retry %d\n",abs(targetfind-encfind),stepcmd[i].retry);
+					}
+				}
+			}
+		}
+		
+		
+		
 		if ((uniman_running_conf.system_reset_encoder_zero&(1<<5))&&inmove[0]==0&&inmove[1]==0) stepper1.disstep();
 		if ((uniman_running_conf.system_reset_encoder_zero&(1<<5))&&inmove[2]==0&&inmove[3]==0) stepper2.disstep();
 		

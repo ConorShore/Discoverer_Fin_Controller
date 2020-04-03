@@ -112,6 +112,52 @@ fdevopen( &usart_putchar_printf,0);
 I2C_init();
 
 
+
+
+//  ar[0]=0;
+//  ar[1]=0b0001101;
+//  ar[2]=0x53;
+// 
+//  	printf("write %d\n",I2C_write(81,ar,3,1));
+// 	 
+// 	 	while (1) {
+// 		 	for (int i=0;i<128;i++) {
+// 			 	printf("add	%d	res %d\n",i,I2C_write(i,NULL,1,1));
+// 			 	wdt_reset();
+// 			 	_delay_ms(100);
+// 		 	}
+// 	 	}
+// 	 
+// 	 
+// ar[0] =0;
+// ar[1] =0;
+// ar[2]=0;
+// 	_delay_ms(100);
+// 	printf("read error = %d\n",I2C_read(50,48,ar,2));
+//  	uint16_t data = (((uint16_t)ar[0])<<8)|ar[1];
+//  	printf("data %x	%x\n",ar[0],ar[1]);
+// test.zeropos();
+//   _delay_ms(20);
+//
+// printf("startsed\n");
+// 	wdt_reset();
+// 	while(1) {
+// 		uint16_t pos=0;
+// 		uint8_t error=0;
+// 		wdt_reset();
+// 		//_delay_ms(100);
+// 		wdt_reset();
+// 		error = test.readpos(&pos);
+// 		printf("data valid %d	pos %d\n",error,pos);
+// 		error = test.readabspos(&pos);
+// 		printf("data valid %d	abspos %d\n",error,pos);
+// 		uint8_t err=0;
+// 		error = test.readerror(&err);
+// 		printf("read err %d, ret er %x\n",error,err);
+//
+// 		}
+
+
 	
 	wdt_enable(WDTO_500MS); // set watchdog up to reset if not called after 2s
 	//pwrredinit();
