@@ -105,14 +105,25 @@ AM4096 test(0x51);
 uint8_t ar[4];
 
 int main( void )
-{
+{wdt_reset();
 	usart_init(MYUBRR);
 fdevopen( &usart_putchar_printf,0);
 
 I2C_init();
 
-
-
+// for (uint8_t i=0;i<128;i++) {
+// 
+// 
+// 	eeprom_write_byte((uint8_t *)i,0xFF);
+// 	wdt_reset();
+// }
+// 
+// 
+// 
+// printf("done");
+// while(1) {
+// 	wdt_reset();
+// }
 
 //  ar[0]=0;
 //  ar[1]=0b0001101;

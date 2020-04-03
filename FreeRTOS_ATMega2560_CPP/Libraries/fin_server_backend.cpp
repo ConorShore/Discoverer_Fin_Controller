@@ -210,7 +210,8 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 	
 	uint16_t temp16=0;
 
-	float tempd[4]={0.0,0.0,0.0,0.0};
+	float tempd[3]={0.0,0.0,0.0};
+	float reqpos=0;
 	
 	//TODO - catch input errors
 	for (int i=0; i<4; i++) {
@@ -222,7 +223,7 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 					error=FIN_CMD_FAIL;
 					internalerror=1;
 				}
-				tempd[4]=float(pos->pos_fin_a);
+				reqpos=float(pos->pos_fin_a);
 			break;
 			
 			case 1:
@@ -230,7 +231,7 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 					error=FIN_CMD_FAIL;
 					internalerror=1;
 				}
-				tempd[4]=float(pos->pos_fin_b);
+				reqpos=float(pos->pos_fin_b);
 			break;
 		
 			case 2:
@@ -238,7 +239,7 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 					error=FIN_CMD_FAIL;
 					internalerror=1;
 				}
-				tempd[4]=float(pos->pos_fin_c);
+				reqpos=float(pos->pos_fin_c);
 			break;
 
 			case 3:
@@ -246,18 +247,18 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 					error=FIN_CMD_FAIL;
 					internalerror=1;
 				}
-				tempd[4]=float(pos->pos_fin_d);	
+				reqpos=float(pos->pos_fin_d);	
 			break;		
 		}
 		
-		//printf("Step %d, enc %d, to %d \n\n",i,temp16,uint16_t(tempd[4]));
+		//printf("Step %d, enc %d, to %d \n\n",i,temp16,uint16_t(reqpos));
 		
 		if(internalerror!=0)  {
 			csp_log_error("Enc %d error",i+1);
 			continue;
 		}
 		
-		if(tempd[4]>3600) {
+		if(reqpos>3600) {
 			csp_log_error("invalid data for stepper from comms");
 			continue;
 		}
@@ -265,9 +266,32 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 		
 		tempd[0]=(float)temp16;
 		tempd[0]/=1.13777777778;
-		tempd[1]=tempd[4]-tempd[0];
-		tempd[2]=3600-tempd[0]+tempd[4];
+		
+	
+		tempd[1]=(reqpos-tempd[0])-3600;
+		while(abs(tempd[1])>=3600) {
+			if(tempd[1]<0) {
+				tempd[1]+=3600;
+			} else {
+				tempd[1]-=3600;
+			}
+		}
+		
+		
+		tempd[2]=(3600-tempd[0]+reqpos);
+		
+		while(abs(tempd[2])>=3600) {
+			if(tempd[2]<0) {
+				tempd[2]+=3600;
+			} else {
+				tempd[2]-=3600;
+			}
+		}
+		
+		csp_log_info("req pos %d dir 0 %d dir 1 %d",int16_t(reqpos),int16_t(tempd[1]),int16_t(tempd[2]));
 		uint8_t direction=0;
+		
+	
 	
 		if(abs(tempd[1])<abs(tempd[2])) {
 			temp16=uint16_t(abs(tempd[1]/8.333333333));
@@ -358,9 +382,9 @@ void read_temp_sensors(uint16_t *array){
 
 
 CSP_DEFINE_TASK(task_stepper) {
-	#define BASEOVERSTEPS 2;
+	#define BASEOVERSTEPS 4;
 	uint8_t oversteps = 4;
-	#define RETRYMAX 5
+	#define RETRYMAX 3
 	#define RETRYMARGIN 10
 	uint16_t recbuf=0;
 	stepper_cmd_t stepcmd[4];
