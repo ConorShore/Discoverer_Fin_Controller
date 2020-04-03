@@ -57,6 +57,7 @@ typedef struct stepper_cmd {
 	uint16_t startenc;
 	uint16_t tarenc;
 	uint8_t retry;
+	uint16_t trackenc;
 }stepper_cmd_t;
 
 
@@ -383,12 +384,19 @@ void read_temp_sensors(uint16_t *array){
 
 CSP_DEFINE_TASK(task_stepper) {
 	#define BASEOVERSTEPS 4;
-	uint8_t oversteps = 4;
+	uint8_t oversteps = BASEOVERSTEPS;
 	#define RETRYMAX 3
 	#define RETRYMARGIN 10
 	uint16_t recbuf=0;
+	uint8_t intervalcount=0;
+	#define INTERVALPERIOD 10
+	#define INTERVALMARGINFACTOR 0.75
+	
+	#define MAXOVERSTEPS 32
+	const uint8_t intervalstep=uint8_t(float((INTERVALPERIOD)*0.833333333)*11.3777777778);
+	const uint16_t intervalmargin = uint16_t(INTERVALMARGINFACTOR*float(intervalstep));
 	stepper_cmd_t stepcmd[4];
-	stepcmd[0]={0,0,0,0,0,0};
+	stepcmd[0]={0,0,0,0,0,0,0};
 		stepcmd[1]=stepcmd[0];
 		stepcmd[2]=stepcmd[0];
 		stepcmd[3]=stepcmd[0];
@@ -404,10 +412,7 @@ CSP_DEFINE_TASK(task_stepper) {
 			stepcmd[ (recbuf&0xC000)>>14 ].direction = (uint8_t) ((recbuf&0x2000)>>13);
 			stepcmd[ (recbuf&0xC000)>>14 ].tarsteps=recbuf&0x1FFF;
 			stepcmd[ (recbuf&0xC000)>>14 ].cursteps=0;
-			
-
-
-			
+		
 				inmove[(recbuf&0xC000)>>14]=1;
 				if((inmove[0]+inmove[1]+inmove[2]+inmove[3])!=0) uniman_status.mode=GS_FIN_MODE_MOVING;
 				
@@ -431,6 +436,7 @@ CSP_DEFINE_TASK(task_stepper) {
 				}
 			
 				stepcmd[ (recbuf&0xC000)>>14 ].startenc=posrec;
+				stepcmd[ (recbuf&0xC000)>>14 ].trackenc=posrec;
 				if(stepcmd[ (recbuf&0xC000)>>14 ].direction==0) {
 					stepcmd[ (recbuf&0xC000)>>14 ].tarenc=posrec+(uint16_t)(((float)stepcmd[ (recbuf&0xC000)>>14 ].tarsteps)*9.48148148148);
 				} else {
@@ -448,6 +454,86 @@ CSP_DEFINE_TASK(task_stepper) {
 		
 		
 		uint16_t stepc=oversteps;
+		
+		if(intervalcount>=INTERVALPERIOD) {
+			intervalcount=0;
+			uint8_t errorsteps=0;
+			for(int i=0;i<4;i++) {
+				uint16_t tpos=0;
+				if(inmove[i]==1) {
+					switch (i) {
+						case 0:
+							encoder1.readpos(&tpos);
+						break;
+					
+						case 1:
+							encoder2.readpos(&tpos);
+						break;	
+					
+						case 2:
+							encoder3.readpos(&tpos);
+						break;
+					
+						case 3:
+							encoder4.readpos(&tpos);
+						break;
+					}
+					int16_t error=abs(tpos-stepcmd[i].trackenc);
+					uint16_t error1=0;
+					uint16_t error2=0;
+					int16_t track=tpos;
+					
+					while(track!=stepcmd[i].trackenc) {
+						track++;
+						error1++;
+						if (track>=4096) track=0;
+						if(track==-1) track=4095;
+					}
+					if(error1<2048) {
+						error=error1;
+					} else {
+						track=tpos;
+						while(track!=stepcmd[i].trackenc) {
+							track--;
+							error2++;
+							if (track>=4096) track=0;
+							if(track==-1) track=4095;
+						}
+						error=error2;
+					}
+					
+
+					
+					csp_log_info("delta a %u",error);
+
+					error-=intervalstep;
+					error=abs(error);
+					
+					csp_log_info("tpos %u track %u cur %d ex %u mar %u",
+						tpos,stepcmd[i].trackenc,error,intervalstep,intervalmargin);
+	
+					if(error>intervalmargin) {
+						csp_log_error("Missed steps on %u",i+1);
+						oversteps*=2;
+						errorsteps++;
+						if(oversteps>MAXOVERSTEPS) {
+							oversteps=MAXOVERSTEPS;	
+						}
+					
+						csp_log_info("new over %d",oversteps);
+					} 
+					if (errorsteps==0) {
+						oversteps=BASEOVERSTEPS;
+						csp_log_info("overstep to normal");
+					}
+					stepcmd[i].trackenc=tpos;
+					
+				}
+		
+			}
+		}
+		intervalcount++;
+				
 		if (inmove[0]==1||inmove[1]==1) stepper1.enstep();
 		if (inmove[2]==1||inmove[3]==1) stepper2.enstep();
 		if(inmove[0]) {
@@ -574,17 +660,18 @@ CSP_DEFINE_TASK(task_stepper) {
 					} else {
 					if(stepcmd[i].retry<RETRYMAX) {
 						csp_log_warn("Command Fail, Retry, Delta %d Retry %d\n",abs(targetfind-encfind),stepcmd[i].retry);
-						//TODO - Auto overstep control
+
 						//TODO - take into account going past setpoint, not jsut being less than it
 						
 						uint16_t command2Q=((i*4)<<12)	|	stepcmd[i].direction<<13	|	uint16_t(((float)abs(targetfind-encfind))/9.48148148148);
 						stepcmd[i].retry++;
-						oversteps*=2;
-						csp_log_info("new over %d",oversteps);
+						
 						csp_queue_enqueue(uniman_stepper_q,&command2Q,1000);
 						} else {
-						oversteps=BASEOVERSTEPS;
+						
 						csp_log_error("Command Fail, Delta %d Retry %d\n",abs(targetfind-encfind),stepcmd[i].retry);
+						stepcmd[i].retry=0;
+						inmove[i]=0;
 					}
 				}
 			}

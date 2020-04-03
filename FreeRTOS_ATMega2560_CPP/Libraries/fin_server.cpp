@@ -68,7 +68,7 @@ static void process_fin_cmd(csp_conn_t * conn, csp_packet_t * packet)
 // 					printf("%x ",packet->data[i]);
 // 				}
 // 				
-                reply_length += sizeof(status)+3;
+                reply_length += sizeof(status);
 				csp_log_info("sizeof sat %d\n",reply_length);
             }
             break;

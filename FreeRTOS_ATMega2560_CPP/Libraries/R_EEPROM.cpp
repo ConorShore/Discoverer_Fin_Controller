@@ -212,7 +212,7 @@ static const uint32_t crc_tab[256] PROGMEM = {
 			readcount |= (countbuff[i]<<i*8);
 		}
 		
-		printf("Read Count %u\n",readcount);
+		
 		
 		count_t comp=0;
 		comp=~comp;

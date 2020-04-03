@@ -212,7 +212,7 @@ I2C_init();
 		}
 
 		// Start router task with 500 word stack, OS task priority 1 		
-		error=csp_route_start_task(180, 2);
+		error=csp_route_start_task(240, 2);
 		
 		if(error!=0) {
 			contled(ONCON,2);
