@@ -385,14 +385,14 @@ void read_temp_sensors(uint16_t *array){
 CSP_DEFINE_TASK(task_stepper) {
 	#define BASEOVERSTEPS 4;
 	uint8_t oversteps = BASEOVERSTEPS;
-	#define RETRYMAX 3
+	#define RETRYMAX 5
 	#define RETRYMARGIN 10
 	uint16_t recbuf=0;
 	uint8_t intervalcount=0;
 	#define INTERVALPERIOD 10
 	#define INTERVALMARGINFACTOR 0.75
 	
-	#define MAXOVERSTEPS 32
+	#define MAXOVERSTEPS 64
 	const uint8_t intervalstep=uint8_t(float((INTERVALPERIOD)*0.833333333)*11.3777777778);
 	const uint16_t intervalmargin = uint16_t(INTERVALMARGINFACTOR*float(intervalstep));
 	stepper_cmd_t stepcmd[4];
@@ -483,26 +483,75 @@ CSP_DEFINE_TASK(task_stepper) {
 					uint16_t error2=0;
 					int16_t track=tpos;
 					
-					while(track!=stepcmd[i].trackenc) {
-						track++;
-						error1++;
-						if (track>=4096) track=0;
-						if(track==-1) track=4095;
-					}
-					if(error1<2048) {
-						error=error1;
-					} else {
-						track=tpos;
-						while(track!=stepcmd[i].trackenc) {
-							track--;
-							error2++;
-							if (track>=4096) track=0;
-							if(track==-1) track=4095;
+					
+					
+					int16_t test1=4096+tpos-stepcmd[i].trackenc;
+					int16_t test2=4096-tpos+stepcmd[i].trackenc;				
+					while(abs(test1)>=4096) {
+						if(test1<0) {
+							test1+=4096;
+						} else {
+							test1-=4096;
 						}
-						error=error2;
+					}
+		
+					while(abs(test2)>=4096) {
+						if(test2<0) {
+							test2+=4096;
+						} else {
+							test2-=4096;
+						}
 					}
 					
-
+					if(abs(test1)<abs(test2)) {
+						error=test1;
+					} else {
+						error=test2;
+					}
+					
+					
+// 					uint16_t addam=2048;
+// 					const uint8_t addbits=8;
+// 					
+// 					csp_log_info("tpos %u track %u cur %d ex %u mar %u",
+// 						tpos,stepcmd[i].trackenc,error,intervalstep,intervalmargin);
+// 					
+// 					for(int i=0;i<addbits-1;i++) {
+// 						int16_t otrack=track;
+// 						track=track+addam;
+// 						if(track>=4096) track-=4096;
+// 						if(track>stepcmd[i].trackenc){
+// 							track=otrack;
+// 						} else {
+// 							error1+=addam;	
+// 														
+// 						}
+// 						printf("error %u track %d add %u\n",error1,track,addam);
+// 							addam=addam>>1;
+// 
+// 						if (addam==0||track==stepcmd[i].trackenc) break;		
+// 					}
+// 					printf("\n");
+// 					printf("\n");
+// 					
+// 					track=tpos;
+// 					addam=2048;
+// 
+// 					
+// 					for(int i=0;i<addbits-1;i++) {
+// 						int16_t otrack=track;
+// 						track=track-addam;
+// 						if(track<0) track=4096+track;
+// 						if(track<stepcmd[i].trackenc){
+// 							track=otrack;
+// 						} else {
+// 							error2+=addam;							
+// 						}
+// 						printf("error %u track %d add %u\n",error1,track,addam);
+// 						addam=addam>>1;
+// 						if (addam==0||track==stepcmd[i].trackenc) break;
+// 					}
+// 					printf("\n");
 					
 					csp_log_info("delta a %u",error);
 
