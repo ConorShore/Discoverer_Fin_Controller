@@ -127,9 +127,9 @@ I2C_init();
 
 //  ar[0]=0;
 //  ar[1]=0b0001101;
-//  ar[2]=0x53;
+//  ar[2]=0x50;
 // 
-//  	printf("write %d\n",I2C_write(81,ar,3,1));
+//  	printf("write %d\n",I2C_write(0x52,ar,3,1));
 // 	 
 // 	 	while (1) {
 // 		 	for (int i=0;i<128;i++) {
@@ -138,7 +138,7 @@ I2C_init();
 // 			 	_delay_ms(100);
 // 		 	}
 // 	 	}
-// 	 
+	 
 // 	 
 // ar[0] =0;
 // ar[1] =0;
@@ -248,7 +248,7 @@ I2C_init();
 
 		//printf("Debug enabed\r\n");
 		
-		csp_debug_toggle_level(CSP_INFO);
+		//csp_debug_toggle_level(CSP_INFO);
 		//csp_debug_toggle_level((CSP_PACKET));
 		//csp_debug_toggle_level(CSP_WARN);
 		//csp_debug_toggle_level(CSP_ERROR);

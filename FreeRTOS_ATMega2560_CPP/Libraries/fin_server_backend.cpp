@@ -217,6 +217,11 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 	//TODO - catch input errors
 	for (int i=0; i<4; i++) {
 		uint8_t internalerror=0;
+		tempd[0]=0;
+		tempd[1]=0;
+		tempd[2]=0;
+		temp16=0;
+		reqpos=0;
 		switch (i) {
 			case 0:
 		
@@ -390,7 +395,7 @@ CSP_DEFINE_TASK(task_stepper) {
 	uint16_t recbuf=0;
 	uint8_t intervalcount=0;
 	#define INTERVALPERIOD 10
-	#define INTERVALMARGINFACTOR 0.75
+	#define INTERVALMARGINFACTOR 0.6
 	
 	#define MAXOVERSTEPS 64
 	const uint8_t intervalstep=uint8_t(float((INTERVALPERIOD)*0.833333333)*11.3777777778);
