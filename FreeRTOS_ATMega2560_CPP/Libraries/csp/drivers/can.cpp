@@ -112,7 +112,7 @@ void CanRxFunc(void* pvParameters) {
 		
 
 		mcp2515.clearInterrupts();
-		csp_log_info("%s %d\n",pcTaskGetName(NULL),uxTaskGetStackHighWaterMark2(NULL));
+		//csp_log_info("%s %d\n",pcTaskGetName(NULL),uxTaskGetStackHighWaterMark2(NULL));
 		vTaskSuspend(NULL);
 		
 			uint8_t count=0;
@@ -151,7 +151,7 @@ void CanRxFunc(void* pvParameters) {
 			
 			} else {
 			
-			csp_log_info("CAN Rec = %d",count); 
+			//csp_log_info("CAN Rec = %d",count); 
 			for (int i=0;i<count;i++){
 				uint8_t pos = count-((uint8_t)((frame[i].can_id >> 10) & 0xFF))-1;
 				if(pos>=count) {

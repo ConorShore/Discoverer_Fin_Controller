@@ -1,7 +1,10 @@
 ﻿#include <AM4096.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <I2C.h>
 #include <util/delay.h>
+#include <csp/csp.h>
 
 //assumbed 4096 res
 
@@ -18,6 +21,14 @@ uint8_t AM4096::init(void) {
 	tempdata[1] |= (1<<4);
 	tempdata[0]=REG_ZIN_E;
 	if(I2C_write(address,tempdata,3,1)!=0) return -1; //this inverts direction
+	_delay_ms(30);
+	tempdata[2] = 0b00000000;
+	tempdata[1] = 0b00001000;
+	tempdata[0]=REG_RES_E;
+	if(I2C_write(address,tempdata,3,1)!=0) return -1; //this set resolution
+	if(I2C_read(address,REG_ZIN_E,&tempdata[1],2)!=0) return -1; //get current zin setting
+	_delay_ms(30);
+	
 	
 	return 0;
 

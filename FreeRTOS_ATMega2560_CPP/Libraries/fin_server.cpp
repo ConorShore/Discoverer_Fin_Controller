@@ -41,8 +41,7 @@ static void process_fin_cmd(csp_conn_t * conn, csp_packet_t * packet)
 				
                 memcpy(&packet->data[1], &status, sizeof(status));
 
-				
-				printf("\n");
+	
 				//testg.write(&status,sizeof(status));
 				
 				
@@ -53,7 +52,7 @@ static void process_fin_cmd(csp_conn_t * conn, csp_packet_t * packet)
 					packet->data[i]=temp;
 				}
 	
-				printf("\n");
+		
 				
 				packet->data[33]=status.mode;
 // 				packet->data[34]=0;
@@ -68,8 +67,8 @@ static void process_fin_cmd(csp_conn_t * conn, csp_packet_t * packet)
 // 					printf("%x ",packet->data[i]);
 // 				}
 // 				
-                reply_length += sizeof(status);
-				csp_log_info("sizeof sat %d\n",reply_length);
+                reply_length += sizeof(status)+3;
+				//csp_log_info("sizeof sat %d\n",reply_length);
             }
             break;
         }

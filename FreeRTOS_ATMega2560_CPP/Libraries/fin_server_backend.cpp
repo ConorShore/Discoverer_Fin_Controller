@@ -34,6 +34,13 @@ uniman_step_config_t uniman_step2_conf = {
 	.CHOPCONF=STEPPER_CHOPCONF_DEFAULT
 };
 
+uniman_step_config_t uniman_fstep_conf = {
+	.GCONF=STEPPER_GCONF_DATA(0,0),
+	.IHOLD=STEPPER_DEFAULT_IHOLD,
+	.IRUN=STEPPER_DEFAULT_IRUN,
+	.CHOPCONF=0x080300C3	
+};
+
 gs_fin_config_t uniman_running_conf = {
 	.stepper_config=0x09,
 	.stepper_ihold=STEPPER_DEFAULT_IHOLD,
@@ -95,9 +102,9 @@ uint16_t enc_tar_points[4] = {0,0,0,0};
 
 
 	AM4096 encoder1(0x50);
-	AM4096 encoder2(0x51);
+	AM4096 encoder2(0x53);
  	AM4096 encoder3(0x52);
- 	AM4096 encoder4(0x53);
+ 	AM4096 encoder4(0x51);
 	
 	
 
@@ -207,7 +214,9 @@ gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
 gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 	
 	gs_fin_cmd_error_t error=FIN_CMD_OK;
-	uniman_status.pos_set_points=*pos;
+	
+	
+
 	
 	uint16_t temp16=0;
 
@@ -216,6 +225,9 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 	
 	//TODO - catch input errors
 	for (int i=0; i<4; i++) {
+		
+
+		
 		uint8_t internalerror=0;
 		tempd[0]=0;
 		tempd[1]=0;
@@ -259,15 +271,37 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 		
 		//printf("Step %d, enc %d, to %d \n\n",i,temp16,uint16_t(reqpos));
 		
+		if (reqpos==60001) {
+			uint16_t commandinc=((i)<<14) | (0<<13) | (0&0x1FFF);
+			if(csp_queue_enqueue(uniman_stepper_q,&commandinc,1000)!=0) error=FIN_CMD_FAIL;
+			printf("pasezn\n");
+			continue;
+		} else if(reqpos>3600) {
+			csp_log_error("invalid data for stepper from comms");
+			continue;
+		} else {
+			switch (i) {
+				case 0:
+				uniman_status.pos_set_points.pos_fin_a=pos->pos_fin_a;
+				break;
+				case 1:
+				uniman_status.pos_set_points.pos_fin_b=pos->pos_fin_b;
+				break;
+				case 2:
+				uniman_status.pos_set_points.pos_fin_c=pos->pos_fin_c;
+				break;
+				case 3:
+				uniman_status.pos_set_points.pos_fin_d=pos->pos_fin_d;
+				break;
+			}
+		}
+		
 		if(internalerror!=0)  {
 			csp_log_error("Enc %d error",i+1);
 			continue;
 		}
 		
-		if(reqpos>3600) {
-			csp_log_error("invalid data for stepper from comms");
-			continue;
-		}
+
 		
 		
 		tempd[0]=(float)temp16;
@@ -388,16 +422,16 @@ void read_temp_sensors(uint16_t *array){
 
 
 CSP_DEFINE_TASK(task_stepper) {
-	#define BASEOVERSTEPS 4;
+	#define BASEOVERSTEPS 2;
 	uint8_t oversteps = BASEOVERSTEPS;
 	#define RETRYMAX 5
-	#define RETRYMARGIN 10
+	#define RETRYMARGIN 16
 	uint16_t recbuf=0;
 	uint8_t intervalcount=0;
-	#define INTERVALPERIOD 10
-	#define INTERVALMARGINFACTOR 0.6
+	#define INTERVALPERIOD 5
+	#define INTERVALMARGINFACTOR 0.5
 	
-	#define MAXOVERSTEPS 64
+	#define MAXOVERSTEPS 4
 	const uint8_t intervalstep=uint8_t(float((INTERVALPERIOD)*0.833333333)*11.3777777778);
 	const uint16_t intervalmargin = uint16_t(INTERVALMARGINFACTOR*float(intervalstep));
 	stepper_cmd_t stepcmd[4];
@@ -417,6 +451,7 @@ CSP_DEFINE_TASK(task_stepper) {
 			stepcmd[ (recbuf&0xC000)>>14 ].direction = (uint8_t) ((recbuf&0x2000)>>13);
 			stepcmd[ (recbuf&0xC000)>>14 ].tarsteps=recbuf&0x1FFF;
 			stepcmd[ (recbuf&0xC000)>>14 ].cursteps=0;
+		
 		
 				inmove[(recbuf&0xC000)>>14]=1;
 				if((inmove[0]+inmove[1]+inmove[2]+inmove[3])!=0) uniman_status.mode=GS_FIN_MODE_MOVING;
@@ -515,77 +550,40 @@ CSP_DEFINE_TASK(task_stepper) {
 					}
 					
 					
-// 					uint16_t addam=2048;
-// 					const uint8_t addbits=8;
-// 					
-// 					csp_log_info("tpos %u track %u cur %d ex %u mar %u",
-// 						tpos,stepcmd[i].trackenc,error,intervalstep,intervalmargin);
-// 					
-// 					for(int i=0;i<addbits-1;i++) {
-// 						int16_t otrack=track;
-// 						track=track+addam;
-// 						if(track>=4096) track-=4096;
-// 						if(track>stepcmd[i].trackenc){
-// 							track=otrack;
-// 						} else {
-// 							error1+=addam;	
-// 														
-// 						}
-// 						printf("error %u track %d add %u\n",error1,track,addam);
-// 							addam=addam>>1;
-// 
-// 						if (addam==0||track==stepcmd[i].trackenc) break;		
-// 					}
-// 					printf("\n");
-// 					printf("\n");
-// 					
-// 					track=tpos;
-// 					addam=2048;
-// 
-// 					
-// 					for(int i=0;i<addbits-1;i++) {
-// 						int16_t otrack=track;
-// 						track=track-addam;
-// 						if(track<0) track=4096+track;
-// 						if(track<stepcmd[i].trackenc){
-// 							track=otrack;
-// 						} else {
-// 							error2+=addam;							
-// 						}
-// 						printf("error %u track %d add %u\n",error1,track,addam);
-// 						addam=addam>>1;
-// 						if (addam==0||track==stepcmd[i].trackenc) break;
-// 					}
-// 					printf("\n");
-					
-					csp_log_info("delta a %u",error);
+					//csp_log_info("delta a %u",error);
 
 					error-=intervalstep;
 					error=abs(error);
 					
-					csp_log_info("tpos %u track %u cur %d ex %u mar %u",
-						tpos,stepcmd[i].trackenc,error,intervalstep,intervalmargin);
+					//csp_log_info("tpos %u track %u cur %d ex %u mar %u",
+						//tpos,stepcmd[i].trackenc,error,intervalstep,intervalmargin);
 	
 					if(error>intervalmargin) {
-						csp_log_error("Missed steps on %u",i+1);
-						oversteps*=2;
+						//csp_log_error("Missed steps on %u",i+1);
 						errorsteps++;
-						if(oversteps>MAXOVERSTEPS) {
-							oversteps=MAXOVERSTEPS;	
-						}
-					
-						csp_log_info("new over %d",oversteps);
+						
+						//csp_log_info("new over %d",oversteps);
 					} 
 					if (errorsteps==0) {
-						oversteps=BASEOVERSTEPS;
-						csp_log_info("overstep to normal");
+
+						//csp_log_info("overstep to normal");
 					}
 					stepcmd[i].trackenc=tpos;
 					
 				}
 		
 			}
+			if (errorsteps>0) {
+				oversteps*=2;
+				if(oversteps>MAXOVERSTEPS) {
+					oversteps=MAXOVERSTEPS;
+				}
+				} else {
+				oversteps=BASEOVERSTEPS;
+			}
 		}
+		
+
 		intervalcount++;
 				
 		if (inmove[0]==1||inmove[1]==1) stepper1.enstep();
@@ -659,9 +657,7 @@ CSP_DEFINE_TASK(task_stepper) {
 			}
 			i++;
 			if(i>=stepc) break;
-			
-			//implement feedback somewhere
-			
+
 			timeoutstart2_us(STEPPER_FSTEP_DELAY>>((uniman_running_conf.stepper_config&0x0F)-1));
 			while(!timeoutcheck2_us());
 			//delay_us(STEPPER_FSTEP_DELAY>>((uniman_running_conf.stepper_config&0x0F)-1));
@@ -674,11 +670,8 @@ CSP_DEFINE_TASK(task_stepper) {
 			
 			
 
-		
-		//vTaskDelay((uint16_t)(1000*(uint32_t)60)/(uniman_running_conf.stepper_speed*(uint32_t)portTICK_PERIOD_MS));
-		stepper1.disstep();
-		stepper2.disstep();
-		vTaskDelayUntil(&funcstarttime,(uint16_t)(1000*(uint32_t)60)/(uniman_running_conf.stepper_speed*(uint32_t)portTICK_PERIOD_MS));
+		vTaskDelayUntil(&funcstarttime,uint16_t((1000*(uint32_t)60)/(uniman_running_conf.stepper_speed*(uint32_t)portTICK_PERIOD_MS)));
+
 		for(int i=0;i<4;i++) {
 			if((inmove[i]==1)&&(stepcmd[i].cursteps==stepcmd[i].tarsteps)) {
 				
@@ -717,10 +710,45 @@ CSP_DEFINE_TASK(task_stepper) {
 
 						//TODO - take into account going past setpoint, not jsut being less than it
 						
-						uint16_t command2Q=((i*4)<<12)	|	stepcmd[i].direction<<13	|	uint16_t(((float)abs(targetfind-encfind))/9.48148148148);
-						stepcmd[i].retry++;
+						gs_fin_positions_t tempos;				
+						for (int a=0; a<4;a++) {
+							switch (a) {
+								case 0:
+									if(a==i){
+										tempos.pos_fin_a=uniman_status.pos_set_points.pos_fin_a;
+									} else {
+										tempos.pos_fin_a=60000;
+									}
+								break;
+								case 1:
+									if(a==i){
+										tempos.pos_fin_b=uniman_status.pos_set_points.pos_fin_b;
+									} else {
+										tempos.pos_fin_b=60000;
+									}
+								break;
+								case 2:
+									if(a==i){
+										tempos.pos_fin_c=uniman_status.pos_set_points.pos_fin_c;
+									} else {
+										tempos.pos_fin_c=60000;
+									}
+								break;
+								case 3:
+									if(a==i){
+										tempos.pos_fin_d=uniman_status.pos_set_points.pos_fin_d;
+									} else {
+										tempos.pos_fin_d=60000;
+									}
+								break;
+							}	
+							
+						}
 						
-						csp_queue_enqueue(uniman_stepper_q,&command2Q,1000);
+					
+						stepcmd[i].retry++;
+						//printf("1 %d 2 %d 3 %d 4 %d\n",tempos.pos_fin_a,tempos.pos_fin_b,tempos.pos_fin_c,tempos.pos_fin_d);
+						set_fin_pos_ns(&tempos);
 						} else {
 						
 						csp_log_error("Command Fail, Delta %d Retry %d\n",abs(targetfind-encfind),stepcmd[i].retry);
@@ -760,6 +788,11 @@ gs_fin_cmd_error_t init_server(void) {
 	gs_fin_cmd_error_t error=FIN_CMD_OK;
 	
 	//I2C_init();
+	printf("hello");
+	encoder1.init();
+	encoder2.init();
+	encoder3.init();
+	encoder4.init();
 
 	
 	setup_temp_sensors();
@@ -785,9 +818,26 @@ gs_fin_cmd_error_t init_server(void) {
 	};
 		
 
-		
-		
-
+	stepper1.enstep();
+	stepper2.enstep();
+	stepper1.updateconfig(&uniman_fstep_conf,&uniman_running_conf);
+	stepper2.updateconfig(&uniman_fstep_conf,&uniman_running_conf);
+	stepper1.dirfunc(0,2);
+	stepper1.dirfunc(1,2);
+	stepper1.stepfunc(0);
+	stepper1.stepfunc(1);
+	stepper2.stepfunc(0);
+	stepper2.stepfunc(1);
+	_delay_ms(20);
+	stepper1.dirfunc(0,2);
+	stepper1.dirfunc(1,2);
+	stepper1.stepfunc(0);
+	stepper1.stepfunc(1);
+	stepper2.stepfunc(0);
+	stepper2.stepfunc(1);
+	_delay_us(100);
+	
+	
 	if(load_fin_config()) error=FIN_CMD_FAIL;
 	
 	print_conf(&uniman_running_conf);

@@ -124,21 +124,22 @@ I2C_init();
 // while(1) {
 // 	wdt_reset();
 // }
-
+// 
 //  ar[0]=0;
 //  ar[1]=0b0001101;
-//  ar[2]=0x50;
+//  ar[2]=0x53;
 // 
-//  	printf("write %d\n",I2C_write(0x52,ar,3,1));
-// 	 
+//  	printf("write %d\n",I2C_write(0x63,ar,3,1));
+	 
+// printf("start\n");
 // 	 	while (1) {
 // 		 	for (int i=0;i<128;i++) {
-// 			 	printf("add	%d	res %d\n",i,I2C_write(i,NULL,1,1));
+// 			 	printf("add	%x	res %d\n",i,I2C_write(i,NULL,1,1));
 // 			 	wdt_reset();
-// 			 	_delay_ms(100);
+// 			 	_delay_ms(50);
 // 		 	}
 // 	 	}
-	 
+// 	 
 // 	 
 // ar[0] =0;
 // ar[1] =0;
@@ -248,7 +249,7 @@ I2C_init();
 
 		//printf("Debug enabed\r\n");
 		
-		//csp_debug_toggle_level(CSP_INFO);
+		csp_debug_toggle_level(CSP_INFO);
 		//csp_debug_toggle_level((CSP_PACKET));
 		//csp_debug_toggle_level(CSP_WARN);
 		//csp_debug_toggle_level(CSP_ERROR);

@@ -317,7 +317,7 @@ static CSP_DEFINE_TASK(csp_task_router) {
 
 	/* Here there be routing */
 	while (1) {
-		csp_log_info("%s %d\n",pcTaskGetName(NULL),uxTaskGetStackHighWaterMark2(NULL));
+		//csp_log_info("%s %d\n",pcTaskGetName(NULL),uxTaskGetStackHighWaterMark2(NULL));
 		csp_route_work(FIFO_TIMEOUT);
 	}
 

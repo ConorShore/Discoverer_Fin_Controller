@@ -6,6 +6,7 @@
 #define REG_RPOS 32
 #define REG_APOS 33
 #define REG_ERR 34
+#define REG_RES_E 3
 
 
 class AM4096 {
