@@ -57,10 +57,10 @@ extern "C" {
 
 	//#include <avr/fuse.h>
 
-#define FUSES __fuse_t __fuse FUSEMEM
+//#define FUSES __fuse_t __fuse FUSEMEM
 
 //FUSES {.low = 0xBF, .high=0x01,.extended = 0xFF};
- FUSES {.low = 0xBF, .high=0x11,.extended = 0xFF};
+// FUSES {.low = 0xBF, .high=0x11,.extended = 0xFF};
 
 
 //static char out[10]; //used for as placeholder for itoa function
@@ -108,6 +108,7 @@ int main( void )
 {wdt_reset();
 	usart_init(MYUBRR);
 fdevopen( &usart_putchar_printf,0);
+printf("X");
 
 I2C_init();
 
@@ -129,8 +130,8 @@ I2C_init();
 //  ar[1]=0b0001101;
 //  ar[2]=0x53;
 // 
-//  	printf("write %d\n",I2C_write(0x63,ar,3,1));
-	 
+//  	printf("write %d\n",I2C_write(0x0,ar,3,1));
+// 	 
 // printf("start\n");
 // 	 	while (1) {
 // 		 	for (int i=0;i<128;i++) {
@@ -273,7 +274,7 @@ I2C_init();
 	
 	
 
-
+	printf("a\n");
 	vTaskStartScheduler();
 	
 	
@@ -286,9 +287,10 @@ I2C_init();
 static void wdtr(void* pvParameters) {
 	 wdt_reset();
 	 wdt_enable(WDTO_500MS);
-	 
+
 	
 	for(;;) {
+		
 	wdt_reset();
 	vTaskDelay(200/ portTICK_PERIOD_MS);
 	contled(TOGCON,0);

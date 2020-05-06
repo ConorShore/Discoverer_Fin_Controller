@@ -175,7 +175,9 @@ MCP2515::ERROR MCP2515::setMode(const CANCTRL_REQOP_MODE mode)
     bool modeMatch = false;
     while (~timeoutcheck()) {
         uint8_t newmode = readRegister(MCP_CANSTAT);
+		//printf("%x\n",newmode);
         newmode &= CANSTAT_OPMOD;
+		
 
         modeMatch = newmode == mode;
 

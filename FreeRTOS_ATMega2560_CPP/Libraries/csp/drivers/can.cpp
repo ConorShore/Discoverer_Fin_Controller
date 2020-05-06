@@ -30,10 +30,10 @@ void canisrinit(void);
 
 int can_init(uint32_t id, uint32_t mask, struct csp_can_config *conf) {
 	int error = 0;
-	portENTER_CRITICAL();
+
 		SPI.begin();
 			errorfunc(mcp2515.reset(),error);
-			errorfunc(mcp2515.setBitrate(CAN_1000KBPS),error);
+		//	errorfunc(mcp2515.setBitrate(CAN_1000KBPS),error);
 			//printf(" mask = %lx",mask);
 			//while(1);
 			errorfunc(mcp2515.setFilterMask(MCP2515::MASK0,1,mask),error);
@@ -42,7 +42,7 @@ int can_init(uint32_t id, uint32_t mask, struct csp_can_config *conf) {
  			errorfunc(mcp2515.setFilter(MCP2515::RXF2,1,id),error);
 			errorfunc(mcp2515.setNormalMode(),error);
 			
-	portEXIT_CRITICAL();
+
 			
 
 

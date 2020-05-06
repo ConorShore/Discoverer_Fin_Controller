@@ -102,9 +102,9 @@ uint16_t enc_tar_points[4] = {0,0,0,0};
 
 
 	AM4096 encoder1(0x50);
-	AM4096 encoder2(0x53);
+	AM4096 encoder2(0x51);
  	AM4096 encoder3(0x52);
- 	AM4096 encoder4(0x51);
+ 	AM4096 encoder4(0x53);
 	
 	
 
@@ -165,30 +165,46 @@ gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
 //get encoder values
 	float tempd=0;
 	uint16_t temp16=0;
+	uint8_t temp8=0;
+	
+	encoder1.readerror(&temp8);
+	printf("%x ",temp8);
 
 	if(encoder1.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
-	status->encoder_pos.pos_fin_a=uint16_t(tempd);
+
+	status->encoder_pos.pos_fin_a=uint16_t(temp16);
 	
 	temp16=0;
 	if(encoder2.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
-	status->encoder_pos.pos_fin_b=uint16_t(tempd);
+
+	status->encoder_pos.pos_fin_b=uint16_t(temp16);
+	
+		encoder2.readerror(&temp8);
+	printf("%x ",temp8);
 	
 	temp16=0;
 	if(encoder3.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
-	status->encoder_pos.pos_fin_c=uint16_t(tempd);
+
+	status->encoder_pos.pos_fin_c=uint16_t(temp16);
+	
+		encoder3.readerror(&temp8);
+	printf("%x ",temp8);
 	
 	temp16=0;
 	if(encoder4.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
-	status->encoder_pos.pos_fin_d=uint16_t(tempd);
 
+	status->encoder_pos.pos_fin_d=uint16_t(temp16);
+
+		encoder4.readerror(&temp8);
+	printf("%x \n",temp8);
 
 //get temps
 	read_temp_sensors(&status->temperatures[0]);
@@ -424,14 +440,14 @@ void read_temp_sensors(uint16_t *array){
 CSP_DEFINE_TASK(task_stepper) {
 	#define BASEOVERSTEPS 2;
 	uint8_t oversteps = BASEOVERSTEPS;
-	#define RETRYMAX 5
+	#define RETRYMAX 2
 	#define RETRYMARGIN 16
 	uint16_t recbuf=0;
 	uint8_t intervalcount=0;
 	#define INTERVALPERIOD 5
 	#define INTERVALMARGINFACTOR 0.5
 	
-	#define MAXOVERSTEPS 4
+	#define MAXOVERSTEPS 2
 	const uint8_t intervalstep=uint8_t(float((INTERVALPERIOD)*0.833333333)*11.3777777778);
 	const uint16_t intervalmargin = uint16_t(INTERVALMARGINFACTOR*float(intervalstep));
 	stepper_cmd_t stepcmd[4];
@@ -440,7 +456,8 @@ CSP_DEFINE_TASK(task_stepper) {
 		stepcmd[2]=stepcmd[0];
 		stepcmd[3]=stepcmd[0];
 	bool inmove[4]= {0,0,0,0};
-		
+		stepper1.enstep();
+ 		stepper2.enstep();
 	for(;;) {
 		TickType_t funcstarttime=xTaskGetTickCount();
 		
@@ -494,6 +511,7 @@ CSP_DEFINE_TASK(task_stepper) {
 		
 		
 		uint16_t stepc=oversteps;
+
 		
 		if(intervalcount>=INTERVALPERIOD) {
 			intervalcount=0;
@@ -606,6 +624,8 @@ CSP_DEFINE_TASK(task_stepper) {
 		}
 		//portENTER_CRITICAL();
 		uint16_t i=0;
+
+		//printf("\n");
 		while(i<stepc) {
 			if(inmove[0]) {
 				stepper1.stepfunc(0);
@@ -822,24 +842,28 @@ gs_fin_cmd_error_t init_server(void) {
 	stepper2.enstep();
 	stepper1.updateconfig(&uniman_fstep_conf,&uniman_running_conf);
 	stepper2.updateconfig(&uniman_fstep_conf,&uniman_running_conf);
-	stepper1.dirfunc(0,2);
-	stepper1.dirfunc(1,2);
+	//for(int i=0;i<100;i++){
+	stepper1.dirfunc(0,0);
+	stepper1.dirfunc(1,0);
 	stepper1.stepfunc(0);
 	stepper1.stepfunc(1);
 	stepper2.stepfunc(0);
 	stepper2.stepfunc(1);
 	_delay_ms(20);
-	stepper1.dirfunc(0,2);
-	stepper1.dirfunc(1,2);
+	stepper1.dirfunc(0,1);
+	stepper1.dirfunc(1,1);
 	stepper1.stepfunc(0);
 	stepper1.stepfunc(1);
 	stepper2.stepfunc(0);
 	stepper2.stepfunc(1);
 	_delay_us(100);
-	
-	
+	//}
+	stepper1.updateconfig(&uniman_step1_conf,&uniman_running_conf);
+	stepper2.updateconfig(&uniman_step2_conf,&uniman_running_conf);
+/*	save_fin_config();*/
+
 	if(load_fin_config()) error=FIN_CMD_FAIL;
-	
+
 	print_conf(&uniman_running_conf);
 		
 	last_pos_rec.begin(EEPROM_LAST_POS_REC,8,sizeof(temp),&temp);

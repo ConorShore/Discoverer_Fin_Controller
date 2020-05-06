@@ -48,6 +48,8 @@ void SPIClass::begin()
     // then set it high (to enable the internal pull-up resistor)
 	
 	PORTB|=(1<<PB4); // then set SS high
+	PORTL|=(1<<PL5);
+	PORTH|=(1<<PH6);
 	
   /*  if(!(*reg & bit)){
 		//PB4

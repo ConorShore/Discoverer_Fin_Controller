@@ -41,6 +41,7 @@ void pwrredinit(void) {
 
 void timeoutstart(int tim) {
 	// remember power save
+	uint8_t sreg = SREG;
 	cli();
 	PRR1&=~(1<<PRTIM3);
 	
@@ -54,6 +55,7 @@ void timeoutstart(int tim) {
 	TCCR3B |= (1 << CS32);
 	TIFR3|=(1<<OCF3A);
 	sei();
+	SREG = sreg;
 	
 }
 
