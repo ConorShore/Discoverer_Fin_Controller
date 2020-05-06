@@ -858,8 +858,8 @@ gs_fin_cmd_error_t init_server(void) {
 	stepper2.stepfunc(1);
 	_delay_us(100);
 	//}
-	stepper1.updateconfig(&uniman_step1_conf,&uniman_running_conf);
-	stepper2.updateconfig(&uniman_step2_conf,&uniman_running_conf);
+	//stepper1.updateconfig(&uniman_step1_conf,&uniman_running_conf);
+	//stepper2.updateconfig(&uniman_step2_conf,&uniman_running_conf);
 /*	save_fin_config();*/
 
 	if(load_fin_config()) error=FIN_CMD_FAIL;

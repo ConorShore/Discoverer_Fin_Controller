@@ -33,7 +33,7 @@ int can_init(uint32_t id, uint32_t mask, struct csp_can_config *conf) {
 
 		SPI.begin();
 			errorfunc(mcp2515.reset(),error);
-		//	errorfunc(mcp2515.setBitrate(CAN_1000KBPS),error);
+			errorfunc(mcp2515.setBitrate(CAN_1000KBPS),error);
 			//printf(" mask = %lx",mask);
 			//while(1);
 			errorfunc(mcp2515.setFilterMask(MCP2515::MASK0,1,mask),error);
