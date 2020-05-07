@@ -69,7 +69,7 @@ static const uint32_t crc_tab[256] PROGMEM = {
 		if(initc==0) return -1;
 		sizeofin=sizeofdata;
 		uint8_t error = 0;
-		uint16_t resamount=(uint16_t(sizeofin)+CRCSIZE+COUNTERSIZE)*blocksin;
+		uint16_t resamount=(uint16_t(sizeofin)+CRCSIZE)*blocksin;
 		//printf("add %d resam %u sizeofin %d\n",add,resamount,sizeofin);
 		for (int i=0;i<ADDRESSSPACESIZE;i++) {
 					//printf("%x\n",addressspace[i]);
@@ -99,7 +99,7 @@ static const uint32_t crc_tab[256] PROGMEM = {
 		
 		uint8_t uninit=1;
 		
-		for (uint16_t i=0;i<sizeofin+COUNTERSIZE+CRCSIZE;i++) {
+		for (uint16_t i=0;i<sizeofin+CRCSIZE;i++) {
 			
 			if(eeprom_read_byte((uint8_t *) startadd+i)!=0xFF) { //check to see if there's real data there
 				uninit=0;
@@ -135,12 +135,12 @@ static const uint32_t crc_tab[256] PROGMEM = {
 
 		crc_t crccalc;
 		crccalc = 0xFFFFFFFF;
-		for (uint16_t i=0;i<sizeofin+COUNTERSIZE+CRCSIZE;i++) {
+		for (uint16_t i=0;i<sizeofin+CRCSIZE;i++) {
 
-			if (i<sizeofin+COUNTERSIZE) {
+			if (i<sizeofin) {
 				crccalc = pgm_read_dword(&(crc_tab[(crccalc ^ (eeprom_read_byte((uint8_t*)curaddress+i))) & 0xFFL])) ^ (crccalc >> 8);
 			} else {
-				crcbuff[i-(sizeofin+COUNTERSIZE)]=eeprom_read_byte((uint8_t*)curaddress+i);
+				crcbuff[i-(sizeofin)]=eeprom_read_byte((uint8_t*)curaddress+i);
 			}
 		}
 		crccalc ^= 0xFFFFFFFF;
@@ -165,7 +165,7 @@ static const uint32_t crc_tab[256] PROGMEM = {
 		for(uint16_t i=0;i<sizeofin;i++) {
 			uint8_t * point;
 
-			uint8_t in=eeprom_read_byte((uint8_t*)curaddress+i+COUNTERSIZE);
+			uint8_t in=eeprom_read_byte((uint8_t*)curaddress+i);
 			*point=in;
 			memcpy(data+i, point,1); 
 			
@@ -199,46 +199,19 @@ static const uint32_t crc_tab[256] PROGMEM = {
 
 		//memcpy(array+COUNTERSIZE,data,sizeofin+COUNTERSIZE); //copy data to new array, leaving room for counter
 				
-		uint8_t countbuff[COUNTERSIZE];
+	
 		uint8_t crcbuff[CRCSIZE];
-		count_t readcount=0;
+	
 		
 		//printf("start add %u cur add %u",startadd,curaddress);
-		
-		
-		eeprom_read_block(countbuff,(int *) curaddress,COUNTERSIZE); //read current val
-		
-		for(uint16_t i=0; i<COUNTERSIZE;i++) {
-			readcount |= (countbuff[i]<<i*8);
-		}
-		
-		
-		
-		count_t comp=0;
-		comp=~comp;
-		
-		if(readcount==comp) { //this checks if area is initalised, if not start the count
-			readcount=0;
-		} else if(readcount>=MAXWRITES) {
-			if(incrementblock()!=0) return -1; //if we need to increment the block, go ahead
-		
-			return write(data); //write data to new block
-		}
-		
-	
-		readcount++;
-		memcpy(countbuff,&readcount,COUNTERSIZE);
-		//memcpy(array,&readcount,COUNTERSIZE);
+
 
 		crc_t crc;
 		crc = 0xFFFFFFFF;
-		for (uint16_t i=0;i<sizeofin+COUNTERSIZE;i++) {
+		for (uint16_t i=0;i<sizeofin;i++) {
 			uint8_t in=0;
-			if (i<COUNTERSIZE) {
-				in=countbuff[i];
-			} else {
-				memcpy(&in,(uint8_t *)(data+i-COUNTERSIZE),1);
-			}
+			memcpy(&in,(uint8_t *)(data+i),1);
+		
 
 			crc = pgm_read_dword(&(crc_tab[(crc ^ in) & 0xFFL])) ^ (crc >> 8);
 			//printf("%x ",in);
@@ -261,21 +234,35 @@ static const uint32_t crc_tab[256] PROGMEM = {
 		}
 		
 
-		for(uint16_t i=0;i<sizeofin+COUNTERSIZE+CRCSIZE;i++) {
-			if(i<COUNTERSIZE) {
-				//counter section
-				eeprom_write_byte((uint8_t *)curaddress+i,countbuff[i]);
-			} else if(i>=sizeofin+COUNTERSIZE) {
+		for(uint16_t i=0;i<sizeofin+CRCSIZE;i++) {
+
+			if(i>=sizeofin) {
 				//crc section
-				eeprom_write_byte((uint8_t *)curaddress+i,crcbuff[i-sizeofin-COUNTERSIZE]);
+				eeprom_write_byte((uint8_t *)curaddress+i,crcbuff[i-sizeofin]);
+				uint8_t readin=0;
+				readin=eeprom_read_byte((uint8_t *)curaddress+i);
+				if (crcbuff[i-sizeofin]!=readin) {
+					incrementblock();
+					write(data);
+					return 1;
+				}
 			} else {
 				//data section
 				uint8_t in=0;
-				memcpy(&in,(uint8_t *)(data+i-COUNTERSIZE),1);
+				memcpy(&in,(uint8_t *)(data+i),1);
 				eeprom_write_byte((uint8_t *)curaddress+i,in);
+				uint8_t readin=0;
+				readin=eeprom_read_byte((uint8_t *)curaddress+i);
+				if (in!=readin) {
+					incrementblock();
+					write(data);
+					return 1;
+					 
+				}
 			}
-			
 		}
+
+		
 		
 		//eeprom_read_block(array,(uint8_t *)curaddress,sizeofin+COUNTERSIZE+CRCSIZE);
 		

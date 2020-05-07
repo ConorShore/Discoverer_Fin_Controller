@@ -240,6 +240,7 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 
 	float tempd[3]={0.0,0.0,0.0};
 	float reqpos=0;
+	uint16_t reqpos16=0;
 	
 	//TODO - catch input errors
 	for (int z=0; z<4; z++) {
@@ -261,6 +262,7 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 					internalerror=1;
 				}
 				reqpos=float(pos->pos_fin_b);
+				reqpos16=pos->pos_fin_b;
 			break;
 			
 			case 1:
@@ -269,6 +271,7 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 					internalerror=1;
 				}
 				reqpos=float(pos->pos_fin_a);
+				reqpos16=pos->pos_fin_a;
 			break;
 		
 			case 2:
@@ -277,6 +280,7 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 					internalerror=1;
 				}
 				reqpos=float(pos->pos_fin_d);
+				reqpos16=pos->pos_fin_d;
 			break;
 
 			case 3:
@@ -285,21 +289,25 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 					internalerror=1;
 				}
 				reqpos=float(pos->pos_fin_c);	
+				reqpos16=pos->pos_fin_c;
 			break;		
 		}
 		portEXIT_CRITICAL();
 		//printf("Step %d, enc %d, to %d \n\n",i,temp16,uint16_t(reqpos));
 		
-		if (reqpos==60001) {
+		if (reqpos16==60001) {
 			uint16_t commandinc=((i)<<14) | (0<<13) | (0&0x1FFF);
 			if(csp_queue_enqueue(uniman_stepper_q,&commandinc,1000)!=0) error=FIN_CMD_FAIL;
-			printf("pasezn\n");
+			//printf("pasezn\n");
 			continue;
-		} else if(reqpos>3600) {
+		} else if(reqpos16>3600) {
 			csp_log_error("invalid data for stepper from comms");
 			continue;
+		} else if (reqpos16==60000) {
+			//printf("hit");
+		
 		} else {
-			switch (i) {
+			switch (z) {
 				case 0:
 				uniman_status.pos_set_points.pos_fin_a=pos->pos_fin_a;
 				break;
@@ -314,6 +322,7 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 				break;
 			}
 		}
+		//printf("no %u i %u status pos %u %u %u %u",reqpos16,i,uniman_status.pos_set_points.pos_fin_a,uniman_status.pos_set_points.pos_fin_b,uniman_status.pos_set_points.pos_fin_c,uniman_status.pos_set_points.pos_fin_d);
 		
 		if(internalerror!=0)  {
 			csp_log_error("Enc %d error",i+1);
@@ -444,7 +453,7 @@ CSP_DEFINE_TASK(task_stepper) {
 	#define BASEOVERSTEPS 2;
 	uint8_t oversteps = BASEOVERSTEPS;
 	#define RETRYMAX 2
-	#define RETRYMARGIN 16
+	#define RETRYMARGIN 10
 	uint16_t recbuf=0;
 	uint8_t intervalcount=0;
 	#define INTERVALPERIOD 5
@@ -699,6 +708,11 @@ CSP_DEFINE_TASK(task_stepper) {
 // 		stepper1.enstep();
 // 		stepper2.enstep();
 // 		vTaskDelay(5);
+		gs_fin_positions_t tempos;
+		tempos.pos_fin_a=60000;
+		tempos.pos_fin_b=60000;
+		tempos.pos_fin_c=60000;
+		tempos.pos_fin_d=60000;
 		for(int i=0;i<4;i++) {
 			if((inmove[i]==1)&&(stepcmd[i].cursteps==stepcmd[i].tarsteps)) {
 				portENTER_CRITICAL();
@@ -737,36 +751,32 @@ CSP_DEFINE_TASK(task_stepper) {
 
 						//TODO - take into account going past setpoint, not jsut being less than it
 						
-						gs_fin_positions_t tempos;				
+									
 						for (int a=0; a<4;a++) {
-						
+						//printf("a %u i %u\n",a,i);
 							switch (a) {
 								case 0:
 									if(a==i){
+										//printf("b\n");
 										tempos.pos_fin_b=uniman_status.pos_set_points.pos_fin_b;
-									} else {
-										tempos.pos_fin_b=60000;
 									}
 								break;
 								case 1:
 									if(a==i){
+										//printf("a\n");
 										tempos.pos_fin_a=uniman_status.pos_set_points.pos_fin_a;
-									} else {
-										tempos.pos_fin_a=60000;
 									}
 								break;
 								case 2:
 									if(a==i){
+										//printf("d\n");
 										tempos.pos_fin_d=uniman_status.pos_set_points.pos_fin_d;
-									} else {
-										tempos.pos_fin_d=60000;
 									}
 								break;
 								case 3:
 									if(a==i){
+										//printf("c\n");
 										tempos.pos_fin_c=uniman_status.pos_set_points.pos_fin_c;
-									} else {
-										tempos.pos_fin_c=60000;
 									}
 								break;
 							}	
@@ -775,14 +785,15 @@ CSP_DEFINE_TASK(task_stepper) {
 						
 					
 						stepcmd[i].retry++;
-						printf("1 %d 2 %d 3 %d 4 %d\n",tempos.pos_fin_a,tempos.pos_fin_b,tempos.pos_fin_c,tempos.pos_fin_d);
-						set_fin_pos_ns(&tempos);
+						//printf("1 %d 2 %d 3 %d 4 %d\n",tempos.pos_fin_a,tempos.pos_fin_b,tempos.pos_fin_c,tempos.pos_fin_d);
+
 						} else {
 						
 						csp_log_error("Command Fail, Delta %d Retry %d\n",abs(targetfind-encfind),stepcmd[i].retry);
 						stepcmd[i].retry=0;
 						inmove[i]=0;
 					}
+					set_fin_pos_ns(&tempos);
 				}
 			}
 		}
@@ -869,7 +880,7 @@ gs_fin_cmd_error_t init_server(void) {
 	//stepper1.updateconfig(&uniman_step1_conf,&uniman_running_conf);
 	//stepper2.updateconfig(&uniman_step2_conf,&uniman_running_conf);
 /*	save_fin_config();*/
-
+	/*save_fin_config();*/
 	if(load_fin_config()) error=FIN_CMD_FAIL;
 
 	print_conf(&uniman_running_conf);
@@ -881,7 +892,7 @@ gs_fin_cmd_error_t init_server(void) {
 
 		if(csp_thread_create(task_server, "SERVER", 270, NULL, 2, &handle_server)) error=FIN_CMD_FAIL;
 	
-	if(csp_thread_create(task_stepper, "STEP",configMINIMAL_STACK_SIZE+140, NULL, 1, NULL)) error=FIN_CMD_FAIL;
+	if(csp_thread_create(task_stepper, "STEP",configMINIMAL_STACK_SIZE+200, NULL, 1, NULL)) error=FIN_CMD_FAIL;
 
 
 	

@@ -3,13 +3,13 @@
 #define BUFFSIZE 64
 
 #define CRCTYPE uint32_t
-#define COUNTERTYPE uint16_t
+
 
 typedef CRCTYPE crc_t;
-typedef COUNTERTYPE count_t;
+
 
 #define CRCSIZE sizeof(CRCTYPE)
-#define COUNTERSIZE sizeof(COUNTERTYPE)
+
 
 class R_EEPROM {
 	private:
