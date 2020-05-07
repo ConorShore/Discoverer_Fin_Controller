@@ -40,9 +40,9 @@ void stepper_1_dir(uint8_t a, uint8_t t) { //a is which stepper 0 is 1 1 is 2, t
 			PORTH^=(1<<PH5);
 			} else {
 			if (t==1) {
-				PORTH&=~(1<<PH5);
-				} else {
 				PORTH|=(1<<PH5);
+				} else {
+				PORTH&=~(1<<PH5);
 			}
 		}
 		} else {
@@ -50,9 +50,9 @@ void stepper_1_dir(uint8_t a, uint8_t t) { //a is which stepper 0 is 1 1 is 2, t
 			PORTH^=(1<<PH3);
 			} else {
 			if (t==1) {
-				PORTH&=~(1<<PH3);
-				} else {
 				PORTH|=(1<<PH3);
+				} else {
+				PORTH&=~(1<<PH3);
 			}
 		}
 	}

@@ -167,44 +167,44 @@ gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
 	uint16_t temp16=0;
 	uint8_t temp8=0;
 	
-	encoder1.readerror(&temp8);
-	printf("%x ",temp8);
+	//encoder1.readerror(&temp8);
+	//printf("%x ",temp8);
 
 	if(encoder1.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
 
-	status->encoder_pos.pos_fin_a=uint16_t(temp16);
+	status->encoder_pos.pos_fin_a=uint16_t(tempd);
 	
 	temp16=0;
 	if(encoder2.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
 
-	status->encoder_pos.pos_fin_b=uint16_t(temp16);
+	status->encoder_pos.pos_fin_b=uint16_t(tempd);
 	
-		encoder2.readerror(&temp8);
-	printf("%x ",temp8);
+	//	encoder2.readerror(&temp8);
+	//printf("%x ",temp8);
 	
 	temp16=0;
 	if(encoder3.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
 
-	status->encoder_pos.pos_fin_c=uint16_t(temp16);
+	status->encoder_pos.pos_fin_c=uint16_t(tempd);
 	
-		encoder3.readerror(&temp8);
-	printf("%x ",temp8);
+	//	encoder3.readerror(&temp8);
+	//printf("%x ",temp8);
 	
 	temp16=0;
 	if(encoder4.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
 
-	status->encoder_pos.pos_fin_d=uint16_t(temp16);
+	status->encoder_pos.pos_fin_d=uint16_t(tempd);
 
-		encoder4.readerror(&temp8);
-	printf("%x \n",temp8);
+	//	encoder4.readerror(&temp8);
+	//printf("%x \n",temp8);
 
 //get temps
 	read_temp_sensors(&status->temperatures[0]);
@@ -231,7 +231,7 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 	
 	gs_fin_cmd_error_t error=FIN_CMD_OK;
 	
-	
+	uniman_status.mode=GS_FIN_MODE_MOVING;
 
 	
 	uint16_t temp16=0;
@@ -471,7 +471,7 @@ CSP_DEFINE_TASK(task_stepper) {
 		
 		
 				inmove[(recbuf&0xC000)>>14]=1;
-				if((inmove[0]+inmove[1]+inmove[2]+inmove[3])!=0) uniman_status.mode=GS_FIN_MODE_MOVING;
+
 				
 				uint16_t posrec=0;
 				switch ((recbuf&0xC000)>>14) {
