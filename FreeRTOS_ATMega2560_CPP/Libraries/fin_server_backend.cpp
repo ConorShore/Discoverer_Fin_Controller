@@ -814,10 +814,10 @@ gs_fin_cmd_error_t init_server(void) {
 	
 	//I2C_init();
 	printf("hello");
-	encoder1.init();
-	encoder2.init();
-	encoder3.init();
-	encoder4.init();
+	encoder1.init(0);
+	encoder2.init(0);
+	encoder3.init(1);
+	encoder4.init(1);
 
 	
 	setup_temp_sensors();

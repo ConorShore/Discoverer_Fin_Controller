@@ -15,7 +15,7 @@ class AM4096 {
 		volatile uint8_t address;
 	public:
 		AM4096(uint8_t addressin);
-		uint8_t init(void);
+		uint8_t init(uint8_t invert);
 		uint8_t readpos(uint16_t * pos);
 		int8_t readabspos(uint16_t * pos);
 		uint8_t zeropos(void);
