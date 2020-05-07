@@ -172,7 +172,7 @@ gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
 	
 	//encoder1.readerror(&temp8);
 	//printf("%x ",temp8);
-
+portENTER_CRITICAL();
 	if(encoder1.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
@@ -203,7 +203,7 @@ gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
 	if(encoder4.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
-
+portEXIT_CRITICAL();
 	status->encoder_pos.pos_fin_c=uint16_t(tempd);
 
 	//	encoder4.readerror(&temp8);
@@ -223,9 +223,7 @@ gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
 //get mode
 	status->mode=uniman_status.mode;
 	
-	
-	//TODO - remove following test statement
-	error=FIN_CMD_OK;
+
 	status->status_code&=~0x80;
 	return error;
 
@@ -254,6 +252,7 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 		tempd[2]=0;
 		temp16=0;
 		reqpos=0;
+		portENTER_CRITICAL();
 		switch (i) {
 			case 0:
 		
@@ -288,7 +287,7 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 				reqpos=float(pos->pos_fin_c);	
 			break;		
 		}
-		
+		portEXIT_CRITICAL();
 		//printf("Step %d, enc %d, to %d \n\n",i,temp16,uint16_t(reqpos));
 		
 		if (reqpos==60001) {
@@ -460,8 +459,6 @@ CSP_DEFINE_TASK(task_stepper) {
 		stepcmd[2]=stepcmd[0];
 		stepcmd[3]=stepcmd[0];
 	bool inmove[4]= {0,0,0,0};
-		stepper1.enstep();
- 		stepper2.enstep();
 	for(;;) {
 		TickType_t funcstarttime=xTaskGetTickCount();
 		
@@ -476,7 +473,7 @@ CSP_DEFINE_TASK(task_stepper) {
 		
 				inmove[(recbuf&0xC000)>>14]=1;
 
-				
+				portENTER_CRITICAL();
 				uint16_t posrec=0;
 				switch ((recbuf&0xC000)>>14) {
 					case 0:
@@ -495,7 +492,7 @@ CSP_DEFINE_TASK(task_stepper) {
 						encoder4.readpos(&posrec);
 					break;
 				}
-			
+			portEXIT_CRITICAL();
 				stepcmd[ (recbuf&0xC000)>>14 ].startenc=posrec;
 				stepcmd[ (recbuf&0xC000)>>14 ].trackenc=posrec;
 				if(stepcmd[ (recbuf&0xC000)>>14 ].direction==0) {
@@ -523,6 +520,7 @@ CSP_DEFINE_TASK(task_stepper) {
 			for(int i=0;i<4;i++) {
 				uint16_t tpos=0;
 				if(inmove[i]==1) {
+					portENTER_CRITICAL();
 					switch (i) {
 						case 0:
 							encoder1.readpos(&tpos);
@@ -540,6 +538,7 @@ CSP_DEFINE_TASK(task_stepper) {
 							encoder4.readpos(&tpos);
 						break;
 					}
+					portEXIT_CRITICAL();
 					int16_t error=abs(tpos-stepcmd[i].trackenc);
 					uint16_t error1=0;
 					uint16_t error2=0;
@@ -693,12 +692,16 @@ CSP_DEFINE_TASK(task_stepper) {
 			
 			
 			
-
-		vTaskDelayUntil(&funcstarttime,uint16_t((1000*(uint32_t)60)/(uniman_running_conf.stepper_speed*(uint32_t)portTICK_PERIOD_MS)));
-
+		vTaskDelay(50);
+		stepper1.disstep();
+		stepper2.disstep();
+		vTaskDelayUntil(&funcstarttime,(uint16_t((1000*(uint32_t)60)/(uniman_running_conf.stepper_speed*(uint32_t)portTICK_PERIOD_MS)))-50);
+// 		stepper1.enstep();
+// 		stepper2.enstep();
+// 		vTaskDelay(5);
 		for(int i=0;i<4;i++) {
 			if((inmove[i]==1)&&(stepcmd[i].cursteps==stepcmd[i].tarsteps)) {
-				
+				portENTER_CRITICAL();
 				uint16_t posrec=0;
 				switch (i) {
 					case 0:
@@ -717,7 +720,7 @@ CSP_DEFINE_TASK(task_stepper) {
 					encoder4.readpos(&posrec);
 					break;
 				}
-				
+				portEXIT_CRITICAL();
 				uint16_t targetfind=abs(2048-stepcmd[i].tarenc);
 				uint16_t encfind=abs(2048-posrec);
 				
