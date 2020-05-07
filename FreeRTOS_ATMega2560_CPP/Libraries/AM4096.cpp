@@ -101,3 +101,11 @@ uint8_t AM4096::readerror(uint8_t * err) {
 	
 	return 0;
 }
+
+uint8_t AM4096::getzero(uint16_t * zerodat) {
+	uint8_t tempdata[2] = {0,0};
+	if(I2C_read(address,REG_ZIN_I,tempdata,2)!=0) return -1; //get current zin setting
+	*zerodat=((uint16_t(tempdata[1]&0x0F))<<8)+tempdata[0];
+	return 0;
+	
+}
