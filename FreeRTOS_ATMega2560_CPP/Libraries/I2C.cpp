@@ -3,6 +3,7 @@
 #include <FreeRTOS/portmacro.h>
 #include <util/delay.h>
 #include <stdio.h>
+#include <FinCont.h>
 
 // some defs for error etc from hardware
 #define START 0x08
@@ -38,7 +39,8 @@ const uint8_t number,const uint8_t stop) {
 
 	TWCR|=(1<<TWSTA);
 	
-	while (!(TWCR & (1<<TWINT))); //wait for I2C to be ready
+	timeoutstart(624);
+	while ((!(TWCR & (1<<TWINT)))&&(~timeoutcheck())); //wait for I2C to be ready with timeout
 	if ((TWSR & 0xF8) != START) {
 		TWCR = (1<<TWINT)|(1<<TWEN)| (1<<TWSTO);
 		
@@ -48,7 +50,8 @@ const uint8_t number,const uint8_t stop) {
 	TWDR = (address<<1);
 	TWCR = (1<<TWINT) | (1<<TWEN);
 	
-	while (!(TWCR & (1<<TWINT)));
+	timeoutstart(624);
+	while ((!(TWCR & (1<<TWINT)))&&(~timeoutcheck())); //wait for I2C to be ready with timeout
 	
 	if ((TWSR & 0xF8) !=MT_SLA_ACK) {
 		TWCR = (1<<TWINT)|(1<<TWEN)| (1<<TWSTO);
@@ -59,7 +62,8 @@ const uint8_t number,const uint8_t stop) {
 		for(int i=0;i<number;i++) {
 			TWDR = *(data+i);
 			TWCR = (1<<TWINT) | (1<<TWEN);
-			while (!(TWCR & (1<<TWINT)));
+			timeoutstart(624);
+			while ((!(TWCR & (1<<TWINT)))&&(~timeoutcheck())); //wait for I2C to be ready with timeout
 			
 			if ((TWSR & 0xF8) != MT_DATA_ACK) {
 				TWCR = (1<<TWINT)|(1<<TWEN)| (1<<TWSTO);
@@ -100,7 +104,8 @@ int8_t I2C_read(const uint8_t address,const uint8_t reg, uint8_t * data,const ui
 	
 	TWCR|=(1<<TWSTA); //repeated start
 	
-	while (!(TWCR & (1<<TWINT))); //wait for I2C to be ready
+	timeoutstart(624);
+	while ((!(TWCR & (1<<TWINT)))&&(~timeoutcheck())); //wait for I2C to be ready with timeout
 	if ((TWSR & 0xF8) != RSTART) { //check RS was transmitted
 		TWCR = (1<<TWINT)|(1<<TWEN)| (1<<TWSTO);
 		
@@ -110,7 +115,8 @@ int8_t I2C_read(const uint8_t address,const uint8_t reg, uint8_t * data,const ui
 	TWDR = (address<<1) | 0x01; //read add on the end
 	TWCR = (1<<TWINT) | (1<<TWEN);
 	
-	while (!(TWCR & (1<<TWINT)));
+	timeoutstart(624);
+	while ((!(TWCR & (1<<TWINT)))&&(~timeoutcheck())); //wait for I2C to be ready with timeout
 	
 	if ((TWSR & 0xF8) !=MR_SLA_ACK) { //wait for ack of address
 		TWCR = (1<<TWINT)|(1<<TWEN)| (1<<TWSTO);
@@ -121,7 +127,8 @@ int8_t I2C_read(const uint8_t address,const uint8_t reg, uint8_t * data,const ui
 	for(int i=0;i<number;i++) {
 		TWCR = (1<<TWINT) | (1<<TWEN);
 		
-		while (!(TWCR & (1<<TWINT))); //wait for ready again
+		timeoutstart(624);
+		while ((!(TWCR & (1<<TWINT)))&&(~timeoutcheck())); //wait for I2C to be ready with timeout
 		if ((TWSR & 0xF8) == MR_DATA_NACK||(TWSR & 0xF8) == MR_DATA_ACK) { //if data
 			*(data+i)=TWDR;
 			} else {
