@@ -72,6 +72,9 @@ csp_thread_handle_t handle_server;
 gs_fin_cmd_error_t process_config(gs_fin_config_t * confin);
 void delay_us(uint16_t in);
 
+const uint8_t stepmap0[4] = {1,0,3,2};
+const uint8_t stepmap[4] = {2,1,4,3};
+
 	
 tmc2041 stepper1(&stepper_1_pin_init,&stepper_1_cson,&stepper_1_csoff,&stepper_1_en, 
 &stepper_1_dis, &stepper_1_tstep, &stepper_1_dir, 
@@ -91,7 +94,7 @@ gs_fin_status_t uniman_status = {
 	.temperatures = {0,0,0,0},
 	.currents = {0,0,0,0},
 	.mode = GS_FIN_MODE_INIT,
-	.status_code=0
+	.status_code=0x80 // reset set high for first status
 };
 
 uint16_t step_set_points[4] = {0,0,0,0};
@@ -174,14 +177,14 @@ gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
 
-	status->encoder_pos.pos_fin_a=uint16_t(tempd);
+	status->encoder_pos.pos_fin_b=uint16_t(tempd);
 	
 	temp16=0;
 	if(encoder2.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
 
-	status->encoder_pos.pos_fin_b=uint16_t(tempd);
+	status->encoder_pos.pos_fin_a=uint16_t(tempd);
 	
 	//	encoder2.readerror(&temp8);
 	//printf("%x ",temp8);
@@ -191,7 +194,7 @@ gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
 
-	status->encoder_pos.pos_fin_c=uint16_t(tempd);
+	status->encoder_pos.pos_fin_d=uint16_t(tempd);
 	
 	//	encoder3.readerror(&temp8);
 	//printf("%x ",temp8);
@@ -201,7 +204,7 @@ gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
 
-	status->encoder_pos.pos_fin_d=uint16_t(tempd);
+	status->encoder_pos.pos_fin_c=uint16_t(tempd);
 
 	//	encoder4.readerror(&temp8);
 	//printf("%x \n",temp8);
@@ -223,6 +226,7 @@ gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
 	
 	//TODO - remove following test statement
 	error=FIN_CMD_OK;
+	status->status_code&=~0x80;
 	return error;
 
 }
@@ -240,8 +244,8 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 	float reqpos=0;
 	
 	//TODO - catch input errors
-	for (int i=0; i<4; i++) {
-		
+	for (int z=0; z<4; z++) {
+	int i = stepmap0[z];		
 
 		
 		uint8_t internalerror=0;
@@ -257,7 +261,7 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 					error=FIN_CMD_FAIL;
 					internalerror=1;
 				}
-				reqpos=float(pos->pos_fin_a);
+				reqpos=float(pos->pos_fin_b);
 			break;
 			
 			case 1:
@@ -265,7 +269,7 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 					error=FIN_CMD_FAIL;
 					internalerror=1;
 				}
-				reqpos=float(pos->pos_fin_b);
+				reqpos=float(pos->pos_fin_a);
 			break;
 		
 			case 2:
@@ -273,7 +277,7 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 					error=FIN_CMD_FAIL;
 					internalerror=1;
 				}
-				reqpos=float(pos->pos_fin_c);
+				reqpos=float(pos->pos_fin_d);
 			break;
 
 			case 3:
@@ -281,7 +285,7 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 					error=FIN_CMD_FAIL;
 					internalerror=1;
 				}
-				reqpos=float(pos->pos_fin_d);	
+				reqpos=float(pos->pos_fin_c);	
 			break;		
 		}
 		
@@ -344,7 +348,7 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 			}
 		}
 		
-		csp_log_info("req pos %d dir 0 %d dir 1 %d",int16_t(reqpos),int16_t(tempd[1]),int16_t(tempd[2]));
+		csp_log_info("step %d req pos %d dir 0 %d dir 1 %d",i,int16_t(reqpos),int16_t(tempd[1]),int16_t(tempd[2]));
 		uint8_t direction=0;
 		
 	
@@ -732,33 +736,34 @@ CSP_DEFINE_TASK(task_stepper) {
 						
 						gs_fin_positions_t tempos;				
 						for (int a=0; a<4;a++) {
+						
 							switch (a) {
 								case 0:
-									if(a==i){
-										tempos.pos_fin_a=uniman_status.pos_set_points.pos_fin_a;
-									} else {
-										tempos.pos_fin_a=60000;
-									}
-								break;
-								case 1:
 									if(a==i){
 										tempos.pos_fin_b=uniman_status.pos_set_points.pos_fin_b;
 									} else {
 										tempos.pos_fin_b=60000;
 									}
 								break;
-								case 2:
+								case 1:
 									if(a==i){
-										tempos.pos_fin_c=uniman_status.pos_set_points.pos_fin_c;
+										tempos.pos_fin_a=uniman_status.pos_set_points.pos_fin_a;
 									} else {
-										tempos.pos_fin_c=60000;
+										tempos.pos_fin_a=60000;
 									}
 								break;
-								case 3:
+								case 2:
 									if(a==i){
 										tempos.pos_fin_d=uniman_status.pos_set_points.pos_fin_d;
 									} else {
 										tempos.pos_fin_d=60000;
+									}
+								break;
+								case 3:
+									if(a==i){
+										tempos.pos_fin_c=uniman_status.pos_set_points.pos_fin_c;
+									} else {
+										tempos.pos_fin_c=60000;
 									}
 								break;
 							}	
@@ -767,7 +772,7 @@ CSP_DEFINE_TASK(task_stepper) {
 						
 					
 						stepcmd[i].retry++;
-						//printf("1 %d 2 %d 3 %d 4 %d\n",tempos.pos_fin_a,tempos.pos_fin_b,tempos.pos_fin_c,tempos.pos_fin_d);
+						printf("1 %d 2 %d 3 %d 4 %d\n",tempos.pos_fin_a,tempos.pos_fin_b,tempos.pos_fin_c,tempos.pos_fin_d);
 						set_fin_pos_ns(&tempos);
 						} else {
 						
