@@ -96,9 +96,9 @@ void stepper_2_dir(uint8_t a, uint8_t t) { //a is which stepper 0 is 1 1 is 2, t
 			PORTL^=(1<<PL4);
 		} else {
 			if (t==1) {
-				PORTL&=~(1<<PL4);
-			} else {
 				PORTL|=(1<<PL4);
+			} else {
+				PORTL&=~(1<<PL4);
 			}
 		}
 	} else {
@@ -106,9 +106,9 @@ void stepper_2_dir(uint8_t a, uint8_t t) { //a is which stepper 0 is 1 1 is 2, t
 			PORTL^=(1<<PL2);
 		} else {
 			if (t==1) {
-				PORTL&=~(1<<PL2);
-			} else {
 				PORTL|=(1<<PL2);
+			} else {
+				PORTL&=~(1<<PL2);
 			}
 		}
 	}

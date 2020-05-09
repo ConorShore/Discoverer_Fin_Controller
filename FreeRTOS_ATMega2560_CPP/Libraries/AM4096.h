@@ -22,4 +22,5 @@ class AM4096 {
 		uint8_t readerror(uint8_t *err);
 		uint8_t check(void);
 		uint8_t getzero(uint16_t * zerodat);
+		uint8_t setzero(uint16_t * data);
 };

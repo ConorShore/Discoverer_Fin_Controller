@@ -109,3 +109,13 @@ uint8_t AM4096::getzero(uint16_t * zerodat) {
 	return 0;
 	
 }
+
+uint8_t AM4096::setzero(uint16_t * data) {
+		
+		uint8_t tempdata[3] = {REG_ZIN_E,0,0}; //first byte is mem address
+		if(I2C_read(address,REG_ZIN_I,&tempdata[1],2)!=0) return -1; //get current zin setting
+		tempdata[1]|=uint8_t(((*data)&0x0F00)>>8);
+		tempdata[2]=uint8_t((*data)&0x00FF);
+		if(I2C_write(address,tempdata,3,1)!=0) return -1;
+		_delay_ms(30);
+}

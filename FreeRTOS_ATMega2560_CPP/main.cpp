@@ -128,10 +128,10 @@ I2C_init();
 // 
 //  ar[0]=0;
 //  ar[1]=0b0001101;
-//  ar[2]=0x53;
+//  ar[2]=0x51;
 // 
-//  	printf("write %d\n",I2C_write(0x0,ar,3,1));
-// 	 
+//  	printf("write %d\n",I2C_write(0x60,ar,3,1));
+	 
 // printf("start\n");
 // 	 	while (1) {
 // 		 	for (int i=0;i<128;i++) {

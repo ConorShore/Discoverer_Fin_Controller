@@ -19,6 +19,13 @@
 R_EEPROM running_conf_EEPROM;
 R_EEPROM last_pos_rec;
 
+R_EEPROM enc_zero_1;
+R_EEPROM enc_zero_2;
+R_EEPROM enc_zero_3;
+R_EEPROM enc_zero_4;
+
+uint16_t enc_zeros[4]= {0,0,0,0};
+
 
 uniman_step_config_t uniman_step1_conf = {
 	.GCONF=STEPPER_GCONF_DATA(0,0),
@@ -51,7 +58,11 @@ gs_fin_config_t uniman_running_conf = {
 };
 
 #define EEPROM_RUN_CONF_ADD 0x00
-#define EEPROM_LAST_POS_REC 0x20
+#define EEPROM_LAST_POS_REC 0xFA0
+#define EEPROM_ENC_ZERO_1 0xFC0
+#define EEPROM_ENC_ZERO_2 0xFD0
+#define EEPROM_ENC_ZERO_3 0xFE0
+#define EEPROM_ENC_ZERO_4 0xFF0
 
 csp_queue_handle_t uniman_stepper_q;
 
@@ -702,8 +713,11 @@ CSP_DEFINE_TASK(task_stepper) {
 			
 			
 		vTaskDelay(50);
-		stepper1.disstep();
-		stepper2.disstep();
+		if((uniman_running_conf.system_reset_encoder_zero&(1<<5))!=0) {
+// 			stepper1.disstep();
+// 			stepper2.disstep();
+		}
+
 		vTaskDelayUntil(&funcstarttime,(uint16_t((1000*(uint32_t)60)/(uniman_running_conf.stepper_speed*(uint32_t)portTICK_PERIOD_MS)))-50);
 // 		stepper1.enstep();
 // 		stepper2.enstep();
@@ -828,10 +842,14 @@ gs_fin_cmd_error_t init_server(void) {
 	
 	//I2C_init();
 	printf("hello");
-	encoder1.init(0);
-	encoder2.init(0);
-	encoder3.init(1);
-	encoder4.init(1);
+	encoder1.init(1);
+	encoder2.init(1);
+	encoder3.init(0);
+	encoder4.init(0);
+	enc_zero_1.begin(EEPROM_ENC_ZERO_1,2,sizeof(uint16_t),&enc_zeros[0]);
+	enc_zero_2.begin(EEPROM_ENC_ZERO_1,2,sizeof(uint16_t),&enc_zeros[1]);
+	enc_zero_3.begin(EEPROM_ENC_ZERO_1,2,sizeof(uint16_t),&enc_zeros[2]);
+	enc_zero_4.begin(EEPROM_ENC_ZERO_1,2,sizeof(uint16_t),&enc_zeros[3]);
 
 	
 	setup_temp_sensors();
@@ -847,7 +865,7 @@ gs_fin_cmd_error_t init_server(void) {
 		
 
 		
-	running_conf_EEPROM.begin(EEPROM_RUN_CONF_ADD,2,sizeof(uniman_running_conf),&uniman_running_conf);
+	running_conf_EEPROM.begin(EEPROM_RUN_CONF_ADD,0xF9,sizeof(uniman_running_conf),&uniman_running_conf);
 
 	gs_fin_positions_t temp = {
 		.pos_fin_a=0,
@@ -880,7 +898,20 @@ gs_fin_cmd_error_t init_server(void) {
 	//stepper1.updateconfig(&uniman_step1_conf,&uniman_running_conf);
 	//stepper2.updateconfig(&uniman_step2_conf,&uniman_running_conf);
 /*	save_fin_config();*/
-	/*save_fin_config();*/
+	
+// 	gs_fin_config_t uniman_running_test = {
+// 		.stepper_config=0x09,
+// 		.stepper_ihold=STEPPER_DEFAULT_IHOLD,
+// 		.stepper_irun=STEPPER_DEFAULT_IRUN,
+// 		.stepper_speed = 60,
+// 		.system_reset_encoder_zero = (1<<5)|(0x0F),
+// 		.system_extra = 0
+// 	};
+// 	set_fin_config(&uniman_running_test);
+	set_fin_config(&uniman_running_conf);
+	
+	save_fin_config();
+	
 	if(load_fin_config()) error=FIN_CMD_FAIL;
 
 	print_conf(&uniman_running_conf);
@@ -950,6 +981,7 @@ gs_fin_cmd_error_t get_fin_config(gs_fin_config_t * conf) {
 
 gs_fin_cmd_error_t set_fin_config(const gs_fin_config_t * conf) {
 gs_fin_cmd_error_t error=FIN_CMD_OK;
+uniman_running_conf=*conf;
 	if(((conf->system_reset_encoder_zero)&(1<<4))!=0) {
 		FORCERESET
 	}
@@ -957,24 +989,45 @@ gs_fin_cmd_error_t error=FIN_CMD_OK;
 	if ((uniman_running_conf.system_reset_encoder_zero&(1<<3))!=0) {
 		uniman_running_conf.system_reset_encoder_zero&=~(1<<3);
 		if(encoder4.zeropos()!=0) error=FIN_CMD_FAIL;
+		uint16_t zeroread=0;
+		if(encoder4.getzero(&zeroread)!=0) error=FIN_CMD_FAIL;
+		if(enc_zero_4.write(&zeroread)!=0) error=FIN_CMD_FAIL;
+		printf("zero 4\n");
 	}
 	
 	if ((uniman_running_conf.system_reset_encoder_zero&(1<<2))!=0) {
 		uniman_running_conf.system_reset_encoder_zero&=~(1<<2);
 		if(encoder3.zeropos()!=0) error=FIN_CMD_FAIL;
+		uint16_t zeroread=0;
+		if(encoder3.getzero(&zeroread)!=0) error=FIN_CMD_FAIL;
+		if(enc_zero_3.write(&zeroread)!=0) error=FIN_CMD_FAIL;
+		printf("zero 3\n");
 	}
 	
 	if ((uniman_running_conf.system_reset_encoder_zero&(1<<1))!=0) {
 		uniman_running_conf.system_reset_encoder_zero&=~(1<<1);
 		if(encoder2.zeropos()!=0) error=FIN_CMD_FAIL;
+		uint16_t zeroread=0;
+		if(encoder2.getzero(&zeroread)!=0) error=FIN_CMD_FAIL;
+		if(enc_zero_2.write(&zeroread)!=0) error=FIN_CMD_FAIL;
+		printf("zero 2\n");
 	}
 	
 	if ((uniman_running_conf.system_reset_encoder_zero&(1<<0))!=0) {
 		uniman_running_conf.system_reset_encoder_zero&=~(1<<0);
 		if(encoder1.zeropos()!=0) error=FIN_CMD_FAIL;
+		uint16_t zeroread=0;
+		if(encoder1.getzero(&zeroread)!=0) error=FIN_CMD_FAIL;
+		if(enc_zero_1.write(&zeroread)!=0) error=FIN_CMD_FAIL;
+		printf("zero 1\n");
 	}
 	
-	uniman_running_conf=*conf;
+	if(((conf->system_reset_encoder_zero)&(1<<6))!=0) {
+		//TODO use zero pos from eeprom
+	}
+	
+	
+
 	
 	if(process_config(&uniman_running_conf)!=0) error=FIN_CMD_FAIL;
 	csp_log_info("Setting running config");
