@@ -463,7 +463,7 @@ void read_temp_sensors(uint16_t *array){
 CSP_DEFINE_TASK(task_stepper) {
 	#define BASEOVERSTEPS 2;
 	uint8_t oversteps = BASEOVERSTEPS;
-	#define RETRYMAX 2
+	#define RETRYMAX 5
 	#define RETRYMARGIN 10
 	uint16_t recbuf=0;
 	uint8_t intervalcount=0;
@@ -712,13 +712,9 @@ CSP_DEFINE_TASK(task_stepper) {
 			
 			
 			
-		vTaskDelay(50);
-		if((uniman_running_conf.system_reset_encoder_zero&(1<<5))!=0) {
-// 			stepper1.disstep();
-// 			stepper2.disstep();
-		}
 
-		vTaskDelayUntil(&funcstarttime,(uint16_t((1000*(uint32_t)60)/(uniman_running_conf.stepper_speed*(uint32_t)portTICK_PERIOD_MS)))-50);
+
+		vTaskDelayUntil(&funcstarttime,(uint16_t((1000*(uint32_t)60)/(uniman_running_conf.stepper_speed*(uint32_t)portTICK_PERIOD_MS))));
 // 		stepper1.enstep();
 // 		stepper2.enstep();
 // 		vTaskDelay(5);
