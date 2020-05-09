@@ -26,6 +26,7 @@ class R_EEPROM {
 		int qsortcomp(uint16_t in1,uint16_t in2);
 		uint8_t initcheck(void);
 		uint8_t incrementblock(void);
+		uint8_t internalwrite(const void * data);
 	
 	public:
 		R_EEPROM(void);

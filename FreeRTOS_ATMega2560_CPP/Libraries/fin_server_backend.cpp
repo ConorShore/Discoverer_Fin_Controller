@@ -58,7 +58,7 @@ gs_fin_config_t uniman_running_conf = {
 };
 
 #define EEPROM_RUN_CONF_ADD 0x00
-#define EEPROM_LAST_POS_REC 0xFA0
+#define EEPROM_LAST_POS_REC 0x030
 #define EEPROM_ENC_ZERO_1 0xFC0
 #define EEPROM_ENC_ZERO_2 0xFD0
 #define EEPROM_ENC_ZERO_3 0xFE0
@@ -861,7 +861,7 @@ gs_fin_cmd_error_t init_server(void) {
 		
 
 		
-	running_conf_EEPROM.begin(EEPROM_RUN_CONF_ADD,0xF9,sizeof(uniman_running_conf),&uniman_running_conf);
+	running_conf_EEPROM.begin(EEPROM_RUN_CONF_ADD,3,sizeof(uniman_running_conf),&uniman_running_conf);
 
 	gs_fin_positions_t temp = {
 		.pos_fin_a=0,
@@ -912,10 +912,10 @@ gs_fin_cmd_error_t init_server(void) {
 
 	print_conf(&uniman_running_conf);
 		
-	last_pos_rec.begin(EEPROM_LAST_POS_REC,8,sizeof(temp),&temp);
+	last_pos_rec.begin(EEPROM_LAST_POS_REC,0x6F,sizeof(temp),&temp);
 
-	last_pos_rec.read(&temp);
-	set_fin_pos_ns(&temp);
+	//last_pos_rec.read(&temp);
+	//set_fin_pos_ns(&temp);
 
 		if(csp_thread_create(task_server, "SERVER", 270, NULL, 2, &handle_server)) error=FIN_CMD_FAIL;
 	

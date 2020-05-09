@@ -112,10 +112,11 @@ printf("X");
 
 I2C_init();
 
-// for (uint8_t i=0;i<128;i++) {
+// for (uint16_t i=0;i<0xFF0;i++) {
 // 
 // 
 // 	eeprom_write_byte((uint8_t *)i,0xFF);
+// 	printf("Cleared %d\n",i);
 // 	wdt_reset();
 // }
 // 
