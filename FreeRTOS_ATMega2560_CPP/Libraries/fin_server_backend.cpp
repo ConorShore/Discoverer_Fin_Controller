@@ -921,9 +921,10 @@ gs_fin_cmd_error_t init_server(void) {
 	print_conf(&uniman_running_conf);
 		
 	last_pos_rec.begin(EEPROM_LAST_POS_REC,0x6F,sizeof(temp),&temp);
+	
 
-	//last_pos_rec.read(&temp);
-	//set_fin_pos_ns(&temp);
+	last_pos_rec.read(&temp);
+	set_fin_pos_ns(&temp);
 
 		if(csp_thread_create(task_server, "SERVER", 270, NULL, 2, &handle_server)) error=FIN_CMD_FAIL;
 	

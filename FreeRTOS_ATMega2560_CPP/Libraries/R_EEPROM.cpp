@@ -2,6 +2,7 @@
 #include <avr/eeprom.h>
 #include <avr/pgmspace.h>
 #include <string.h>
+#include <avr/wdt.h>
 
 #include <R_EEPROM.h>
 
@@ -189,7 +190,7 @@ static const uint32_t crc_tab[256] PROGMEM = {
 		blockpoint=0;
 	}
 	
-	uint8_t R_EEPROM::write(const void * data) {
+	uint8_t R_EEPROM::internalwrite(const void * data) {
 		
 		if(initcheck()!=0) return -1;
 		if(sizeofin>=BUFFSIZE) return -1; //sanity checks
@@ -242,8 +243,8 @@ static const uint32_t crc_tab[256] PROGMEM = {
 				uint8_t readin=0;
 				readin=eeprom_read_byte((uint8_t *)curaddress+i);
 				if (crcbuff[i-sizeofin]!=readin) {
-					incrementblock();
-					write(data);
+					if(incrementblock()==-1) return -4;
+
 					return 1;
 				}
 			} else {
@@ -254,8 +255,7 @@ static const uint32_t crc_tab[256] PROGMEM = {
 				uint8_t readin=0;
 				readin=eeprom_read_byte((uint8_t *)curaddress+i);
 				if (in!=readin) {
-					incrementblock();
-					write(data);
+					if(incrementblock()==-1) return -4;
 					return 1;
 					 
 				}
@@ -280,10 +280,24 @@ static const uint32_t crc_tab[256] PROGMEM = {
 
 	
 	uint8_t R_EEPROM::incrementblock(void) {
+		printf("block incr bp %hu b %hu\n",blockpoint,blocks);
 		if(blockpoint+1>=blocks) return -1;
 		blockpoint++;
-		printf("block incr\n");
+		
 		curaddress=startadd+(sizeofin*blockpoint);
+		return 0;
+	}
+	
+	uint8_t R_EEPROM::write(const void * data) {
+		uint8_t ret=1;
+		while(ret==1) {
+			ret=internalwrite(data);
+			wdt_reset();
+			printf("ret %d\n",ret);
+			if(ret==-4) {
+				return -1;
+			}
+		}
 		return 0;
 	}
 
