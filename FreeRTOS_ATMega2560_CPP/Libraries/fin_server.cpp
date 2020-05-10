@@ -11,6 +11,9 @@
 #include <fin.h>
 #include <fin_server.h>
 #include <fin_server_backend.h>
+#include <FinCont.h>
+
+
 
 //TODO - remove this library, only for testing
 #include <R_EEPROM.h>
@@ -53,13 +56,17 @@ static void process_fin_cmd(csp_conn_t * conn, csp_packet_t * packet)
 				}
 	
 		
-				
+				#if GS==1
 				packet->data[33]=status.mode;
-// 				packet->data[34]=0;
-// 				packet->data[35]=0;
-// 				packet->data[36]=0;
-// 				packet->data[37]=status.status_code;
 				packet->data[34]=status.status_code;
+				reply_length += sizeof(status);
+				#else
+				packet->data[33]=status.mode;
+				packet->data[37]=status.status_code;
+				reply_length += sizeof(status)+3;
+				#endif
+				
+
 				
 				
 			
@@ -67,7 +74,7 @@ static void process_fin_cmd(csp_conn_t * conn, csp_packet_t * packet)
 // 					printf("%x ",packet->data[i]);
 // 				}
 // 				
-                reply_length += sizeof(status)+3;
+                
 				//csp_log_info("sizeof sat %d\n",reply_length);
             }
             break;

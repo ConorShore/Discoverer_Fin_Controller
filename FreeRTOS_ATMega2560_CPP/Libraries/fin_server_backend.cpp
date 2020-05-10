@@ -57,12 +57,12 @@ gs_fin_config_t uniman_running_conf = {
 	.system_extra = 0
 };
 
-#define EEPROM_RUN_CONF_ADD 0x00
+#define EEPROM_RUN_CONF_ADD 0x000
 #define EEPROM_LAST_POS_REC 0x030
-#define EEPROM_ENC_ZERO_1 0xFC0
-#define EEPROM_ENC_ZERO_2 0xFD0
-#define EEPROM_ENC_ZERO_3 0xFE0
-#define EEPROM_ENC_ZERO_4 0xFF0
+#define EEPROM_ENC_ZERO_1 0xFA0
+#define EEPROM_ENC_ZERO_2 0xFB0
+#define EEPROM_ENC_ZERO_3 0xFC0
+#define EEPROM_ENC_ZERO_4 0xFD0
 
 csp_queue_handle_t uniman_stepper_q;
 
@@ -184,14 +184,16 @@ gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
 	//encoder1.readerror(&temp8);
 	//printf("%x ",temp8);
 portENTER_CRITICAL();
-	if(encoder1.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
+	if(encoder1.readpos(&temp16)!=0) uniman_status.status_code|=(1<<0);
+	else uniman_status.status_code&=~(1<<0);
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
 
 	status->encoder_pos.pos_fin_b=uint16_t(tempd);
 	
 	temp16=0;
-	if(encoder2.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
+	if(encoder2.readpos(&temp16)!=0) uniman_status.status_code|=(1<<1);
+	else uniman_status.status_code&=~(1<<1);
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
 
@@ -201,7 +203,8 @@ portENTER_CRITICAL();
 	//printf("%x ",temp8);
 	
 	temp16=0;
-	if(encoder3.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
+	if(encoder3.readpos(&temp16)!=0) uniman_status.status_code|=(1<<2);
+	else uniman_status.status_code&=~(1<<2);
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
 
@@ -211,7 +214,8 @@ portENTER_CRITICAL();
 	//printf("%x ",temp8);
 	
 	temp16=0;
-	if(encoder4.readpos(&temp16)!=0) error=FIN_CMD_FAIL;
+	if(encoder4.readpos(&temp16)!=0) uniman_status.status_code|=(1<<3);
+	else uniman_status.status_code&=~(1<<3);
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
 portEXIT_CRITICAL();
@@ -233,6 +237,7 @@ portEXIT_CRITICAL();
 
 //get mode
 	status->mode=uniman_status.mode;
+	status->status_code=uniman_status.status_code;
 	
 
 	status->status_code&=~0x80;

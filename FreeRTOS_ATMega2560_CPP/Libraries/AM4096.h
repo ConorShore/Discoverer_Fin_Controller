@@ -13,6 +13,7 @@ class AM4096 {
 	
 	private:
 		volatile uint8_t address;
+		uint8_t initcomplete;
 	public:
 		AM4096(uint8_t addressin);
 		uint8_t init(uint8_t invert);
@@ -23,4 +24,5 @@ class AM4096 {
 		uint8_t check(void);
 		uint8_t getzero(uint16_t * zerodat);
 		uint8_t setzero(uint16_t * data);
+		uint8_t initcheck(void);
 };

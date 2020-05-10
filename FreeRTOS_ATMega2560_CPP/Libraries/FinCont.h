@@ -9,6 +9,9 @@
 #define ONCON 1
 #define OFFCON 2
 
+#define GS 0
+#define FM 0
+
 
 void pwrredinit(void); // some power saving commands
 void timeoutstart(int tim);

@@ -13,11 +13,11 @@ typedef CRCTYPE crc_t;
 
 class R_EEPROM {
 	private:
-		uint8_t blockpoint;
+		uint16_t blockpoint;
 		uint8_t sizeofin;
 		uint8_t initr;
 		static uint8_t initc;
-		uint8_t blocks;
+		uint16_t blocks;
 		static uint8_t firstrun;	
 		int startadd;
 		int curaddress;
