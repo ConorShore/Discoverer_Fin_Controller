@@ -129,10 +129,11 @@ I2C_init();
 // 
 //  ar[0]=0;
 //  ar[1]=0b0001101;
-//  ar[2]=0x51;
+//  ar[2]=0x50;
 // 
-//  	printf("write %d\n",I2C_write(0x60,ar,3,1));
-	 
+//  	printf("write %d\n",I2C_write(0x0,ar,3,1));
+// while(1);
+// 	 
 // printf("start\n");
 // 	 	while (1) {
 // 		 	for (int i=0;i<128;i++) {
@@ -251,12 +252,13 @@ I2C_init();
 
 		//printf("Debug enabed\r\n");
 		
+		#if GS==1
+		csp_debug_toggle_level(CSP_WARN);
+		csp_debug_toggle_level(CSP_ERROR);
+		#else
 		csp_debug_toggle_level(CSP_INFO);
-		//csp_debug_toggle_level((CSP_PACKET));
 		//csp_debug_toggle_level(CSP_WARN);
 		//csp_debug_toggle_level(CSP_ERROR);
-
-		
 		printf("Conn table\r\n");
 		csp_conn_print_table();
 
@@ -265,6 +267,10 @@ I2C_init();
 
 		printf("Interfaces\r\n");
 		csp_route_print_interfaces();
+		#endif
+
+		
+
 		
 		
 		xTaskCreate(wdtr,"WDT",configMINIMAL_STACK_SIZE,NULL,3,NULL);

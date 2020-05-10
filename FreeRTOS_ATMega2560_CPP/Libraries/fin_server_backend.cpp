@@ -240,10 +240,11 @@ portEXIT_CRITICAL();
 
 //get mode
 	status->mode=uniman_status.mode;
+
 	status->status_code=uniman_status.status_code;
 	
 
-	status->status_code&=~0x80;
+	uniman_status.status_code&=~0x80;
 	return error;
 
 }
@@ -846,10 +847,17 @@ gs_fin_cmd_error_t init_server(void) {
 	
 	//I2C_init();
 	printf("hello");
+	#if FM==1
 	encoder1.init(1);
 	encoder2.init(1);
 	encoder3.init(0);
 	encoder4.init(0);
+	#else
+	encoder1.init(1);
+	encoder2.init(1);
+	encoder3.init(0);
+	encoder4.init(0);
+	#endif
 	enc_zero_1.begin(EEPROM_ENC_ZERO_1,2,sizeof(uint16_t),&enc_zeros[0]);
 	enc_zero_2.begin(EEPROM_ENC_ZERO_1,2,sizeof(uint16_t),&enc_zeros[1]);
 	enc_zero_3.begin(EEPROM_ENC_ZERO_1,2,sizeof(uint16_t),&enc_zeros[2]);

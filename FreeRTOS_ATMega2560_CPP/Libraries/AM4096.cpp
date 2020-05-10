@@ -32,7 +32,6 @@ uint8_t AM4096::init(uint8_t invert) {
 	tempdata[0]=REG_RES_E;
 	if(I2C_write(address,tempdata,3,1)!=0) return -1; //this set resolution
 	_delay_ms(30);
-	printf("he");
 	
 	
 	initcomplete=1;
@@ -41,10 +40,10 @@ uint8_t AM4096::init(uint8_t invert) {
 }
 
 uint8_t AM4096::initcheck(void) {
-		if(initcomplete==0) {
-			if(init(address)!=0) return -1;
-			else return 0;
-		}
+// 		if(initcomplete==0) {
+// 			if(init(address)!=0) return -1;
+// 			else return 0;
+// 		}
 		return 0;
 }
 

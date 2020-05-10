@@ -1,6 +1,7 @@
 //functions for triggering enable disable driver and cs on off for SPI
 
 #include <stdio.h>
+#include <FinCont.h>
 
 
 void stepper_1_pin_init(void) {
@@ -35,6 +36,7 @@ void stepper_1_tstep(uint8_t a) {
 }
 
 void stepper_1_dir(uint8_t a, uint8_t t) { //a is which stepper 0 is 1 1 is 2, t is what to do, 2 is toggle, 1 is on 0 is off
+	#if FM==1
 	if(a) {
 		if (t==2) {
 			PORTH^=(1<<PH5);
@@ -56,6 +58,29 @@ void stepper_1_dir(uint8_t a, uint8_t t) { //a is which stepper 0 is 1 1 is 2, t
 			}
 		}
 	}
+	#else
+		if(a) {
+		if (t==2) {
+			PORTH^=(1<<PH5);
+			} else {
+			if (t==1) {
+				PORTH|=(1<<PH5);
+				} else {
+				PORTH&=~(1<<PH5);
+			}
+		}
+		} else {
+		if (t==2) {
+			PORTH^=(1<<PH3);
+			} else {
+			if (t==1) {
+				PORTH|=(1<<PH3);
+				} else {
+				PORTH&=~(1<<PH3);
+			}
+		}
+	}
+	#endif
 }
 
 void stepper_2_pin_init(void) {
