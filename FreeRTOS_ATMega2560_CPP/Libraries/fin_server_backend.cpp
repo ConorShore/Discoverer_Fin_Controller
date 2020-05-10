@@ -19,6 +19,8 @@
 R_EEPROM running_conf_EEPROM;
 R_EEPROM last_pos_rec;
 
+
+
 R_EEPROM enc_zero_1;
 R_EEPROM enc_zero_2;
 R_EEPROM enc_zero_3;
@@ -208,6 +210,7 @@ portENTER_CRITICAL();
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
 
+	
 	status->encoder_pos.pos_fin_d=uint16_t(tempd);
 	
 	//	encoder3.readerror(&temp8);
