@@ -17,7 +17,7 @@
 #include <R_EEPROM.h>
 
 R_EEPROM running_conf_EEPROM;
-R_EEPROM last_pos_rec;
+//R_EEPROM last_pos_rec;
 
 
 
@@ -407,7 +407,7 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 
 gs_fin_cmd_error_t set_fin_pos(const gs_fin_positions_t * pos) {
 	
-	last_pos_rec.write(pos);
+	//last_pos_rec.write(pos);
 	
 	return set_fin_pos_ns(pos);
 
@@ -920,19 +920,19 @@ gs_fin_cmd_error_t init_server(void) {
 // 		.system_extra = 0
 // 	};
 // 	set_fin_config(&uniman_running_test);
-	set_fin_config(&uniman_running_conf);
-	
-	save_fin_config();
+// 	set_fin_config(&uniman_running_conf);
+// 	
+// 	save_fin_config();
 	
 	if(load_fin_config()) error=FIN_CMD_FAIL;
 
 	print_conf(&uniman_running_conf);
 		
-	last_pos_rec.begin(EEPROM_LAST_POS_REC,0x6F,sizeof(temp),&temp);
+	//last_pos_rec.begin(EEPROM_LAST_POS_REC,0x6F,sizeof(temp),&temp);
 	
 
-	last_pos_rec.read(&temp);
-	set_fin_pos_ns(&temp);
+	//last_pos_rec.read(&temp);
+	//set_fin_pos_ns(&temp);
 
 		if(csp_thread_create(task_server, "SERVER", 270, NULL, 2, &handle_server)) error=FIN_CMD_FAIL;
 	
