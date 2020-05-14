@@ -110,7 +110,9 @@ static void process_fin_cmd(csp_conn_t * conn, csp_packet_t * packet)
 
             if (error == FIN_CMD_OK) {
                 /* Copy conf to response buffer */
+				conf.stepper_speed = csp_ntoh16(conf.stepper_speed);
                 memcpy(&packet->data[1], &conf, sizeof(conf));
+				//TODO - change speed big endian
                 reply_length += sizeof(conf);
             }
             break;

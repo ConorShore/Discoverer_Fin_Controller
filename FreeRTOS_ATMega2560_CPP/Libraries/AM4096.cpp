@@ -15,9 +15,9 @@ AM4096::AM4096(uint8_t addressin) {
 }
 
 uint8_t AM4096::init(uint8_t invert) {
-	uint8_t tempdata[3] = {REG_ADD,0b00011101,address}; //first byte is mem address
-	if(I2C_write(address,tempdata,3,1)!=0) return -1;
-	_delay_ms(30);
+ 	uint8_t tempdata[3] = {REG_ADD,0b00011101,address}; //first byte is mem address
+// 	if(I2C_write(address,tempdata,3,1)!=0) return -1;
+// 	_delay_ms(30);
 	if(I2C_read(address,REG_ZIN_E,&tempdata[1],2)!=0) return -1; //get current zin setting
 	if (invert==1) {
 		tempdata[1] |= (1<<4);

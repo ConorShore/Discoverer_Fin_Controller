@@ -232,10 +232,22 @@ portEXIT_CRITICAL();
 	//printf("temps %d %d %d %d\n",status->temperatures[0],status->temperatures[1],status->temperatures[2],status->temperatures[3]);
 
 
-	status->currents[0] = 0;
-	status->currents[1] = 0;
-	status->currents[2] = 0;
-	status->currents[3] = 0;
+ 	status->currents[0] = 0xFFFF;
+ 	status->currents[1] = 0xFFFF;
+ 	status->currents[2] = 0xFFFF;
+ 	status->currents[3] = 0xFFFF;
+
+// 	int tracker=0;
+//  		 	for (int i=0;i<128;i++) {
+// 		
+// 				 if(I2C_write(i,NULL,1,1)==0) {
+// 					 status->currents[tracker]=i;
+// 					 tracker++;
+// 				 }
+// 			 	wdt_reset();
+// 			 	_delay_us(250);
+// 		 	}
+ 	 	
 	
 
 //get mode
