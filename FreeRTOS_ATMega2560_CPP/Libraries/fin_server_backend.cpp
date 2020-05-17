@@ -151,25 +151,6 @@ uint16_t enc_tar_points[4] = {0,0,0,0};
 
 gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
 	
-	//TODO - remove this test code
-// 	gs_fin_positions_t test2 = {
-// 		.pos_fin_a=0x01F1,
-// 		.pos_fin_b=0x02F2,
-// 		.pos_fin_c=0x03F3,
-// 		.pos_fin_d=0x04F4
-// 	};
-// 	
-// 	gs_fin_status_t test = {
-// 		.pos_set_points=test2,
-// 		.encoder_pos=test2,
-// 		.temperatures={0x05F5,0x06F6,0x07F7,0x08F8},
-// 		.currents={0x09F9,0x10F0,0x11F1,0x12F2},
-// 		.mode=GS_FIN_MODE_CUSTOM,
-// 		.status_code=7
-// 	};
-// 	
-// 	*status=test;
-// 	return FIN_CMD_OK;
 
 //get setpoints, probably will done during normal operation
 
@@ -186,7 +167,7 @@ gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
 	//encoder1.readerror(&temp8);
 	//printf("%x ",temp8);
 portENTER_CRITICAL();
-	if(encoder1.readpos(&temp16)!=0) uniman_status.status_code|=(1<<0);
+	if(encoder1.readpos(&temp16)<0) uniman_status.status_code|=(1<<0);
 	else uniman_status.status_code&=~(1<<0);
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
@@ -194,7 +175,7 @@ portENTER_CRITICAL();
 	status->encoder_pos.pos_fin_b=uint16_t(tempd);
 	
 	temp16=0;
-	if(encoder2.readpos(&temp16)!=0) uniman_status.status_code|=(1<<1);
+	if(encoder2.readpos(&temp16)<0) uniman_status.status_code|=(1<<1);
 	else uniman_status.status_code&=~(1<<1);
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
@@ -205,7 +186,7 @@ portENTER_CRITICAL();
 	//printf("%x ",temp8);
 	
 	temp16=0;
-	if(encoder3.readpos(&temp16)!=0) uniman_status.status_code|=(1<<2);
+	if(encoder3.readpos(&temp16)<0) uniman_status.status_code|=(1<<2);
 	else uniman_status.status_code&=~(1<<2);
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
@@ -217,7 +198,7 @@ portENTER_CRITICAL();
 	//printf("%x ",temp8);
 	
 	temp16=0;
-	if(encoder4.readpos(&temp16)!=0) uniman_status.status_code|=(1<<3);
+	if(encoder4.readpos(&temp16)<0) uniman_status.status_code|=(1<<3);
 	else uniman_status.status_code&=~(1<<3);
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
@@ -330,7 +311,7 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 		switch (i) {
 			case 0:
 		
-				if(encoder1.readpos(&temp16)!=0) {
+				if(encoder1.readpos(&temp16)<0) {
 					error=FIN_CMD_FAIL;
 					internalerror=1;
 				}
@@ -339,7 +320,7 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 			break;
 			
 			case 1:
-				if(encoder2.readpos(&temp16)!=0) {
+				if(encoder2.readpos(&temp16)<0) {
 					error=FIN_CMD_FAIL;
 					internalerror=1;
 				}
@@ -348,7 +329,7 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 			break;
 		
 			case 2:
-				if(encoder3.readpos(&temp16)!=0) {
+				if(encoder3.readpos(&temp16)<0) {
 					error=FIN_CMD_FAIL;
 					internalerror=1;
 				}
@@ -357,7 +338,7 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 			break;
 
 			case 3:
-				if(encoder4.readpos(&temp16)!=0) {
+				if(encoder4.readpos(&temp16)<0) {
 					error=FIN_CMD_FAIL;
 					internalerror=1;
 				}
@@ -366,7 +347,7 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 			break;		
 		}
 		portEXIT_CRITICAL();
-		//printf("Step %d, enc %d, to %d \n\n",i,temp16,uint16_t(reqpos));
+		printf("Step %d, enc %d, to %d \n\n",i,temp16,uint16_t(reqpos));
 		
 		if (reqpos16==60001) {
 			uint16_t commandinc=((i)<<14) | (0<<13) | (0&0x1FFF);
