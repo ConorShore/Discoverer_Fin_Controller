@@ -237,17 +237,58 @@ portEXIT_CRITICAL();
  	status->currents[2] = 0xFFFF;
  	status->currents[3] = 0xFFFF;
 
-// 	int tracker=0;
-//  		 	for (int i=0;i<128;i++) {
-// 		
-// 				 if(I2C_write(i,NULL,1,1)==0) {
-// 					 status->currents[tracker]=i;
-// 					 tracker++;
-// 				 }
-// 			 	wdt_reset();
-// 			 	_delay_us(250);
-// 		 	}
- 	 	
+
+// 	uint8_t ar[4];
+// 
+// 	 ar[0]=0;
+// 	 ar[1]=0b0001101;
+// 	 ar[2]=0x53;
+// 
+// 	 wdt_reset();
+// 	 //printf("write %d\n",I2C_write(2,ar,3,1));
+// 	 if (I2C_write(2,ar,3,1)==0) {
+// 			status->currents[2]|=(1<<0);
+// 		} else {
+// 			status->currents[2]|=0x00FF;
+// 		}
+//  
+// 	 _delay_ms(50);
+// 	 wdt_reset();
+//  
+// 	if(I2C_write(0x53,NULL,1,1)==0) {
+// 		 status->currents[2]|=(1<<8);
+// 		} else {
+// 			status->currents[2]|=0xFF00;
+// 		}
+//  
+// 
+// 	 if (I2C_read(2,REG_ADD,&ar[1],2)==0) {
+// 		 status->currents[3]|=uint16_t(ar[2]);
+// 	 } else {
+// 		status->currents[3]|=0x00FF;
+// 	 }
+// 	  if (I2C_read(0x53,REG_ADD,&ar[1],2)==0) {
+// 			 status->currents[3]|=uint16_t(ar[2])<<8;
+// 	  } else {
+// 		status->currents[3]|=0xFF00;
+// 	  }
+// 	 wdt_reset();
+//  
+  	uint16_t tracker=0;
+	  portENTER_CRITICAL();
+  	for (uint16_t i=0;i<128;i++) {
+
+	 	if(I2C_write(i,NULL,1,1)==0) {
+
+			status->currents[tracker]=i<<8;
+		 	tracker++;
+			 if(tracker>3) break;
+	 	}
+	 	wdt_reset();
+ 	 		 	_delay_us(250);
+ 	 	 	}
+ 	 		 wdt_reset();
+ 	 	 	 	portEXIT_CRITICAL();
 	
 
 //get mode

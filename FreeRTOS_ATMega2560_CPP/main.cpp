@@ -100,12 +100,10 @@ struct can_frame canMsg2;
 #include <I2C.h>
 #include <AM4096.h>
 
-AM4096 test(0x51);	
-
 uint8_t ar[4];
 
 int main( void )
-{wdt_reset();
+{
 	usart_init(MYUBRR);
 fdevopen( &usart_putchar_printf,0);
 printf("X");
@@ -129,16 +127,8 @@ I2C_init();
 // 
 
 	enableleds();
-//  ar[0]=0;
-//  ar[1]=0b0001101;
-//  ar[2]=0x53;
-// 
-//  	//printf("write %d\n",I2C_write(2,ar,3,1));
-// 	 if (I2C_write(2,ar,3,1)==0) {
-// 		 contled(ONCON,0);
-// 	 } else if(I2C_write(0x53,NULL,1,1)==0) {
-// 		 contled(ONCON,0);
-// 	 }
+
+	
 // while(1);
 // 	 
 // printf("start\n");

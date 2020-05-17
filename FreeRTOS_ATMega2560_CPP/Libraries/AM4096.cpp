@@ -59,27 +59,52 @@ uint8_t AM4096::readpos(uint16_t * pos) {
 	uint8_t tempdata[2] = {0,0};
 		if(initcheck()!=0) return -1;
 	
-	if(I2C_read(address,REG_RPOS,tempdata,2)!=0) return -1;
-	
-	if((tempdata[0]&0xF0)==0) { //if this bit is set, data is invalid
-		*pos = (((uint16_t)tempdata[0])<<8)|tempdata[1];
-		return 0;
-		} else {
+	uint8_t complete=-1;
+
+	for(int i=0;i<POSREADRETRY;i++) {
+		if(I2C_read(address,REG_RPOS,tempdata,2)==0) {
+			complete=1;
+			break;
+		}
+	}
+
+	if (complete!=1) {
 		return -1;
+	} else {
+	
+		if((tempdata[0]&0xF0)==0) { //if this bit is set, data is invalid
+			*pos = (((uint16_t)tempdata[0])<<8)|tempdata[1];
+			return 0;
+			} else {
+			return -1;
+		}
 	}
 }
 
 int8_t AM4096::readabspos(uint16_t * pos) {
 	uint8_t tempdata[2] = {0,0};
 		if(initcheck()!=0) return -1;
+		
+	uint8_t complete=-1;
+	printf("s\n");
+	for(int i=0;i<POSREADRETRY;i++) {
+		if(I2C_read(address,REG_APOS,tempdata,2)==0) {
+			complete=1;
+			break;
+		}
 	
-	if(I2C_read(address,REG_APOS,tempdata,2)!=0) return -1;
-	
-	if((tempdata[0]&0xF0)==0) { //if this bit is set, data is invalid
-		*pos = (((uint16_t)tempdata[0])<<8)|tempdata[1];
-		return 0;
-		} else {
+	}
+	printf("e\n");
+	if (complete!=1) {
 		return -1;
+	} else {
+	
+		if((tempdata[0]&0xF0)==0) { //if this bit is set, data is invalid
+			*pos = (((uint16_t)tempdata[0])<<8)|tempdata[1];
+			return 0;
+			} else {
+			return -1;
+		}
 	}
 }
 
