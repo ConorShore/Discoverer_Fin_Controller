@@ -19,7 +19,7 @@ static int started=0;
 void volatile I2C_init(void) {
 	if(started==0) {
 		//portENTER_CRITICAL();
-		TWBR=18; // 3 =400kHz 6=250khz 18=100khz
+		TWBR=72; 
 		TWSR=0;
 		TWCR|= (1<<TWEA) | (1<<TWEN) | (1<<TWINT);
 		PORTD|=((1<<PD0) | (1<<PD1));
@@ -104,7 +104,7 @@ int8_t I2C_read(const uint8_t address,const uint8_t reg, uint8_t * data,const ui
 	
 	TWCR|=(1<<TWSTA); //repeated start
 	
-	timeoutstart(624);
+	timeoutstart(100);
 	while ((!(TWCR & (1<<TWINT)))&&(~timeoutcheck())); //wait for I2C to be ready with timeout
 	if ((TWSR & 0xF8) != RSTART) { //check RS was transmitted
 		TWCR = (1<<TWINT)|(1<<TWEN)| (1<<TWSTO);
@@ -115,7 +115,7 @@ int8_t I2C_read(const uint8_t address,const uint8_t reg, uint8_t * data,const ui
 	TWDR = (address<<1) | 0x01; //read add on the end
 	TWCR = (1<<TWINT) | (1<<TWEN);
 	
-	timeoutstart(624);
+	timeoutstart(100);
 	while ((!(TWCR & (1<<TWINT)))&&(~timeoutcheck())); //wait for I2C to be ready with timeout
 	
 	if ((TWSR & 0xF8) !=MR_SLA_ACK) { //wait for ack of address
@@ -127,7 +127,7 @@ int8_t I2C_read(const uint8_t address,const uint8_t reg, uint8_t * data,const ui
 	for(int i=0;i<number;i++) {
 		TWCR = (1<<TWINT) | (1<<TWEN);
 		
-		timeoutstart(624);
+		timeoutstart(100);
 		while ((!(TWCR & (1<<TWINT)))&&(~timeoutcheck())); //wait for I2C to be ready with timeout
 		if ((TWSR & 0xF8) == MR_DATA_NACK||(TWSR & 0xF8) == MR_DATA_ACK) { //if data
 			*(data+i)=TWDR;

@@ -8,7 +8,7 @@
 #define REG_ERR 34
 #define REG_RES_E 3
 
-#define POSREADRETRY 20
+#define POSREADRETRY 10
 
 class AM4096 {
 	

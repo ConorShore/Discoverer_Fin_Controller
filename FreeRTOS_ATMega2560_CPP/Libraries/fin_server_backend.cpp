@@ -255,21 +255,21 @@ portEXIT_CRITICAL();
 // 	  }
 // 	 wdt_reset();
 //  
-  	uint16_t tracker=0;
-	  portENTER_CRITICAL();
-  	for (uint16_t i=0;i<128;i++) {
-
-	 	if(I2C_write(i,NULL,1,1)==0) {
-
-			status->currents[tracker]=i<<8;
-		 	tracker++;
-			 if(tracker>3) break;
-	 	}
-	 	wdt_reset();
- 	 		 	_delay_us(250);
- 	 	 	}
- 	 		 wdt_reset();
- 	 	 	 	portEXIT_CRITICAL();
+//   	uint16_t tracker=0;
+// 	  portENTER_CRITICAL();
+//   	for (uint16_t i=0;i<128;i++) {
+// 
+// 	 	if(I2C_write(i,NULL,1,1)==0) {
+// 
+// 			status->currents[tracker]=i<<8;
+// 		 	tracker++;
+// 			 if(tracker>3) break;
+// 	 	}
+// 	 	wdt_reset();
+//  	 		 	_delay_us(250);
+//  	 	 	}
+//  	 		 wdt_reset();
+//  	 	 	 	portEXIT_CRITICAL();
 	
 
 //get mode
