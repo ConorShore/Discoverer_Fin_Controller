@@ -122,7 +122,8 @@ I2C_init();
 // 
 // printf("done");
 // while(1) {
-// 	wdt_reset();
+// 	
+
 // }
 // 
 

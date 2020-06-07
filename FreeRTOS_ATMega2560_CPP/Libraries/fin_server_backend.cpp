@@ -347,7 +347,9 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 			break;		
 		}
 		portEXIT_CRITICAL();
-		printf("Step %d, enc %d, to %d \n\n",i,temp16,uint16_t(reqpos));
+		#if GS==0
+		printf("Step %d, enc %d, to %d \n\n",i+1,temp16,uint16_t(reqpos));
+		#endif
 		
 		if (reqpos16==60001) {
 			uint16_t commandinc=((i)<<14) | (0<<13) | (0&0x1FFF);
@@ -410,7 +412,7 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 			}
 		}
 		
-		csp_log_info("step %d req pos %d dir 0 %d dir 1 %d",i,int16_t(reqpos),int16_t(tempd[1]),int16_t(tempd[2]));
+		csp_log_info("step %d req pos %d dir 0 %d dir 1 %d",i+1,int16_t(reqpos),int16_t(tempd[1]),int16_t(tempd[2]));
 		uint8_t direction=0;
 		
 	
@@ -535,7 +537,9 @@ CSP_DEFINE_TASK(task_stepper) {
 		
 		
 				inmove[(recbuf&0xC000)>>14]=1;
-
+				#if GS==0 
+				printf("B im %d %d %d %d\n",inmove[0],inmove[1],inmove[2],inmove[3]);
+				#endif
 				portENTER_CRITICAL();
 				uint16_t posrec=0;
 				switch ((recbuf&0xC000)>>14) {
@@ -669,7 +673,15 @@ CSP_DEFINE_TASK(task_stepper) {
 		
 
 		intervalcount++;
-				
+			#if GS==0 
+			printf("A im %d %d %d %d\n",inmove[0],inmove[1],inmove[2],inmove[3]);
+			#endif	
+			#if GS==0 
+				for (int i=0;i<4;i++) {
+					printf("Step %d tar %d cur %d	",i+1,stepcmd[i].tarsteps,stepcmd[i].cursteps);
+				}
+				printf("\n");
+			#endif	
 		if (inmove[0]==1||inmove[1]==1) stepper1.enstep();
 		if (inmove[2]==1||inmove[3]==1) stepper2.enstep();
 		if(inmove[0]) {
@@ -767,7 +779,15 @@ CSP_DEFINE_TASK(task_stepper) {
 		tempos.pos_fin_c=60000;
 		tempos.pos_fin_d=60000;
 		for(int i=0;i<4;i++) {
-			if((inmove[i]==1)&&(stepcmd[i].cursteps==stepcmd[i].tarsteps)) {
+			if((inmove[i]==1)&&(stepcmd[i].cursteps>=stepcmd[i].tarsteps)) {
+							
+							
+							
+			#if GS==0 
+			if(stepcmd[i].cursteps>stepcmd[i].tarenc) {
+				printf("IT HAPPENED HERE\n\n\n\n\n\n\n\n");
+			}
+			#endif	
 				portENTER_CRITICAL();
 				uint16_t posrec=0;
 				switch (i) {
@@ -845,6 +865,7 @@ CSP_DEFINE_TASK(task_stepper) {
 						csp_log_error("Command Fail, Delta %d Retry %d\n",abs(targetfind-encfind),stepcmd[i].retry);
 						stepcmd[i].retry=0;
 						inmove[i]=0;
+						//printf("C im %d %d %d %d\n",inmove[0],inmove[1],inmove[2],inmove[3]);
 					}
 					set_fin_pos_ns(&tempos);
 				}
