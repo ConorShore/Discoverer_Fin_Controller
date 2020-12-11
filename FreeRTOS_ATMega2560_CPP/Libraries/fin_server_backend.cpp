@@ -673,10 +673,10 @@ CSP_DEFINE_TASK(task_stepper) {
 		
 
 		intervalcount++;
-			#if VERBOSE==0 
+			#if VERBOSE==1 
 			printf("A im %d %d %d %d\n",inmove[0],inmove[1],inmove[2],inmove[3]);
 			#endif	
-			#if VERBOSE==0 
+			#if VERBOSE==1 
 				for (int i=0;i<4;i++) {
 					printf("Step %d tar %d cur %d	",i+1,stepcmd[i].tarsteps,stepcmd[i].cursteps);
 				}
@@ -783,7 +783,7 @@ CSP_DEFINE_TASK(task_stepper) {
 							
 							
 							
-			#if VERBOSE==0 
+			#if VERBOSE==1 
 			if(stepcmd[i].cursteps>stepcmd[i].tarenc) {
 				printf("IT HAPPENED HERE\n\n\n\n\n\n\n\n");
 			}
