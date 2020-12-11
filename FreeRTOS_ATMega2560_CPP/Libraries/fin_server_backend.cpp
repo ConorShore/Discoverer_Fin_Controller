@@ -347,7 +347,7 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 			break;		
 		}
 		portEXIT_CRITICAL();
-		#if GS==0
+		#if VERBOSE==1
 		printf("Step %d, enc %d, to %d \n\n",i+1,temp16,uint16_t(reqpos));
 		#endif
 		
@@ -537,7 +537,7 @@ CSP_DEFINE_TASK(task_stepper) {
 		
 		
 				inmove[(recbuf&0xC000)>>14]=1;
-				#if GS==0 
+				#if VERBOSE==1 
 				printf("B im %d %d %d %d\n",inmove[0],inmove[1],inmove[2],inmove[3]);
 				#endif
 				portENTER_CRITICAL();
@@ -673,10 +673,10 @@ CSP_DEFINE_TASK(task_stepper) {
 		
 
 		intervalcount++;
-			#if GS==0 
+			#if VERBOSE==0 
 			printf("A im %d %d %d %d\n",inmove[0],inmove[1],inmove[2],inmove[3]);
 			#endif	
-			#if GS==0 
+			#if VERBOSE==0 
 				for (int i=0;i<4;i++) {
 					printf("Step %d tar %d cur %d	",i+1,stepcmd[i].tarsteps,stepcmd[i].cursteps);
 				}
@@ -783,7 +783,7 @@ CSP_DEFINE_TASK(task_stepper) {
 							
 							
 							
-			#if GS==0 
+			#if VERBOSE==0 
 			if(stepcmd[i].cursteps>stepcmd[i].tarenc) {
 				printf("IT HAPPENED HERE\n\n\n\n\n\n\n\n");
 			}

@@ -250,7 +250,7 @@ I2C_init();
 
 		//printf("Debug enabed\r\n");
 		
-		#if GS==1
+		#if VERBOSE==1
 		csp_debug_toggle_level(CSP_WARN);
 		csp_debug_toggle_level(CSP_ERROR);
 		#else
