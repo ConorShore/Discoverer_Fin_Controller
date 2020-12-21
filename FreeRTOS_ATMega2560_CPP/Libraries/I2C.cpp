@@ -19,7 +19,7 @@ static int started=0;
 void volatile I2C_init(void) {
 	if(started==0) {
 		//portENTER_CRITICAL();
-		TWBR=72; 
+		TWBR=198; 
 		TWSR=0;
 		TWCR|= (1<<TWEA) | (1<<TWEN) | (1<<TWINT);
 		PORTD|=((1<<PD0) | (1<<PD1));
