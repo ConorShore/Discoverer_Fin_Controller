@@ -158,9 +158,11 @@ void CanRxFunc(void* pvParameters) {
 					csp_log_error("impossible pos %d	count = %d\r\n",pos,count);
 					csp_log_error("Id = %ux\r\n",frame[i].can_id);
 					csp_log_error("DLC = %ux\r\n",frame[i].can_dlc);
+					
 					for (int a=0;a<frame[i].can_dlc;a++) {
 						csp_log_error("Data %d = %x",a,frame[i].data[a]);
 					}
+					csp_log_reset("Force reset on impossible pos in CAN");
 				}
 				
 				
