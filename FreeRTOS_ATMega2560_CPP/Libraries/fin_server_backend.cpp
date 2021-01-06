@@ -163,11 +163,14 @@ gs_fin_cmd_error_t get_fin_status(gs_fin_status_t * status) {
 	float tempd=0;
 	uint16_t temp16=0;
 	uint8_t temp8=0;
+	int encerr=0;
 	
 	//encoder1.readerror(&temp8);
 	//printf("%x ",temp8);
 portENTER_CRITICAL();
-	if(encoder1.readpos(&temp16)<0) uniman_status.status_code|=(1<<0);
+	encerr = encoder1.readpos(&temp16);
+	uniman_status.currents[0]=encerr;
+	if(encerr<0) uniman_status.status_code|=(1<<0);
 	else uniman_status.status_code&=~(1<<0);
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
@@ -175,7 +178,9 @@ portENTER_CRITICAL();
 	status->encoder_pos.pos_fin_b=uint16_t(tempd);
 	
 	temp16=0;
-	if(encoder2.readpos(&temp16)<0) uniman_status.status_code|=(1<<1);
+	encerr = encoder2.readpos(&temp16);
+	uniman_status.currents[1]=encerr;
+	if(encerr<0) uniman_status.status_code|=(1<<1);
 	else uniman_status.status_code&=~(1<<1);
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
@@ -186,7 +191,9 @@ portENTER_CRITICAL();
 	//printf("%x ",temp8);
 	
 	temp16=0;
-	if(encoder3.readpos(&temp16)<0) uniman_status.status_code|=(1<<2);
+	encerr = encoder3.readpos(&temp16);
+	uniman_status.currents[2]=encerr;
+	if(encerr<0) uniman_status.status_code|=(1<<2);
 	else uniman_status.status_code&=~(1<<2);
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
@@ -198,11 +205,13 @@ portENTER_CRITICAL();
 	//printf("%x ",temp8);
 	
 	temp16=0;
-	if(encoder4.readpos(&temp16)<0) uniman_status.status_code|=(1<<3);
+	encerr = encoder4.readpos(&temp16);
+	uniman_status.currents[3]=encerr;
+	if(encerr<0) uniman_status.status_code|=(1<<3);
 	else uniman_status.status_code&=~(1<<3);
 	tempd=(float)temp16;
 	tempd/=1.13777777778;
-portEXIT_CRITICAL();
+	portEXIT_CRITICAL();
 	status->encoder_pos.pos_fin_c=uint16_t(tempd);
 
 	//	encoder4.readerror(&temp8);
@@ -213,63 +222,12 @@ portEXIT_CRITICAL();
 	//printf("temps %d %d %d %d\n",status->temperatures[0],status->temperatures[1],status->temperatures[2],status->temperatures[3]);
 
 
- 	status->currents[0] = 0xFFFF;
- 	status->currents[1] = 0xFFFF;
- 	status->currents[2] = 0xFFFF;
- 	status->currents[3] = 0xFFFF;
+ 	//status->currents[0] = 0xFFFF;
+ 	//status->currents[1] = 0xFFFF;
+ 	//status->currents[2] = 0xFFFF;
+ 	//status->currents[3] = 0xFFFF;
 
 
-// 	uint8_t ar[4];
-// 
-// 	 ar[0]=0;
-// 	 ar[1]=0b0001101;
-// 	 ar[2]=0x53;
-// 
-// 	 wdt_reset();
-// 	 //printf("write %d\n",I2C_write(2,ar,3,1));
-// 	 if (I2C_write(2,ar,3,1)==0) {
-// 			status->currents[2]|=(1<<0);
-// 		} else {
-// 			status->currents[2]|=0x00FF;
-// 		}
-//  
-// 	 _delay_ms(50);
-// 	 wdt_reset();
-//  
-// 	if(I2C_write(0x53,NULL,1,1)==0) {
-// 		 status->currents[2]|=(1<<8);
-// 		} else {
-// 			status->currents[2]|=0xFF00;
-// 		}
-//  
-// 
-// 	 if (I2C_read(2,REG_ADD,&ar[1],2)==0) {
-// 		 status->currents[3]|=uint16_t(ar[2]);
-// 	 } else {
-// 		status->currents[3]|=0x00FF;
-// 	 }
-// 	  if (I2C_read(0x53,REG_ADD,&ar[1],2)==0) {
-// 			 status->currents[3]|=uint16_t(ar[2])<<8;
-// 	  } else {
-// 		status->currents[3]|=0xFF00;
-// 	  }
-// 	 wdt_reset();
-//  
-//   	uint16_t tracker=0;
-// 	  portENTER_CRITICAL();
-//   	for (uint16_t i=0;i<128;i++) {
-// 
-// 	 	if(I2C_write(i,NULL,1,1)==0) {
-// 
-// 			status->currents[tracker]=i<<8;
-// 		 	tracker++;
-// 			 if(tracker>3) break;
-// 	 	}
-// 	 	wdt_reset();
-//  	 		 	_delay_us(250);
-//  	 	 	}
-//  	 		 wdt_reset();
-//  	 	 	 	portEXIT_CRITICAL();
 	
 
 //get mode
@@ -312,6 +270,7 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 			case 0:
 		
 				if(encoder1.readpos(&temp16)<0) {
+					uniman_status.status_code|=(1<<0);
 					error=FIN_CMD_FAIL;
 					internalerror=1;
 				}
@@ -321,6 +280,7 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 			
 			case 1:
 				if(encoder2.readpos(&temp16)<0) {
+					uniman_status.status_code|=(1<<1);
 					error=FIN_CMD_FAIL;
 					internalerror=1;
 				}
@@ -330,6 +290,7 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 		
 			case 2:
 				if(encoder3.readpos(&temp16)<0) {
+					uniman_status.status_code|=(1<<2);
 					error=FIN_CMD_FAIL;
 					internalerror=1;
 				}
@@ -339,6 +300,7 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 
 			case 3:
 				if(encoder4.readpos(&temp16)<0) {
+					uniman_status.status_code|=(1<<3);
 					error=FIN_CMD_FAIL;
 					internalerror=1;
 				}
@@ -354,13 +316,11 @@ gs_fin_cmd_error_t set_fin_pos_ns(const gs_fin_positions_t * pos) {
 		if (reqpos16==60001) {
 			uint16_t commandinc=((i)<<14) | (0<<13) | (0&0x1FFF);
 			if(csp_queue_enqueue(uniman_stepper_q,&commandinc,1000)!=0) error=FIN_CMD_FAIL;
-			//printf("pasezn\n");
 			continue;
 		} else if(reqpos16>3600) {
 			csp_log_error("invalid data for stepper from comms");
 			continue;
 		} else if (reqpos16==60000) {
-			//printf("hit");
 		
 		} else {
 			switch (z) {
