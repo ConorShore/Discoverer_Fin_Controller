@@ -73,7 +73,7 @@ int8_t AM4096::readpos(uint16_t * pos) {
 	} else {
 	
 		if((tempdata[0]&0xF0)==0) { //if this bit is set, data is invalid
-			*pos = (((uint16_t)tempdata[0])<<8)|tempdata[1];
+			*pos = (((uint16_t)(tempdata[0]&0x0F))<<8)|tempdata[1];
 			return i+1;
 			} else {
 			return -1;
@@ -100,7 +100,7 @@ int8_t AM4096::readabspos(uint16_t * pos) {
 	} else {
 	
 		if((tempdata[0]&0xF0)==0) { //if this bit is set, data is invalid
-			*pos = (((uint16_t)tempdata[0])<<8)|tempdata[1];
+			*pos = (((uint16_t)(tempdata[0]&0x0F))<<8)|tempdata[1];
 			return i+1;
 			} else {
 			return -1;

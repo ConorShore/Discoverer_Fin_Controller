@@ -947,20 +947,22 @@ gs_fin_cmd_error_t init_server(void) {
 	stepper1.updateconfig(&uniman_fstep_conf,&uniman_running_conf);
 	stepper2.updateconfig(&uniman_fstep_conf,&uniman_running_conf);
 	//for(int i=0;i<100;i++){
-	stepper1.dirfunc(0,0);
-	stepper1.dirfunc(1,0);
-	stepper1.stepfunc(0);
-	stepper1.stepfunc(1);
-	stepper2.stepfunc(0);
-	stepper2.stepfunc(1);
-	_delay_ms(20);
-	stepper1.dirfunc(0,1);
-	stepper1.dirfunc(1,1);
-	stepper1.stepfunc(0);
-	stepper1.stepfunc(1);
-	stepper2.stepfunc(0);
-	stepper2.stepfunc(1);
+	#if STARTWOBBLE == 1
+		stepper1.dirfunc(0,0);
+		stepper1.dirfunc(1,0);
+		stepper1.stepfunc(0);
+		stepper1.stepfunc(1);
+		stepper2.stepfunc(0);
+		stepper2.stepfunc(1);
+		_delay_ms(20);
+		stepper1.dirfunc(0,1);
+		stepper1.dirfunc(1,1);
+		stepper1.stepfunc(0);
+		stepper1.stepfunc(1);
+		stepper2.stepfunc(0);
+		stepper2.stepfunc(1);
 	_delay_us(100);
+	#endif
 	//}
 	//stepper1.updateconfig(&uniman_step1_conf,&uniman_running_conf);
 	//stepper2.updateconfig(&uniman_step2_conf,&uniman_running_conf);
